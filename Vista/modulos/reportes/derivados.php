@@ -3,6 +3,64 @@ $titulo = 'Derivados | Reportes';
 $appName = 'Seguimiento de procesos';
 $usuario = 'Andres';
 
+/* 1) funciones + data + totales (rows, totalEstimado, totalAdj, etc.) */
+
+/* 2) EXPORT ANTES DE CUALQUIER HTML */
+if (isset($_GET['export']) && $_GET['export'] === 'xls') {
+    header('Content-Type: application/vnd.ms-excel; charset=UTF-8');
+    header('Content-Disposition: attachment; filename="reporte_derivados_af_2026.xls"');
+    header('Pragma: no-cache');
+    header('Expires: 0');
+
+    echo "\xEF\xBB\xBF";
+
+    $esc = fn($s) => htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
+
+    echo '<html><head><meta charset="UTF-8"><style>
+      table{border-collapse:collapse;font-family:Arial,sans-serif;font-size:10pt;}
+      th,td{border:1px solid #999;padding:6px;vertical-align:top;}
+      th{background:#f2f2f2;font-weight:bold;text-align:center;}
+      .num{mso-number-format:"\\#\\,\\#\\#0\\.00"; text-align:right;}
+      .txt{mso-number-format:"\\@";}
+      .wrap{white-space:normal;}
+    </style></head><body>';
+
+    echo '<table><tr>
+      <th>N°</th><th>EXP. PAC</th><th>OBAC</th><th>HISTORIAL</th><th>DESCRIPCIÓN</th>
+      <th>FF</th><th>TP</th><th>ESTIMADO</th><th>ADJUDICADO</th><th>FPC</th><th>ESTADO</th><th>SITUACIÓN</th>
+    </tr>';
+
+    foreach ($rows as $r) {
+        echo '<tr>';
+        echo '<td class="txt">' . $esc((int)$r['n']) . '</td>';
+        echo '<td class="txt">' . $esc($r['exp']) . '</td>';
+        echo '<td class="txt">' . $esc(strtoupper(trim($r['obac']))) . '</td>';
+        echo '<td class="wrap">' . $esc((string)$r['hist']) . '</td>';
+        echo '<td class="wrap">' . $esc((string)$r['desc']) . '</td>';
+        echo '<td class="txt">' . $esc((string)$r['ff']) . '</td>';
+        echo '<td class="txt">' . $esc((string)$r['tp']) . '</td>';
+        echo '<td class="num">' . number_format((float)$r['est'], 2, '.', '') . '</td>';
+        echo '<td class="num">' . number_format((float)$r['adj'], 2, '.', '') . '</td>';
+        echo '<td class="txt">' . $esc((string)$r['fpc']) . '</td>';
+        echo '<td class="txt">' . $esc((string)$r['estado']) . '</td>';
+        echo '<td class="wrap">' . $esc((string)$r['sit']) . '</td>';
+        echo '</tr>';
+    }
+
+    echo '<tr>
+      <td colspan="7" style="font-weight:bold;text-align:right;">TOTAL</td>
+      <td class="num" style="font-weight:bold;">' . number_format((float)$totalEstimado, 2, '.', '') . '</td>
+      <td class="num" style="font-weight:bold;">' . number_format((float)$totalAdj, 2, '.', '') . '</td>
+      <td colspan="3"></td>
+    </tr>';
+
+    echo '</table></body></html>';
+    exit;
+}
+
+/* si necesitas csv, igual va aquí ANTES del header.php */
+
+/* 3) recién aquí incluyes el layout */
 require_once __DIR__ . '/../../layout/header.php';
 
 function parseDateAny($s)
@@ -341,53 +399,6 @@ foreach ($rows as $r) {
     if (isset($cnt[$k])) $cnt[$k]++;
 }
 
-/* =========================
-   EXPORT: CSV (Excel)
-   URL: ?export=csv
-   ========================= */
-if (isset($_GET['export']) && $_GET['export'] === 'csv') {
-    header('Content-Type: text/csv; charset=UTF-8');
-    header('Content-Disposition: attachment; filename="reporte_derivados_af_2026.csv"');
-
-    $out = fopen('php://output', 'w');
-    fwrite($out, "\xEF\xBB\xBF");
-
-    fputcsv($out, [
-        'N°',
-        'EXP. PAC',
-        'OBAC',
-        'HISTORIAL',
-        'DESCRIPCIÓN',
-        'FF',
-        'TP',
-        'ESTIMADO',
-        'ADJUDICADO',
-        'FPC',
-        'ESTADO',
-        'SITUACIÓN'
-    ]);
-
-    foreach ($rows as $r) {
-        fputcsv($out, [
-            (int)$r['n'],
-            $r['exp'],
-            badgeObac($r['obac']),
-            str_replace(["\r\n", "\r"], ["\n", "\n"], (string)$r['hist']),
-            (string)$r['desc'],
-            (string)$r['ff'],
-            (string)$r['tp'],
-            (float)$r['est'],
-            (float)$r['adj'],
-            (string)$r['fpc'],
-            (string)$r['estado'],
-            str_replace(["\r\n", "\r"], ["\n", "\n"], (string)$r['sit']),
-        ]);
-    }
-
-    fputcsv($out, ['', '', '', '', '', '', 'TOTAL', (float)$totalEstimado, (float)$totalAdj, '', '', '']);
-    fclose($out);
-    exit;
-}
 
 /* =========================
    EXPORT: PRINT (PDF)
@@ -403,13 +414,26 @@ $isPrint = (isset($_GET['export']) && $_GET['export'] === 'print');
             <a class="back noprint" href="<?= BASE_URL ?>/reportes" aria-label="Volver">‹</a>
 
             <div class="min-w-0">
-                <p class="text-xs text-slate-500 font-bold">AGENCIA • OFICINA DE PLANEAMIENTO Y PRESUPUESTO</p>
-                <h2 class="text-xl sm:text-2xl font-black text-slate-900 mt-1">Contrataciones derivadas • AF-2025</h2>
+                <p class="topline">AGENCIA • OFICINA DE PLANEAMIENTO Y PRESUPUESTO</p>
+                <h2 class="title">Contrataciones derivadas • AF-2025</h2>
             </div>
 
             <div class="actions noprint">
-                <a class="btnx" href="?export=csv" title="Exportar a Excel (CSV)">Excel</a>
-                <a class="btnx" href="?export=print" title="Exportar a PDF (Imprimir)">PDF</a>
+                <a class="icon-btn icon-btn--excel" href="?export=xls" title="Exportar a Excel" aria-label="Excel">
+                    <!-- Excel SVG -->
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3 4a2 2 0 0 1 2-2h9l5 5v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4zm10 0v4h4" />
+                        <path d="M8.2 10h1.6l1 1.8L11.8 10h1.6l-1.9 3 2 3h-1.6l-1.1-1.9L9.6 16H8l2-3-1.8-3z" />
+                    </svg>
+                </a>
+
+                <a class="icon-btn icon-btn--pdf" href="?export=print" title="Exportar a PDF" aria-label="PDF">
+                    <!-- PDF SVG -->
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M6 2h9l5 5v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm8 1v5h5" />
+                        <path d="M8 15h2a2 2 0 1 0 0-4H8v4zm6 0h2a2 2 0 1 0 0-4h-2v4z" />
+                    </svg>
+                </a>
             </div>
 
             <div class="pill">AF-2026</div>
@@ -417,7 +441,9 @@ $isPrint = (isset($_GET['export']) && $_GET['export'] === 'print');
 
         <div class="toolbar noprint">
             <div class="search">
-                <input id="q" type="search" placeholder="Buscar (expediente, OBAC, descripción, estado)..." autocomplete="off">
+                <span class="s-ico" aria-hidden="true">⌕</span>
+                <input id="q" type="search" placeholder="Buscar: exp., OBAC, descripción, estado…" autocomplete="off">
+                <button class="s-clear" type="button" id="qClear" aria-label="Limpiar búsqueda">×</button>
             </div>
         </div>
     </section>
@@ -633,35 +659,6 @@ $isPrint = (isset($_GET['export']) && $_GET['export'] === 'print');
 
 <?php if (!$isPrint) require_once __DIR__ . '/../../layout/bottom-nav.php'; ?>
 
-<?php if ($isPrint): ?>
-    <script>
-        window.addEventListener('load', () => window.print());
-    </script>
-<?php endif; ?>
-
-<script>
-    const q = document.getElementById('q');
-    const cards = document.querySelectorAll('.card[data-hay]');
-    const empty = document.getElementById('emptyCards');
-
-    function applyFilter() {
-        const term = (q?.value || '').trim().toUpperCase();
-        const showAll = term.length === 0;
-
-        let visible = 0;
-        cards.forEach(c => {
-            const ok = showAll || (c.dataset.hay || '').includes(term);
-            c.style.display = ok ? '' : 'none';
-            if (ok) visible++;
-        });
-
-        if (empty) empty.style.display = (visible === 0 ? '' : 'none');
-    }
-
-    if (q) q.addEventListener('input', applyFilter);
-    window.addEventListener('load', applyFilter);
-</script>
-
 <style>
     /* =========================
    TOKENS / BASE
@@ -673,7 +670,6 @@ $isPrint = (isset($_GET['export']) && $_GET['export'] === 'print');
         --bg: #f1f5f9;
         --card: rgba(255, 255, 255, .96);
 
-        /* Tipografía/jerarquía */
         --text-strong: #0f172a;
         --text: #1f2937;
         --muted: #64748b;
@@ -689,8 +685,6 @@ $isPrint = (isset($_GET['export']) && $_GET['export'] === 'print');
         --r-lg: 22px;
         --r-md: 18px;
         --r-sm: 14px;
-
-        --pad: 16px;
     }
 
     * {
@@ -779,67 +773,27 @@ $isPrint = (isset($_GET['export']) && $_GET['export'] === 'print');
         line-height: 1.1;
     }
 
-    .headbox p.text-xs {
+    .topline {
+        font-size: .72rem;
         font-weight: 600;
-        letter-spacing: .06em;
+        letter-spacing: .08em;
+        text-transform: uppercase;
         color: var(--muted);
+        line-height: 1.2;
     }
 
-    .headbox h2 {
-        line-height: 1.15;
-        font-size: 1.05rem;
+    .title {
         margin-top: 6px;
-        word-break: break-word;
+        font-size: 1.05rem;
         font-weight: 750;
         color: var(--text-strong);
+        line-height: 1.15;
+        word-break: break-word;
     }
 
     @media (min-width:640px) {
-        .headbox h2 {
+        .title {
             font-size: 1.35rem;
-        }
-    }
-
-    .actions {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-    }
-
-    @media (max-width:520px) {
-        .actions {
-            flex: 1 1 100%;
-            order: 3;
-        }
-    }
-
-    .btnx {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        height: 38px;
-        padding: 0 12px;
-        border-radius: 999px;
-        background: var(--primary);
-        color: #fff;
-        text-decoration: none;
-        font-weight: 700;
-        font-size: .82rem;
-        box-shadow: var(--shadow-sm);
-        user-select: none;
-        white-space: nowrap;
-    }
-
-    .btnx:hover {
-        filter: brightness(1.05);
-    }
-
-    @media (max-width:520px) {
-        .btnx {
-            flex: 1 1 0;
-            height: 34px;
-            padding: 0 10px;
-            font-size: .78rem;
         }
     }
 
@@ -864,6 +818,91 @@ $isPrint = (isset($_GET['export']) && $_GET['export'] === 'print');
     }
 
     /* =========================
+   ACTIONS / BOTONES EXPORT
+   ========================= */
+    .actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    @media (max-width:520px) {
+        .actions {
+            flex: 1 1 100%;
+            order: 3;
+        }
+    }
+
+    .btnx {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+
+        height: 38px;
+        padding: 0 14px;
+        border-radius: 999px;
+
+        text-decoration: none;
+        user-select: none;
+        white-space: nowrap;
+
+        font-weight: 700;
+        font-size: .82rem;
+
+        border: 1px solid transparent;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, .08);
+        transition: transform .08s ease, filter .15s ease, box-shadow .15s ease;
+    }
+
+    .btnx:hover {
+        filter: brightness(1.03);
+        box-shadow: 0 12px 26px rgba(0, 0, 0, .10);
+    }
+
+    .btnx:active {
+        transform: scale(.99);
+    }
+
+    .btnx--primary {
+        background: var(--primary);
+        color: #fff;
+        border-color: rgba(15, 47, 90, .18);
+    }
+
+    .btnx--ghost {
+        background: #fff;
+        color: var(--text-strong);
+        border-color: rgba(148, 163, 184, .35);
+    }
+
+    .ico {
+        width: 18px;
+        height: 18px;
+        display: grid;
+        place-items: center;
+        font-weight: 900;
+        opacity: .9;
+    }
+
+    .btnx--ghost .ico {
+        color: #166534;
+    }
+
+    .btnx--primary .ico {
+        color: #fff;
+    }
+
+    @media (max-width:520px) {
+        .btnx {
+            flex: 1 1 0;
+            height: 34px;
+            padding: 0 10px;
+            font-size: .78rem;
+        }
+    }
+
+    /* =========================
    TOOLBAR (BUSCAR)
    ========================= */
     .toolbar {
@@ -875,7 +914,8 @@ $isPrint = (isset($_GET['export']) && $_GET['export'] === 'print');
     }
 
     .search {
-        flex: 1 1 220px;
+        position: relative;
+        flex: 1 1 260px;
     }
 
     @media (max-width:520px) {
@@ -884,32 +924,73 @@ $isPrint = (isset($_GET['export']) && $_GET['export'] === 'print');
         }
     }
 
-    #q {
+    .search input {
         width: 100%;
-        height: 38px;
+        height: 40px;
         border-radius: 999px;
         border: 1px solid rgba(148, 163, 184, .35);
-        padding: 0 14px;
-        outline: none;
         background: #fff;
+        padding: 0 44px 0 42px;
+        /* icono + clear */
+        outline: none;
+
         font-weight: 600;
         color: var(--text);
+
+        transition: box-shadow .15s ease, border-color .15s ease;
     }
 
-    #q::placeholder {
+    .search input::placeholder {
         color: var(--muted2);
         font-weight: 500;
     }
 
-    #q:focus {
+    .search input:focus {
         border-color: rgba(15, 47, 90, .45);
         box-shadow: 0 0 0 4px rgba(15, 47, 90, .10);
     }
 
     @media (max-width:420px) {
-        #q {
-            height: 36px;
+        .search input {
+            height: 38px;
         }
+    }
+
+    .s-ico {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 18px;
+        height: 18px;
+        display: grid;
+        place-items: center;
+        color: var(--muted);
+        opacity: .9;
+        pointer-events: none;
+        font-weight: 900;
+    }
+
+    .s-clear {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, .25);
+        background: #f8fafc;
+        color: #475569;
+        display: none;
+        /* JS */
+        place-items: center;
+        cursor: pointer;
+        font-weight: 900;
+    }
+
+    .s-clear:hover {
+        filter: brightness(1.03);
     }
 
     /* =========================
@@ -971,197 +1052,8 @@ $isPrint = (isset($_GET['export']) && $_GET['export'] === 'print');
         min-width: 0;
     }
 
-    .card-top {
-        display: flex;
-        gap: 10px;
-        justify-content: space-between;
-        align-items: flex-start;
-    }
-
-    .card-left {
-        display: flex;
-        gap: 6px;
-        flex-wrap: wrap;
-        min-width: 0;
-    }
-
-    .tag {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        height: 26px;
-        padding: 0 10px;
-        border-radius: 999px;
-        background: #f8fafc;
-        border: 1px solid rgba(148, 163, 184, .22);
-        font-weight: 650;
-        font-size: .72rem;
-        color: #475569;
-        white-space: nowrap;
-    }
-
-    @media (max-width:420px) {
-        .tag {
-            height: 24px;
-            padding: 0 8px;
-            font-size: .68rem;
-        }
-    }
-
-    .card-title {
-        margin-top: 10px;
-        font-weight: 750;
-        color: var(--text-strong);
-        line-height: 1.25;
-        font-size: .95rem;
-        word-break: break-word;
-    }
-
-    .moneybox {
-        margin-top: 10px;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        background: #f8fafc;
-        border: 1px solid var(--line2);
-        border-radius: var(--r-sm);
-        padding: 10px;
-    }
-
-    @media (max-width:360px) {
-        .moneybox {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    .ml {
-        font-size: .72rem;
-        font-weight: 600;
-        color: var(--muted);
-        text-transform: uppercase;
-        letter-spacing: .08em;
-    }
-
-    .mv {
-        margin-top: 4px;
-        font-weight: 800;
-        color: var(--text-strong);
-        font-variant-numeric: tabular-nums;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
     /* =========================
-   DETAILS / SUMMARY
-   ========================= */
-    .dets {
-        margin-top: 10px;
-        border: 1px solid rgba(148, 163, 184, .22);
-        border-radius: 14px;
-        background: #fff;
-        overflow: hidden;
-    }
-
-    .dets summary {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-
-        padding: 10px 12px;
-        cursor: pointer;
-        user-select: none;
-
-        font-weight: 650;
-        color: var(--text-strong);
-        background: rgba(15, 47, 90, .05);
-        list-style: none;
-    }
-
-    .dets summary::-webkit-details-marker {
-        display: none;
-    }
-
-    .dets__label {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        min-width: 0;
-    }
-
-    .dets__label::before {
-        content: "";
-        width: 10px;
-        height: 10px;
-        border-radius: 999px;
-        background: #94a3b8;
-        flex: 0 0 auto;
-    }
-
-    .dets--sit .dets__label::before {
-        background: rgba(107, 28, 38, .95);
-    }
-
-    .dets--hist .dets__label::before {
-        background: rgba(15, 47, 90, .95);
-    }
-
-    .dets__chev {
-        width: 10px;
-        height: 10px;
-        border-right: 3px solid rgba(15, 47, 90, .45);
-        border-bottom: 3px solid rgba(15, 47, 90, .45);
-        transform: rotate(45deg);
-        transition: transform .16s ease;
-        flex: 0 0 auto;
-    }
-
-    .dets__body {
-        padding: 10px 12px;
-        border-top: 1px solid rgba(148, 163, 184, .18);
-        background: #fff;
-    }
-
-    .dets[open] summary {
-        background: rgba(15, 47, 90, .08);
-    }
-
-    .dets[open] .dets__chev {
-        transform: rotate(-135deg);
-    }
-
-    .dets summary:active {
-        transform: scale(.995);
-    }
-
-    @media (max-width:420px) {
-        .dets summary {
-            padding: 9px 10px;
-        }
-
-        .dets__body {
-            padding: 9px 10px;
-        }
-    }
-
-    .preline {
-        margin-top: 6px;
-        white-space: normal;
-        color: #334155;
-        font-size: .86rem;
-        font-weight: 450;
-        line-height: 1.45;
-        overflow-wrap: anywhere;
-    }
-
-    .mono {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-        color: #475569;
-    }
-
-    /* =========================
-   BADGES / STATUS
+   STATUS / BADGES
    ========================= */
     .obac {
         display: inline-flex;
@@ -1210,7 +1102,216 @@ $isPrint = (isset($_GET['export']) && $_GET['export'] === 'print');
     }
 
     /* =========================
-   RESUMEN (CON TÍTULO SUPERIOR)
+   CARD V2
+   ========================= */
+    .card-v2 {
+        padding: 18px;
+    }
+
+    .card-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .card-head-left {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .tp {
+        font-size: .75rem;
+        color: var(--muted);
+        font-weight: 600;
+    }
+
+    .card-title {
+        margin-top: 10px;
+        font-weight: 750;
+        color: var(--text-strong);
+        line-height: 1.25;
+        font-size: .95rem;
+        word-break: break-word;
+    }
+
+    .meta-line {
+        display: flex;
+        gap: 18px;
+        font-size: .75rem;
+        color: var(--muted);
+        margin-top: 6px;
+        margin-bottom: 14px;
+    }
+
+    .finance {
+        display: flex;
+        justify-content: space-between;
+        padding: 14px;
+        background: #f8fafc;
+        border-radius: 14px;
+        border: 1px solid rgba(148, 163, 184, .18);
+    }
+
+    .finance small {
+        display: block;
+        font-size: .70rem;
+        color: var(--muted);
+        margin-bottom: 4px;
+        font-weight: 600;
+    }
+
+    .finance strong {
+        font-size: 1rem;
+        font-weight: 800;
+        color: var(--text-strong);
+    }
+
+    /* =========================
+   DETAILS: timeline simple (hist/sit)
+   ========================= */
+    .timeline {
+        margin-top: 14px;
+        border-top: 1px solid rgba(148, 163, 184, .18);
+        padding-top: 10px;
+    }
+
+    .timeline summary {
+        font-size: .80rem;
+        font-weight: 600;
+        color: #334155;
+        cursor: pointer;
+    }
+
+    .timeline-body {
+        margin-top: 8px;
+        font-size: .80rem;
+        color: #475569;
+        line-height: 1.4;
+    }
+
+    .mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        color: #475569;
+    }
+
+    /* =========================
+   TIMELINE DESPLEGABLE (DETAILS)
+   ========================= */
+    .tlx {
+        margin-top: 14px;
+        border: 1px solid rgba(148, 163, 184, .18);
+        border-radius: 14px;
+        overflow: hidden;
+        background: #fff;
+    }
+
+    .tlx-sum {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        cursor: pointer;
+        user-select: none;
+        list-style: none;
+        background: rgba(15, 47, 90, .05);
+    }
+
+    .tlx-sum::-webkit-details-marker {
+        display: none;
+    }
+
+    .tlx-title {
+        font-weight: 650;
+        color: var(--text-strong);
+    }
+
+    .tlx-meta {
+        margin-left: auto;
+        font-size: .75rem;
+        font-weight: 600;
+        color: var(--muted);
+    }
+
+    .tlx-chev {
+        width: 10px;
+        height: 10px;
+        border-right: 3px solid rgba(15, 47, 90, .45);
+        border-bottom: 3px solid rgba(15, 47, 90, .45);
+        transform: rotate(45deg);
+        transition: transform .16s ease;
+    }
+
+    .tlx[open] .tlx-chev {
+        transform: rotate(-135deg);
+    }
+
+    .tlx-body {
+        padding: 10px 12px;
+        border-top: 1px solid rgba(148, 163, 184, .16);
+    }
+
+    /* =========================
+   TIMELINE POR PROCESO
+   ========================= */
+    .timeline2-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .timeline2-item {
+        position: relative;
+        display: grid;
+        grid-template-columns: 16px 1fr;
+        gap: 10px;
+        padding: 8px 0;
+    }
+
+    .timeline2-item:not(:last-child)::after {
+        content: "";
+        position: absolute;
+        left: 7px;
+        top: 18px;
+        bottom: -8px;
+        width: 2px;
+        background: rgba(148, 163, 184, .22);
+    }
+
+    .timeline2-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 999px;
+        margin-top: 2px;
+        border: 2px solid rgba(148, 163, 184, .55);
+        background: #fff;
+    }
+
+    .timeline2-item.is-hist .timeline2-dot {
+        border-color: rgba(15, 47, 90, .45);
+    }
+
+    .timeline2-item.is-sit .timeline2-dot {
+        border-color: rgba(107, 28, 38, .50);
+    }
+
+    .timeline2-date {
+        font-size: .72rem;
+        font-weight: 700;
+        color: var(--text-strong);
+        margin-bottom: 2px;
+    }
+
+    .timeline2-text {
+        font-size: .82rem;
+        color: #475569;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+    }
+
+    /* =========================
+   RESUMEN (TABLA)
    ========================= */
     .tbl-card {
         background: var(--card);
@@ -1227,16 +1328,6 @@ $isPrint = (isset($_GET['export']) && $_GET['export'] === 'print');
         justify-content: space-between;
         align-items: flex-end;
         gap: 10px;
-    }
-
-    .tbl-top p.text-sm {
-        font-weight: 750;
-        color: var(--text-strong);
-    }
-
-    .tbl-top p.text-xs {
-        font-weight: 600;
-        color: var(--muted);
     }
 
     .res-wrap {
@@ -1270,6 +1361,10 @@ $isPrint = (isset($_GET['export']) && $_GET['export'] === 'print');
         color: #334155;
     }
 
+    .res-cell:last-child {
+        border-right: none;
+    }
+
     .res-h {
         background: rgba(15, 47, 90, .06);
         font-weight: 650;
@@ -1280,10 +1375,6 @@ $isPrint = (isset($_GET['export']) && $_GET['export'] === 'print');
     .res-total,
     .res-foot {
         background: #fff7d6;
-    }
-
-    .res-cell:last-child {
-        border-right: none;
     }
 
     /* =========================
@@ -1334,189 +1425,124 @@ $isPrint = (isset($_GET['export']) && $_GET['export'] === 'print');
         }
     }
 
-    /* =========================
-   CARD V2 – MÁS LIMPIA
-   ========================= */
-
-    .card-v2 {
-        padding: 18px;
-    }
-
-    .card-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px;
-    }
-
-    .card-head-left {
+    .actions {
+        margin-left: auto;
         display: flex;
         gap: 8px;
         align-items: center;
     }
 
-    .tp {
-        font-size: .75rem;
-        color: #64748b;
-        font-weight: 600;
-    }
-
-    .meta-line {
-        display: flex;
-        gap: 18px;
-        font-size: .75rem;
-        color: #64748b;
-        margin-top: 6px;
-        margin-bottom: 14px;
-    }
-
-    .finance {
-        display: flex;
-        justify-content: space-between;
-        padding: 14px;
-        background: #f8fafc;
-        border-radius: 14px;
-        border: 1px solid rgba(148, 163, 184, .18);
-    }
-
-    .finance small {
-        display: block;
-        font-size: .70rem;
-        color: #64748b;
-        margin-bottom: 4px;
-        font-weight: 600;
-    }
-
-    .finance strong {
-        font-size: 1rem;
-        font-weight: 800;
-        color: #0f172a;
-    }
-
-    .timeline {
-        margin-top: 14px;
-        border-top: 1px solid rgba(148, 163, 184, .18);
-        padding-top: 10px;
-    }
-
-    .timeline summary {
-        font-size: .80rem;
-        font-weight: 600;
-        color: #334155;
-        cursor: pointer;
-    }
-
-    .timeline-body {
-        margin-top: 8px;
-        font-size: .80rem;
+    .icon-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        display: grid;
+        place-items: center;
+        background: #fff;
+        border: 1px solid rgba(148, 163, 184, .35);
         color: #475569;
-        line-height: 1.4;
+        transition: all .15s ease;
     }
 
-   /* =========================
-   TIMELINE DESPLEGABLE (DETAILS)
-   ========================= */
-.tlx{
-  margin-top:14px;
-  border:1px solid rgba(148,163,184,.18);
-  border-radius:14px;
-  overflow:hidden;
-  background:#fff;
-}
+    .icon-btn svg {
+        width: 18px;
+        height: 18px;
+    }
 
-.tlx-sum{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:10px 12px;
-  cursor:pointer;
-  user-select:none;
-  list-style:none;
-  background:rgba(15,47,90,.05);
-}
+    .icon-btn:hover {
+        background: #f8fafc;
+        transform: translateY(-1px);
+    }
 
-.tlx-sum::-webkit-details-marker{ display:none; }
+    /* Colores sutiles */
+    .icon-btn--excel {
+        color: #166534;
+        /* verde suave */
+    }
 
-.tlx-title{
-  font-weight:650;
-  color:#0f172a;
-}
-
-.tlx-meta{
-  margin-left:auto;
-  font-size:.75rem;
-  font-weight:600;
-  color:#64748b;
-}
-
-.tlx-chev{
-  width:10px;
-  height:10px;
-  border-right:3px solid rgba(15,47,90,.45);
-  border-bottom:3px solid rgba(15,47,90,.45);
-  transform:rotate(45deg);
-  transition:transform .16s ease;
-}
-
-.tlx[open] .tlx-chev{
-  transform:rotate(-135deg);
-}
-
-.tlx-body{
-  padding:10px 12px;
-  border-top:1px solid rgba(148,163,184,.16);
-}
-
-/* =========================
-   TIMELINE POR PROCESO
-   ========================= */
-.timeline2-list{
-  list-style:none;
-  margin:0;
-  padding:0;
-}
-
-.timeline2-item{
-  position:relative;
-  display:grid;
-  grid-template-columns:16px 1fr;
-  gap:10px;
-  padding:8px 0;
-}
-
-.timeline2-item:not(:last-child)::after{
-  content:"";
-  position:absolute;
-  left:7px;
-  top:18px;
-  bottom:-8px;
-  width:2px;
-  background:rgba(148,163,184,.22);
-}
-
-.timeline2-dot{
-  width:12px;
-  height:12px;
-  border-radius:999px;
-  margin-top:2px;
-  border:2px solid rgba(148,163,184,.55);
-  background:#fff;
-}
-
-.timeline2-item.is-hist .timeline2-dot{ border-color:rgba(15,47,90,.45); }
-.timeline2-item.is-sit  .timeline2-dot{ border-color:rgba(107,28,38,.50); }
-
-.timeline2-date{
-  font-size:.72rem;
-  font-weight:700;
-  color:#0f172a;
-  margin-bottom:2px;
-}
-
-.timeline2-text{
-  font-size:.82rem;
-  color:#475569;
-  line-height:1.35;
-  overflow-wrap:anywhere;
-}
+    .icon-btn--pdf {
+        color: #7f1d1d;
+        /* rojo vino sutil */
+    }
 </style>
+
+<script>
+    (function() {
+        "use strict";
+
+        /* =========================
+           HELPERS
+           ========================= */
+        const $ = (sel, root = document) => root.querySelector(sel);
+        const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+        /* =========================
+           DOM
+           ========================= */
+        const input = $("#q");
+        const clearBtn = $("#qClear");
+        const empty = $("#emptyCards");
+        const cards = $$(".card[data-hay]");
+
+        /* =========================
+           FILTRO CARDS
+           ========================= */
+        function toggleClear() {
+            if (!clearBtn || !input) return;
+            clearBtn.style.display = input.value.trim() ? "grid" : "none";
+        }
+
+        function applyFilter() {
+            if (!input) return;
+
+            const term = input.value.trim().toUpperCase();
+            const showAll = term.length === 0;
+
+            let visible = 0;
+            for (const c of cards) {
+                const hay = (c.dataset.hay || "");
+                const ok = showAll || hay.includes(term);
+                c.style.display = ok ? "" : "none";
+                if (ok) visible++;
+            }
+
+            if (empty) empty.style.display = (visible === 0 ? "" : "none");
+            toggleClear();
+        }
+
+        /* =========================
+           EVENTS
+           ========================= */
+        if (input) {
+            input.addEventListener("input", applyFilter);
+            input.addEventListener("keydown", (e) => {
+                // ESC limpia
+                if (e.key === "Escape") {
+                    input.value = "";
+                    applyFilter();
+                    input.blur();
+                }
+            });
+        }
+
+        if (clearBtn && input) {
+            clearBtn.addEventListener("click", () => {
+                input.value = "";
+                applyFilter();
+                input.focus();
+            });
+        }
+
+        /* =========================
+           PRINT
+           =========================
+           Si estás en modo print, el PHP ya llama window.print().
+           Este bloque no interfiere.
+           ========================= */
+
+        /* =========================
+           INIT
+           ========================= */
+        window.addEventListener("load", applyFilter);
+    })();
+</script>
