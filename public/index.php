@@ -45,8 +45,12 @@ switch ($modulo) {
     require '../Vista/modulos/perfil.php';
     break;
 
-  case 'ingresos':
-    require '../Vista/modulos/ingresos.php';
+  case 'indicadores':
+    require '../Vista/modulos/indicadores.php';
+    break;
+
+  case 'alertas':
+    require '../Vista/modulos/alertas.php';
     break;
 
   case 'reportes':
@@ -61,10 +65,6 @@ switch ($modulo) {
 
       case 'procesos':
         $file = $baseVista . '/reportes/procesos.php';
-        break;
-
-      case 'indicadores':
-        $file = $baseVista . '/reportes/indicadores.php';
         break;
 
       case 'consolidado':
@@ -83,18 +83,6 @@ switch ($modulo) {
     }
 
     require $file;
-    break;
-
-  case 'ahorro':
-    require '../Vista/modulos/ahorro.php';
-    break;
-
-  case 'categorias':
-    require '../Vista/modulos/categorias.php';
-    break;
-
-  case 'metas':
-    require '../Vista/modulos/metas.php';
     break;
 
   case 'procesos':
