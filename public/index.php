@@ -50,7 +50,39 @@ switch ($modulo) {
     break;
 
   case 'reportes':
-    require '../Vista/modulos/reportes.php';
+    $sub = $ruta[1] ?? 'index'; // reportes/derivados
+
+    $baseVista = __DIR__ . '/../Vista/modulos'; // <-- base real
+
+    switch ($sub) {
+      case 'derivados':
+        $file = $baseVista . '/reportes/derivados.php';
+        break;
+
+      case 'procesos':
+        $file = $baseVista . '/reportes/procesos.php';
+        break;
+
+      case 'indicadores':
+        $file = $baseVista . '/reportes/indicadores.php';
+        break;
+
+      case 'consolidado':
+        $file = $baseVista . '/reportes/consolidado.php';
+        break;
+
+      default:
+        $file = $baseVista . '/reportes.php'; // tu pantalla con los 4 cards
+        break;
+    }
+
+    if (!is_file($file)) {
+      http_response_code(404);
+      echo "<h1 style='color:white'>404 - No existe: {$file}</h1>";
+      exit;
+    }
+
+    require $file;
     break;
 
   case 'ahorro':

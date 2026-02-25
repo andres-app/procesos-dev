@@ -15,8 +15,8 @@ $procesos = [
     'proceso' => 'LPA-06-2025',
     'expediente' => '583',
     'obac' => 'FAP-0268',
-    'descripcion' => 'ADQUISICIÓN DE 2 CAMIONETAS PARA LAS ALAS AÉREAS DE PROVINCIA (ALAR1 ALAR3 ALAR4 ALAR5) PP-0135 (ITEM 2)',
-    'estado' => 'ADJUDICADO',
+    'descripcion' => 'ADQUISICIÓN DE 2 CAMIONETAS PARA LAS ALAS AÉREAS DE PROVINCIA (ALAR1 ALAR 3 ALAR4 ALAR5) PP-0135 (ITEM 2)',
+    'estado' => 'DESIERTO',
     'estimado' => 356800.00
   ],
   [
@@ -24,7 +24,7 @@ $procesos = [
     'proceso' => 'RES-36-2025',
     'expediente' => '610',
     'obac' => 'EP-0420',
-    'descripcion' => 'ADQUISICIÓN DE EQUIPOS CONTRA INCENDIOS HELIBALDE PARA EL BAT N° 821-AE - AF 2026',
+    'descripcion' => 'ADQUISICIÓN DE EQUIPOS CONTRA INCENDIOS HELIBALDE PARA EL BAT NO 821-AE - AF 2026',
     'estado' => 'ADJUDICADO',
     'estimado' => 9031433.08
   ],
@@ -33,7 +33,7 @@ $procesos = [
     'proceso' => 'CPC-08-2025',
     'expediente' => '609',
     'obac' => 'MGP-0338',
-    'descripcion' => 'SUPERVISIÓN DE LA EJECUCIÓN DE LA OBRA 03 PARQUEADEROS DEL PROYECTO DE INVERSIÓN: AMPLIACIÓN Y MEJORAMIENTO DE LOS SERVICIOS DEL ASTILLERO DEL ARSENAL NAVAL DE LA MARINA DE GUERRA DEL PERÚ EN LA BASE NAVAL DEL CALLAO',
+    'descripcion' => 'SUPERVISIÓN DE LA EJECUCIÓN DE LA OBRA 03 PARQUEADEROS DEL PROYECTO DE INVERSIÓN AMPLIACIÓN Y MEJORAMIENTO DE LOS SERVICIOS DEL ASTILLERO DEL ARSENAL DE LA MARINA DE GUERRA DEL PERÚ EN LA BASE NAVAL DEL CALLAO_ 0018-2025-DIRPRONAV /CONSULTORÍA DE OBRA PP 0135',
     'estado' => 'CONVOCADO',
     'estimado' => 2266776.72
   ],
@@ -42,18 +42,90 @@ $procesos = [
     'proceso' => 'LP-09-2025',
     'expediente' => '606',
     'obac' => 'EP-0422',
-    'descripcion' => 'ADQUISICIÓN DE VEHÍCULOS DE FLOTA LIVIANA AF-2026',
+    'descripcion' => 'ADQUISICION DE VEHICULOS DE FLOTA LIVIANA AF-2026',
     'estado' => 'ADJUDICADO',
     'estimado' => 18213000.00
   ],
   [
     'id' => 5,
+    'proceso' => 'LP-12-2025',
+    'expediente' => '604',
+    'obac' => 'MGP-0334',
+    'descripcion' => 'ADQUISICIÓN DE VEHÍCULOS DE FLOTA PESADA PARA LA INSTITUCIÓN /BIEN PP 0135',
+    'estado' => 'ADJUDICADO',
+    'estimado' => 10091022.36
+  ],
+  [
+    'id' => 6,
+    'proceso' => 'CPC-07-2025',
+    'expediente' => '603',
+    'obac' => 'MGP-0333',
+    'descripcion' => 'ELABORACIÓN DE EXPEDIENTE TÉCNICO DEL PI RECUPERACIÓN DE CONTROL, VIGILANCIA Y DEFENSA TERRESTRE, AÉREO Y MARITIMO, FLUVIAL, LACUSTRE DEL TERRITORIO NACIONAL EN AERÓDROMO DE LA BASE NAVAL SAN JUNA DE MARCONA CUI. 2630221 /CONSULTORIA OBRA PP 0135',
+    'estado' => 'CONVOCADO',
+    'estimado' => 903068.34
+  ],
+  [
+    'id' => 7,
+    'proceso' => 'CPS-06-2025',
+    'expediente' => 'CORP-03-2025',
+    'obac' => 'CORP',
+    'descripcion' => 'SEGURO DE AVIACIÓN AF-2026/2027 PP-135',
+    'estado' => 'ADJUDICADO',
+    'estimado' => 61367168.26
+  ],
+  [
+    'id' => 8,
+    'proceso' => 'LP-10-2025',
+    'expediente' => '599',
+    'obac' => 'MGP-0332',
+    'descripcion' => 'ADQUISICIÓN PARA LA OPTIMIZACIÓN Y REGULACIÓN DE LA CAPACIDAD DE ADMINISTRACIÓN DE DATA CENTER INSTITUCIONAL /BIEN PP 0135',
+    'estado' => 'ADJUDICADO',
+    'estimado' => 16320849.47
+  ],
+  [
+    'id' => 9,
+    'proceso' => 'LP-08-2025',
+    'expediente' => '598',
+    'obac' => 'MGP-0331',
+    'descripcion' => 'EJECUCIÓN DE LA OBRA DE CONSTRUCCIÓN DE 03 PARQUEADEROS DE LA FASE 1C DEL PROYECTO DE INVERSIÓN: AMPLIACIÓN Y MEJORAMIENTO DE LOS SERVICIOS DEL ASTILLERO DEL ARSENAL NAVAL DE LA MARINA DE GUERRA DEL PERÚ EN LA BASE NAVAL DEL CALLAO CUI. 2188537 /OBRAS PP 0135',
+    'estado' => 'ADJUDICADO',
+    'estimado' => 41214122.11
+  ],
+  [
+    'id' => 10,
+    'proceso' => 'LP-07-2025',
+    'expediente' => '597',
+    'obac' => 'FAP-0274',
+    'descripcion' => 'ADQUISICION DE SISTEMA DE TECNOLOGIA, INFORMACIÓN Y COMUNICACIÓN EN EL SERVICIO DE INFORMATICA, MEDIANTE LA REPOSICIÓN DE EQUIPOS DE CIBERSEGURIDAD, DE CONECTIVIDAD DE RED DE DATOS A NIVEL DATA CENTER Y DE ALMACENAMIENTO',
+    'estado' => 'ADJUDICADO',
+    'estimado' => 5135151.00
+  ],
+  [
+    'id' => 11,
     'proceso' => 'RES-28-2025',
     'expediente' => '590',
     'obac' => 'EP-0408',
-    'descripcion' => 'ADQUISICIÓN DE ACCESORIO Y MATERIALES PARA LOS COMBATIENTES DEL CE-VRAEM',
+    'descripcion' => 'ADQUISICIÓN DE ACCESORIO Y MATERIALES PARA LOS COMBATIENTES DEL COOEE CE-VRAEM',
     'estado' => 'DESIERTO',
     'estimado' => 1370460.00
+  ],
+  [
+    'id' => 12,
+    'proceso' => 'CPS-05-2025',
+    'expediente' => '584',
+    'obac' => 'MGP-0325',
+    'descripcion' => 'SERVICIO DE MANTENIMIENTO Y OVERHAUL DE TRES (3) MOTORES DEUTZ BF6M1015CP / 0009-2025-COMCONAVRAEM /SERVICIO PP 0032',
+    'estado' => 'DESIERTO',
+    'estimado' => 700000.00
+  ],
+  [
+    'id' => 13,
+    'proceso' => 'RES-19-2025',
+    'expediente' => '564',
+    'obac' => 'FAP-0210',
+    'descripcion' => 'SERVICIO DE OVERHAUL DE COMPONENTES APLICABLE A LOS HELICOPTEROS MI-17/171SH PP-0135',
+    'estado' => 'ADJUDICADO',
+    'estimado' => 2720415.60
   ],
 ];
 
