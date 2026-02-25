@@ -118,7 +118,7 @@ function statusClass($estado)
       <div class="mt-4">
         <div class="search">
           <span class="search-ico">🔎</span>
-          <input id="q" type="text" placeholder="Buscar por Expediente, Proceso, OBAC o descripción..." />
+          <input id="q" type="text" placeholder="Buscar Proceso, PAC o descripción..." />
         </div>
       </div>
     </div>
@@ -137,8 +137,6 @@ function statusClass($estado)
             <div class="info">
               <p class="title">
                 <?= htmlspecialchars($p['proceso']) ?>
-                <span class="dot-sep">·</span>
-                Exp. <?= htmlspecialchars($p['expediente']) ?>
               </p>
 
               <p class="sub">

@@ -5,12 +5,18 @@ $usuario = 'Andres';
 require __DIR__ . '/../layout/header.php';
 ?>
 
+<!-- ✅ INICIO (AGREGA EL MÓDULO PAC CON EL MISMO ESTILO "APPLE-CARD") -->
 <main class="page flex-1 flex items-center px-5">
   <div class="grid grid-cols-2 gap-5 w-full max-w-md mx-auto">
 
     <a href="<?= BASE_URL ?>/procesos" class="apple-card bg-blue-100/80 text-blue-700">
       <div class="icon">📁</div>
       <span>Procesos</span>
+    </a>
+
+    <a href="<?= BASE_URL ?>/pac" class="apple-card bg-amber-100/80 text-amber-800">
+      <div class="icon">📁</div>
+      <span>PAC</span>
     </a>
 
     <a href="<?= BASE_URL ?>/indicadores" class="apple-card bg-emerald-100/80 text-emerald-700">

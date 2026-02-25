@@ -69,6 +69,10 @@ switch ($modulo) {
     require '../Vista/modulos/procesos.php';
     break;
 
+  case 'pac':
+    require '../Vista/modulos/pac.php';
+    break;
+
   case 'logout':
     session_destroy();
     header("Location: login");
