@@ -270,8 +270,6 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
     header('Content-Disposition: attachment; filename="reporte_derivados_af_2026.csv"');
 
     $out = fopen('php://output', 'w');
-
-    // BOM para Excel (evita problemas de tildes)
     fwrite($out, "\xEF\xBB\xBF");
 
     fputcsv($out, [
@@ -306,9 +304,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
         ]);
     }
 
-    // Fila totales (opcional)
     fputcsv($out, ['', '', '', '', '', '', 'TOTAL', (float)$totalEstimado, (float)$totalAdj, '', '', '']);
-
     fclose($out);
     exit;
 }
@@ -328,7 +324,7 @@ $isPrint = (isset($_GET['export']) && $_GET['export'] === 'print');
 
             <div class="min-w-0">
                 <p class="text-xs text-slate-500 font-bold">AGENCIA • OFICINA DE PLANEAMIENTO Y PRESUPUESTO</p>
-                <h2 class="text-xl sm:text-2xl font-black text-slate-900 mt-1">Contrataciones derivadas • AF-2026</h2>
+                <h2 class="text-xl sm:text-2xl font-black text-slate-900 mt-1">Contrataciones derivadas • AF-2025</h2>
             </div>
 
             <div class="actions noprint">
@@ -340,11 +336,6 @@ $isPrint = (isset($_GET['export']) && $_GET['export'] === 'print');
         </div>
 
         <div class="toolbar noprint">
-            <div class="seg">
-                <button type="button" class="segbtn is-on" data-view="cards">Móvil</button>
-                <button type="button" class="segbtn" data-view="table">Tabla</button>
-            </div>
-
             <div class="search">
                 <input id="q" type="search" placeholder="Buscar (expediente, OBAC, descripción, estado)..." autocomplete="off">
             </div>
@@ -371,169 +362,159 @@ $isPrint = (isset($_GET['export']) && $_GET['export'] === 'print');
     </section>
 
     <!-- =========================
-       VISTA MÓVIL (CARDS)
-       ========================= -->
-    <section class="mb-6 view view-cards">
-        <div class="cards">
+     VISTA MÓVIL (CARDS) ÚNICA
+     ========================= -->
+    <section class="mb-6">
+        <div class="cards" id="cards">
             <?php foreach ($rows as $r): ?>
                 <?php
-                $haystack = strtoupper(
-                    trim($r['exp'] . ' ' . $r['obac'] . ' ' . $r['desc'] . ' ' . $r['estado'] . ' ' . $r['tp'] . ' ' . $r['ff'] . ' ' . $r['fpc'] . ' ' . $r['hist'] . ' ' . $r['sit'])
-                );
+                $haystack = strtoupper(trim(
+                    $r['exp'] . ' ' . $r['obac'] . ' ' . $r['desc'] . ' ' . $r['estado'] . ' ' . $r['tp'] . ' ' . $r['ff'] . ' ' . $r['fpc'] . ' ' . $r['hist'] . ' ' . $r['sit']
+                ));
                 ?>
-                <article class="card" data-hay="<?= htmlspecialchars($haystack) ?>">
-                    <div class="card-top">
-                        <div class="card-left">
-                            <div class="tag">EXP <?= htmlspecialchars($r['exp']) ?></div>
-                            <div class="tag"><?= htmlspecialchars(badgeObac($r['obac'])) ?></div>
-                            <div class="tag"><?= htmlspecialchars($r['tp']) ?></div>
-                            <div class="tag"><?= htmlspecialchars($r['ff']) ?></div>
-                            <div class="tag"><?= htmlspecialchars($r['fpc']) ?></div>
+                <article class="card card-v2" data-hay="<?= htmlspecialchars($haystack) ?>">
+
+                    <!-- HEADER SIMPLE -->
+                    <div class="card-head">
+                        <div class="card-head-left">
+                            <span class="obac"><?= htmlspecialchars(badgeObac($r['obac'])) ?></span>
+                            <span class="tp"><?= htmlspecialchars($r['tp']) ?></span>
                         </div>
-                        <div class="card-right">
-                            <span class="st <?= statusClass($r['estado']) ?>"><?= htmlspecialchars($r['estado']) ?></span>
+
+                        <span class="st <?= statusClass($r['estado']) ?>">
+                            <?= htmlspecialchars($r['estado']) ?>
+                        </span>
+                    </div>
+
+                    <!-- TÍTULO -->
+                    <h3 class="card-title">
+                        <?= htmlspecialchars($r['desc']) ?>
+                    </h3>
+
+                    <!-- META INFO COMPACTA -->
+                    <div class="meta-line">
+                        <span>Exp: <?= htmlspecialchars($r['exp']) ?></span>
+                        <span>FF: <?= htmlspecialchars($r['ff']) ?></span>
+                        <span>FPC: <?= htmlspecialchars($r['fpc']) ?></span>
+                    </div>
+
+                    <!-- BLOQUE FINANCIERO DESTACADO -->
+                    <div class="finance">
+                        <div>
+                            <small>Estimado</small>
+                            <strong><?= money($r['est']) ?></strong>
+                        </div>
+                        <div>
+                            <small>Adjudicado</small>
+                            <strong><?= money($r['adj']) ?></strong>
                         </div>
                     </div>
 
-                    <h3 class="card-title"><?= htmlspecialchars($r['desc']) ?></h3>
-
-                    <div class="moneybox">
-                        <div>
-                            <div class="ml">Estimado</div>
-                            <div class="mv"><?= money($r['est']) ?></div>
-                        </div>
-                        <div>
-                            <div class="ml">Adjudicado</div>
-                            <div class="mv"><?= money($r['adj']) ?></div>
-                        </div>
-                    </div>
-
+                    <!-- SITUACIÓN -->
                     <?php if (!empty(trim((string)$r['sit']))): ?>
-                        <details class="dets">
-                            <summary>Situación</summary>
-                            <div class="preline"><?= nl2br(htmlspecialchars($r['sit'])) ?></div>
+                        <details class="timeline timeline--sit">
+                            <summary>Ver situación</summary>
+                            <div class="timeline-body">
+                                <?= nl2br(htmlspecialchars($r['sit'])) ?>
+                            </div>
                         </details>
                     <?php endif; ?>
 
+                    <!-- HISTORIAL -->
                     <?php if (!empty(trim((string)$r['hist']))): ?>
-                        <details class="dets">
-                            <summary>Historial</summary>
-                            <div class="preline mono"><?= nl2br(htmlspecialchars($r['hist'])) ?></div>
+                        <details class="timeline timeline--hist">
+                            <summary>Ver cronología</summary>
+                            <div class="timeline-body mono">
+                                <?= nl2br(htmlspecialchars($r['hist'])) ?>
+                            </div>
                         </details>
                     <?php endif; ?>
+
                 </article>
             <?php endforeach; ?>
+
+            <div id="emptyCards" style="display:none;padding:12px;text-align:center;color:#64748b;font-weight:800;">
+                Sin resultados.
+            </div>
         </div>
     </section>
 
-    <!-- =========================
-       VISTA TABLA (SCROLL)
-       ========================= -->
-    <section class="tbl-card mb-6 view view-table">
-        <div class="tbl-top">
-            <p class="text-sm font-black text-slate-900">Detalle</p>
-            <p class="text-xs text-slate-500 font-bold">Desliza horizontalmente para ver todas las columnas</p>
-        </div>
-
-        <div class="tbl-wrap">
-            <table class="tbl" id="tbl">
-                <thead>
-                    <tr>
-                        <th class="sticky-col">N°</th>
-                        <th class="sticky-col2">EXP. PAC</th>
-                        <th>OBAC</th>
-                        <th>HISTORIAL</th>
-                        <th>DESCRIPCIÓN</th>
-                        <th>FF</th>
-                        <th>TP</th>
-                        <th class="num">ESTIMADO</th>
-                        <th class="num">ADJUDICADO</th>
-                        <th>FPC</th>
-                        <th>ESTADO</th>
-                        <th>SITUACIÓN</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($rows as $r): ?>
-                        <?php
-                        $haystack = strtoupper(
-                            trim($r['exp'] . ' ' . $r['obac'] . ' ' . $r['desc'] . ' ' . $r['estado'] . ' ' . $r['tp'] . ' ' . $r['ff'] . ' ' . $r['fpc'] . ' ' . $r['hist'] . ' ' . $r['sit'])
-                        );
-                        ?>
-                        <tr data-hay="<?= htmlspecialchars($haystack) ?>">
-                            <td class="center sticky-col"><?= (int)$r['n'] ?></td>
-                            <td class="center sticky-col2"><?= htmlspecialchars($r['exp']) ?></td>
-                            <td class="center">
-                                <span class="obac"><?= htmlspecialchars(badgeObac($r['obac'])) ?></span>
-                            </td>
-                            <td class="mono pre"><?= nl2br(htmlspecialchars($r['hist'])) ?></td>
-                            <td class="strong"><?= htmlspecialchars($r['desc']) ?></td>
-                            <td class="center"><?= htmlspecialchars($r['ff']) ?></td>
-                            <td class="center"><?= htmlspecialchars($r['tp']) ?></td>
-                            <td class="num"><?= money($r['est']) ?></td>
-                            <td class="num"><?= money($r['adj']) ?></td>
-                            <td class="center"><?= htmlspecialchars($r['fpc']) ?></td>
-                            <td class="center">
-                                <span class="st <?= statusClass($r['estado']) ?>"><?= htmlspecialchars($r['estado']) ?></span>
-                            </td>
-                            <td class="pre"><?= nl2br(htmlspecialchars($r['sit'])) ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="7" class="right strong">TOTAL</td>
-                        <td class="num strong"><?= money($totalEstimado) ?></td>
-                        <td class="num strong"><?= money($totalAdj) ?></td>
-                        <td colspan="3"></td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-    </section>
-
-    <!-- RESUMEN (SE MANTIENE) -->
+    <!-- RESUMEN (COMPLETO COMO TU EXCEL) -->
     <section class="tbl-card mb-10">
         <div class="tbl-top">
             <p class="text-sm font-black text-slate-900">Resumen</p>
-            <p class="text-xs text-slate-500 font-bold">Estructura similar a tu cuadro</p>
+            <p class="text-xs text-slate-500 font-bold">Contrataciones derivadas AF-2026</p>
         </div>
 
-        <div class="res-grid">
-            <div class="res-cell res-h">FASES</div>
-            <div class="res-cell res-h">MODALIDAD</div>
-            <div class="res-cell res-h">OBAC EP</div>
-            <div class="res-cell res-h">OBAC FAP</div>
-            <div class="res-cell res-h">OBAC MGP</div>
-            <div class="res-cell res-h">EXPEDIENTES PAC</div>
-            <div class="res-cell res-h">PROCESOS</div>
-            <div class="res-cell res-h">ESTIMADOS (SOLES)</div>
+        <div class="res-wrap">
+            <!-- Título superior -->
+            <div class="res-title">
+                CONTRATACIONES DERIVADAS BAJO ÁMBITO DE LA ACFFAA AF-2026
+            </div>
 
-            <div class="res-cell" style="grid-row: span 3;">PROCESO DE COMPRAS</div>
+            <!-- Cabecera -->
+            <div class="res-grid">
+                <div class="res-cell res-h">FASES</div>
+                <div class="res-cell res-h">MODALIDAD</div>
 
-            <div class="res-cell">Corporativo</div>
-            <div class="res-cell center">1</div>
-            <div class="res-cell center">1</div>
-            <div class="res-cell center">1</div>
-            <div class="res-cell center">3</div>
-            <div class="res-cell center">1</div>
-            <div class="res-cell num"><?= money(61367168.26) ?></div>
+                <div class="res-cell res-h res-h-center res-h-obac" style="grid-column: span 3;">OBAC</div>
 
-            <div class="res-cell">Individual</div>
-            <div class="res-cell center">3</div>
-            <div class="res-cell center">3</div>
-            <div class="res-cell center">6</div>
-            <div class="res-cell center">12</div>
-            <div class="res-cell center">12</div>
-            <div class="res-cell num"><?= money(108323098.68) ?></div>
+                <div class="res-cell res-h">EXPEDIENTES PAC</div>
+                <div class="res-cell res-h">PROCESOS</div>
+                <div class="res-cell res-h">ESTIMADOS (SOLES)</div>
 
-            <div class="res-cell strong">SUB TOTAL</div>
-            <div class="res-cell center strong">4</div>
-            <div class="res-cell center strong">4</div>
-            <div class="res-cell center strong">7</div>
-            <div class="res-cell center strong">15</div>
-            <div class="res-cell center strong">13</div>
-            <div class="res-cell num strong"><?= money(169690266.94) ?></div>
+                <div class="res-cell res-h"></div>
+                <div class="res-cell res-h"></div>
+                <div class="res-cell res-h center">EP</div>
+                <div class="res-cell res-h center">FAP</div>
+                <div class="res-cell res-h center">MGP</div>
+                <div class="res-cell res-h"></div>
+                <div class="res-cell res-h"></div>
+                <div class="res-cell res-h"></div>
+
+                <!-- PROCESO DE COMPRAS (3 filas) -->
+                <div class="res-cell strong" style="grid-row: span 3;">PROCESO DE COMPRAS</div>
+
+                <div class="res-cell">Corporativo</div>
+                <div class="res-cell center">1</div>
+                <div class="res-cell center">1</div>
+                <div class="res-cell center">1</div>
+                <div class="res-cell center">3</div>
+                <div class="res-cell center">1</div>
+                <div class="res-cell num"><?= money(61367168.26) ?></div>
+
+                <div class="res-cell">Individual</div>
+                <div class="res-cell center">3</div>
+                <div class="res-cell center">3</div>
+                <div class="res-cell center">6</div>
+                <div class="res-cell center">12</div>
+                <div class="res-cell center">12</div>
+                <div class="res-cell num"><?= money(108323098.68) ?></div>
+
+                <div class="res-cell res-sub strong">SUB TOTAL</div>
+                <div class="res-cell res-sub center strong">4</div>
+                <div class="res-cell res-sub center strong">4</div>
+                <div class="res-cell res-sub center strong">7</div>
+                <div class="res-cell res-sub center strong">15</div>
+                <div class="res-cell res-sub center strong">13</div>
+                <div class="res-cell res-sub num strong"><?= money(169690266.94) ?></div>
+
+                <!-- TOTAL (fila completa) -->
+                <div class="res-cell res-total strong right" style="grid-column: span 2;">TOTAL</div>
+                <div class="res-cell res-total center strong">4</div>
+                <div class="res-cell res-total center strong">4</div>
+                <div class="res-cell res-total center strong">7</div>
+                <div class="res-cell res-total center strong">15</div>
+                <div class="res-cell res-total center strong">13</div>
+                <div class="res-cell res-total num strong"><?= money(170099832.94) ?></div>
+
+                <!-- VALOR ESTIMADO (solo EP/FAP/MGP) -->
+                <div class="res-cell res-foot strong" style="grid-column: span 2;">VALOR ESTIMADO (SOLES)</div>
+                <div class="res-cell res-foot num strong"><?= money(50460533.08) ?></div>
+                <div class="res-cell res-foot num strong"><?= money(34457249.61) ?></div>
+                <div class="res-cell res-foot num strong"><?= money(85182050.25) ?></div>
+                <div class="res-cell res-foot" style="grid-column: span 3;"></div>
+            </div>
         </div>
     </section>
 
@@ -543,604 +524,781 @@ $isPrint = (isset($_GET['export']) && $_GET['export'] === 'print');
 
 <?php if ($isPrint): ?>
     <script>
-        // Vista para imprimir -> el usuario guarda como PDF
         window.addEventListener('load', () => window.print());
     </script>
 <?php endif; ?>
 
 <script>
-  const btns = document.querySelectorAll('.segbtn');
-  const views = {
-    cards: document.querySelector('.view-cards'),
-    table: document.querySelector('.view-table'),
-  };
+    const q = document.getElementById('q');
+    const cards = document.querySelectorAll('.card[data-hay]');
+    const empty = document.getElementById('emptyCards');
 
-  const q = document.getElementById('q');
-  const cards = document.querySelectorAll('.card[data-hay]');
-  const trs = document.querySelectorAll('.view-table tr[data-hay]');
+    function applyFilter() {
+        const term = (q?.value || '').trim().toUpperCase();
+        const showAll = term.length === 0;
 
-  // mensaje "sin resultados" (para cards y tabla)
-  function ensureEmptyState() {
-    if (!document.getElementById('emptyCards')) {
-      const d = document.createElement('div');
-      d.id = 'emptyCards';
-      d.style.display = 'none';
-      d.style.padding = '12px';
-      d.style.textAlign = 'center';
-      d.style.color = '#64748b';
-      d.style.fontWeight = '800';
-      d.textContent = 'Sin resultados.';
-      views.cards.querySelector('.cards')?.appendChild(d);
+        let visible = 0;
+        cards.forEach(c => {
+            const ok = showAll || (c.dataset.hay || '').includes(term);
+            c.style.display = ok ? '' : 'none';
+            if (ok) visible++;
+        });
+
+        if (empty) empty.style.display = (visible === 0 ? '' : 'none');
     }
-    if (!document.getElementById('emptyTable')) {
-      const d = document.createElement('div');
-      d.id = 'emptyTable';
-      d.style.display = 'none';
-      d.style.padding = '12px 16px';
-      d.style.textAlign = 'center';
-      d.style.color = '#64748b';
-      d.style.fontWeight = '800';
-      d.textContent = 'Sin resultados.';
-      views.table.querySelector('.tbl-top')?.after(d);
-    }
-  }
 
-  function applyFilter() {
-    const term = (q?.value || '').trim().toUpperCase();
-    const showAll = term.length === 0;
-
-    let visibleCards = 0;
-    cards.forEach(c => {
-      const ok = showAll || (c.dataset.hay || '').includes(term);
-      c.style.display = ok ? '' : 'none';
-      if (ok) visibleCards++;
-    });
-
-    let visibleRows = 0;
-    trs.forEach(tr => {
-      const ok = showAll || (tr.dataset.hay || '').includes(term);
-      tr.style.display = ok ? '' : 'none';
-      if (ok) visibleRows++;
-    });
-
-    // empty states
-    ensureEmptyState();
-    const emptyCards = document.getElementById('emptyCards');
-    const emptyTable = document.getElementById('emptyTable');
-
-    // cards: si NO hay cards visibles, mostramos mensaje
-    if (emptyCards) emptyCards.style.display = (visibleCards === 0 ? '' : 'none');
-
-    // tabla: si NO hay filas visibles, mostramos mensaje
-    if (emptyTable) emptyTable.style.display = (visibleRows === 0 ? '' : 'none');
-  }
-
-  function setView(v) {
-    btns.forEach(b => b.classList.toggle('is-on', b.dataset.view === v));
-
-    // Importantísimo: forzar display correcto
-    views.cards.style.display = (v === 'cards' ? '' : 'none');
-    views.table.style.display = (v === 'table' ? '' : 'none');
-
-    localStorage.setItem('rep_view', v);
-
-    // Re-aplicar filtro al cambiar de vista (evita "tabla vacía")
-    applyFilter();
-
-    // forzar reflow (ayuda en algunos móviles)
-    requestAnimationFrame(() => {
-      document.body.offsetHeight;
-    });
-  }
-
-  // init
-  setView(localStorage.getItem('rep_view') || 'cards');
-  btns.forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
-
-  if (q) q.addEventListener('input', applyFilter);
-
-  // aplica filtro al cargar por si el input tiene valor guardado por el navegador
-  window.addEventListener('load', applyFilter);
+    if (q) q.addEventListener('input', applyFilter);
+    window.addEventListener('load', applyFilter);
 </script>
 
 <style>
-  /* =========================
-     LAYOUT BASE
-     ========================= */
-  .page-shell {
-    width: 100%;
-    padding-bottom: calc(92px + env(safe-area-inset-bottom)); /* evita que el bottom-nav tape */
-  }
+    /* =========================
+   TOKENS / BASE
+   ========================= */
+    :root {
+        --primary: #0F2F5A;
+        --accent: #6B1C26;
 
-  @media (min-width:1024px) {
+        --bg: #f1f5f9;
+        --card: rgba(255, 255, 255, .96);
+
+        /* Tipografía/jerarquía */
+        --text-strong: #0f172a;
+        --text: #1f2937;
+        --muted: #64748b;
+        --muted2: #94a3b8;
+
+        --line: rgba(148, 163, 184, .22);
+        --line2: rgba(148, 163, 184, .18);
+
+        --shadow-sm: 0 10px 20px rgba(0, 0, 0, .10);
+        --shadow-md: 0 14px 28px rgba(0, 0, 0, .10);
+        --shadow-lg: 0 18px 40px rgba(0, 0, 0, .10);
+
+        --r-lg: 22px;
+        --r-md: 18px;
+        --r-sm: 14px;
+
+        --pad: 16px;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    img,
+    svg,
+    video,
+    canvas {
+        max-width: 100%;
+        height: auto;
+    }
+
+    html {
+        -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+        background: var(--bg);
+        color: var(--text);
+    }
+
+    /* =========================
+   LAYOUT BASE
+   ========================= */
     .page-shell {
-      max-width: 1240px;
-      margin: 0 auto;
-      padding-left: 24px;
-      padding-right: 24px;
+        width: 100%;
+        padding-left: 20px;
+        padding-right: 20px;
+        padding-bottom: calc(92px + env(safe-area-inset-bottom));
     }
-  }
 
-  @media (max-width:420px){
-    .page-shell{
-      padding-left: 14px !important;
-      padding-right: 14px !important;
+    @media (min-width:1024px) {
+        .page-shell {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding-left: 24px;
+            padding-right: 24px;
+        }
     }
-  }
 
-  /* =========================
-     HEADER
-     ========================= */
-  .headbox {
-    display: flex;
-    flex-wrap: wrap;                 /* CLAVE: que rompa filas */
-    align-items: flex-start;
-    gap: 10px;
-    background: rgba(255, 255, 255, .92);
-    border: 1px solid rgba(148, 163, 184, .22);
-    border-radius: 22px;
-    padding: 12px;
-    box-shadow: 0 14px 28px rgba(0, 0, 0, .10);
-  }
-
-  .back {
-    width: 40px;
-    height: 40px;
-    border-radius: 999px;
-    display: grid;
-    place-items: center;
-    background: #f8fafc;
-    border: 1px solid rgba(148, 163, 184, .35);
-    font-weight: 900;
-    font-size: 1.4rem;
-    color: #0f172a;
-    text-decoration: none;
-    flex: 0 0 auto;
-  }
-
-  /* El bloque del título debe poder ocupar todo el ancho */
-  .headbox .min-w-0{
-    flex: 1 1 220px;
-    min-width: 0;
-  }
-
-  .headbox h2{
-    line-height: 1.15;
-    font-size: 1.05rem;  /* móvil */
-    margin-top: 6px;
-  }
-
-  @media (min-width:640px){
-    .headbox h2{ font-size: 1.35rem; }
-  }
-
-  /* acciones en móvil: bajan a otra fila */
-  .actions {
-    display: flex;
-    gap: 8px;
-  }
-
-  @media (max-width:520px){
-    .actions{
-      flex: 1 1 100%;
-      order: 3;                    /* debajo del título */
+    @media (max-width:420px) {
+        .page-shell {
+            padding-left: 14px;
+            padding-right: 14px;
+        }
     }
-  }
 
-  .btnx {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    height: 38px;
-    padding: 0 12px;
-    border-radius: 999px;
-    background: #0F2F5A;
-    color: #fff;
-    text-decoration: none;
-    font-weight: 900;
-    font-size: .82rem;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, .12);
-  }
-
-  @media (max-width:520px){
-    .btnx{
-      flex: 1 1 0;
-      height: 34px;
-      padding: 0 10px;
-      font-size: .78rem;
+    /* =========================
+   HEADER
+   ========================= */
+    .headbox {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 10px;
+        background: rgba(255, 255, 255, .92);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+        padding: 12px;
+        box-shadow: var(--shadow-md);
     }
-  }
 
-  .btnx:hover { filter: brightness(1.05); }
-
-  .pill {
-    margin-left: auto;
-    padding: 10px 12px;
-    border-radius: 999px;
-    background: rgba(107, 28, 38, .10);
-    border: 1px solid rgba(107, 28, 38, .18);
-    color: #6B1C26;
-    font-weight: 900;
-    white-space: nowrap;
-  }
-
-  @media (max-width:520px){
-    .pill{
-      order: 2;
-      padding: 8px 10px;
-      font-size: .75rem;
-      align-self: flex-start;
+    .back {
+        width: 40px;
+        height: 40px;
+        border-radius: 999px;
+        display: grid;
+        place-items: center;
+        background: #f8fafc;
+        border: 1px solid rgba(148, 163, 184, .35);
+        font-weight: 800;
+        font-size: 1.35rem;
+        color: var(--text-strong);
+        text-decoration: none;
+        flex: 0 0 auto;
     }
-  }
 
-  /* =========================
-     TOOLBAR (Móvil/Tabla + Buscar)
-     ========================= */
-  .toolbar {
-    margin-top: 10px;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
+    .headbox .min-w-0 {
+        flex: 1 1 220px;
+        min-width: 0;
+    }
 
-  .seg {
-    display: inline-flex;
-    border: 1px solid rgba(148, 163, 184, .25);
-    border-radius: 999px;
-    overflow: hidden;
-    background: #fff;
-    flex: 0 0 auto;
-  }
+    .headbox p {
+        line-height: 1.1;
+    }
 
-  .segbtn {
-    height: 38px;
-    padding: 0 14px;
-    font-weight: 900;
-    font-size: .82rem;
-    background: transparent;
-    border: 0;
-    cursor: pointer;
-    color: #334155;
-  }
+    .headbox p.text-xs {
+        font-weight: 600;
+        letter-spacing: .06em;
+        color: var(--muted);
+    }
 
-  @media (max-width:420px){
-    .segbtn{ height: 34px; padding: 0 12px; font-size: .78rem; }
-  }
+    .headbox h2 {
+        line-height: 1.15;
+        font-size: 1.05rem;
+        margin-top: 6px;
+        word-break: break-word;
+        font-weight: 750;
+        color: var(--text-strong);
+    }
 
-  .segbtn.is-on {
-    background: rgba(15, 47, 90, .10);
-    color: #0F2F5A;
-  }
+    @media (min-width:640px) {
+        .headbox h2 {
+            font-size: 1.35rem;
+        }
+    }
 
-  .search {
-    flex: 1 1 220px;
-  }
+    .actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
 
-  @media (max-width:520px){
-    .search{ flex: 1 1 100%; } /* buscador full width */
-  }
+    @media (max-width:520px) {
+        .actions {
+            flex: 1 1 100%;
+            order: 3;
+        }
+    }
 
-  #q {
-    width: 100%;
-    height: 38px;
-    border-radius: 999px;
-    border: 1px solid rgba(148, 163, 184, .35);
-    padding: 0 14px;
-    outline: none;
-    background: #fff;
-    font-weight: 700;
-  }
+    .btnx {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 38px;
+        padding: 0 12px;
+        border-radius: 999px;
+        background: var(--primary);
+        color: #fff;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: .82rem;
+        box-shadow: var(--shadow-sm);
+        user-select: none;
+        white-space: nowrap;
+    }
 
-  @media (max-width:420px){
-    #q{ height: 36px; }
-  }
+    .btnx:hover {
+        filter: brightness(1.05);
+    }
 
-  /* =========================
-     KPI
-     ========================= */
-  .kpi {
-    background: rgba(255, 255, 255, .96);
-    border: 1px solid rgba(148, 163, 184, .22);
-    border-radius: 18px;
-    padding: 14px;
-    box-shadow: 0 12px 24px rgba(0, 0, 0, .08);
-  }
+    @media (max-width:520px) {
+        .btnx {
+            flex: 1 1 0;
+            height: 34px;
+            padding: 0 10px;
+            font-size: .78rem;
+        }
+    }
 
-  @media (max-width:420px){
-    .kpi{ padding: 12px; }
-  }
+    .pill {
+        margin-left: auto;
+        padding: 10px 12px;
+        border-radius: 999px;
+        background: rgba(107, 28, 38, .10);
+        border: 1px solid rgba(107, 28, 38, .18);
+        color: rgba(107, 28, 38, .95);
+        font-weight: 700;
+        white-space: nowrap;
+    }
 
-  .kpi-l {
-    font-size: .75rem;
-    font-weight: 900;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: .03em;
-  }
+    @media (max-width:520px) {
+        .pill {
+            order: 2;
+            padding: 8px 10px;
+            font-size: .75rem;
+            align-self: flex-start;
+        }
+    }
 
-  .kpi-v {
-    margin-top: 6px;
-    font-size: 1.05rem;
-    font-weight: 900;
-    color: #0f172a;
-    white-space: nowrap; /* evita que se rompa raro */
-  }
+    /* =========================
+   TOOLBAR (BUSCAR)
+   ========================= */
+    .toolbar {
+        margin-top: 10px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
 
-  @media (max-width:420px){
-    .kpi-v{ font-size: 1rem; }
-  }
+    .search {
+        flex: 1 1 220px;
+    }
 
-  /* =========================
-     CARDS (mobile-first)
-     ========================= */
-  .cards {
-    display: grid;
-    gap: 12px;
-  }
+    @media (max-width:520px) {
+        .search {
+            flex: 1 1 100%;
+        }
+    }
 
-  .card {
-    background: rgba(255, 255, 255, .96);
-    border: 1px solid rgba(148, 163, 184, .22);
-    border-radius: 18px;
-    padding: 12px;
-    box-shadow: 0 12px 28px rgba(0, 0, 0, .08);
-  }
+    #q {
+        width: 100%;
+        height: 38px;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, .35);
+        padding: 0 14px;
+        outline: none;
+        background: #fff;
+        font-weight: 600;
+        color: var(--text);
+    }
 
-  .card-top {
-    display: flex;
-    gap: 10px;
-    justify-content: space-between;
-    align-items: flex-start;
-  }
+    #q::placeholder {
+        color: var(--muted2);
+        font-weight: 500;
+    }
 
-  .card-left {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    min-width: 0;
-  }
+    #q:focus {
+        border-color: rgba(15, 47, 90, .45);
+        box-shadow: 0 0 0 4px rgba(15, 47, 90, .10);
+    }
 
-  .tag {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    height: 26px;
-    padding: 0 10px;
-    border-radius: 999px;
-    background: #f8fafc;
-    border: 1px solid rgba(148, 163, 184, .25);
-    font-weight: 900;
-    font-size: .72rem;
-    color: #334155;
-    white-space: nowrap;
-  }
+    @media (max-width:420px) {
+        #q {
+            height: 36px;
+        }
+    }
 
-  @media (max-width:420px){
-    .tag{ height: 24px; padding: 0 8px; font-size: .68rem; }
-  }
+    /* =========================
+   KPI
+   ========================= */
+    .kpi {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: var(--r-md);
+        padding: 14px;
+        box-shadow: 0 12px 24px rgba(0, 0, 0, .08);
+        min-width: 0;
+    }
 
-  .card-title {
-    margin-top: 10px;
-    font-weight: 900;
-    color: #0f172a;
-    line-height: 1.25;
-    font-size: .95rem;
-  }
+    @media (max-width:420px) {
+        .kpi {
+            padding: 12px;
+        }
+    }
 
-  .moneybox {
-    margin-top: 10px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    background: #f8fafc;
-    border: 1px solid rgba(148, 163, 184, .18);
-    border-radius: 14px;
-    padding: 10px;
-  }
+    .kpi-l {
+        font-size: .75rem;
+        font-weight: 600;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: .08em;
+    }
 
-  @media (max-width:360px){
-    .moneybox{ grid-template-columns: 1fr; }
-  }
+    .kpi-v {
+        margin-top: 6px;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--text-strong);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 
-  .ml {
-    font-size: .72rem;
-    font-weight: 900;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: .03em;
-  }
+    @media (max-width:420px) {
+        .kpi-v {
+            font-size: 1rem;
+        }
+    }
 
-  .mv {
-    margin-top: 4px;
-    font-weight: 900;
-    color: #0f172a;
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
-  }
+    /* =========================
+   CARDS
+   ========================= */
+    .cards {
+        display: grid;
+        gap: 12px;
+    }
 
-  .dets {
-    margin-top: 10px;
-  }
+    .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: var(--r-md);
+        padding: 12px;
+        box-shadow: 0 12px 28px rgba(0, 0, 0, .08);
+        min-width: 0;
+    }
 
-  .dets summary {
-    cursor: pointer;
-    font-weight: 900;
-    color: #0F2F5A;
-    list-style: none;
-    padding: 6px 0;
-  }
+    .card-top {
+        display: flex;
+        gap: 10px;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
 
-  .dets summary::-webkit-details-marker { display: none; }
+    .card-left {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        min-width: 0;
+    }
 
-  .preline {
-    margin-top: 6px;
-    white-space: normal;
-    color: #0f172a;
-    font-size: .86rem;
-  }
+    .tag {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 26px;
+        padding: 0 10px;
+        border-radius: 999px;
+        background: #f8fafc;
+        border: 1px solid rgba(148, 163, 184, .22);
+        font-weight: 650;
+        font-size: .72rem;
+        color: #475569;
+        white-space: nowrap;
+    }
 
-  .mono {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  }
+    @media (max-width:420px) {
+        .tag {
+            height: 24px;
+            padding: 0 8px;
+            font-size: .68rem;
+        }
+    }
 
-  /* =========================
-     TABLA
-     ========================= */
-  .tbl-card {
-    background: rgba(255, 255, 255, .96);
-    border: 1px solid rgba(148, 163, 184, .22);
-    border-radius: 22px;
-    box-shadow: 0 18px 40px rgba(0, 0, 0, .10);
-    overflow: hidden;
-  }
+    .card-title {
+        margin-top: 10px;
+        font-weight: 750;
+        color: var(--text-strong);
+        line-height: 1.25;
+        font-size: .95rem;
+        word-break: break-word;
+    }
 
-  .tbl-top {
-    padding: 14px 16px;
-    border-bottom: 1px solid rgba(148, 163, 184, .18);
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    gap: 10px;
-  }
+    .moneybox {
+        margin-top: 10px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        background: #f8fafc;
+        border: 1px solid var(--line2);
+        border-radius: var(--r-sm);
+        padding: 10px;
+    }
 
-  .tbl-wrap {
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
-  }
+    @media (max-width:360px) {
+        .moneybox {
+            grid-template-columns: 1fr;
+        }
+    }
 
-  .tbl {
-    width: 1400px;
-    border-collapse: separate;
-    border-spacing: 0;
-    font-size: .82rem;
-  }
+    .ml {
+        font-size: .72rem;
+        font-weight: 600;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: .08em;
+    }
 
-  .tbl thead th {
-    position: sticky;
-    top: 0;
-    z-index: 3;
-    background: #0F2F5A;
-    color: #fff;
-    text-align: left;
-    padding: 12px 10px;
-    font-weight: 900;
-    white-space: nowrap;
-  }
+    .mv {
+        margin-top: 4px;
+        font-weight: 800;
+        color: var(--text-strong);
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 
-  .tbl td {
-    padding: 10px;
-    border-bottom: 1px solid rgba(148, 163, 184, .18);
-    vertical-align: top;
-    color: #0f172a;
-    background: #fff;
-  }
+    /* =========================
+   DETAILS / SUMMARY
+   ========================= */
+    .dets {
+        margin-top: 10px;
+        border: 1px solid rgba(148, 163, 184, .22);
+        border-radius: 14px;
+        background: #fff;
+        overflow: hidden;
+    }
 
-  .tbl tbody tr:hover td { background: #f8fafc; }
+    .dets summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
 
-  .tbl tfoot td {
-    background: #f8fafc;
-    font-weight: 900;
-  }
+        padding: 10px 12px;
+        cursor: pointer;
+        user-select: none;
 
-  .center { text-align: center; }
-  .right { text-align: right; }
-  .num { text-align: right; font-variant-numeric: tabular-nums; }
-  .strong { font-weight: 900; }
-  .pre { white-space: normal; }
+        font-weight: 650;
+        color: var(--text-strong);
+        background: rgba(15, 47, 90, .05);
+        list-style: none;
+    }
 
-  /* Sticky columnas */
-  .sticky-col {
-    position: sticky;
-    left: 0;
-    z-index: 2;
-    background: inherit;
-    box-shadow: 8px 0 14px rgba(0, 0, 0, .06);
-  }
+    .dets summary::-webkit-details-marker {
+        display: none;
+    }
 
-  .sticky-col2 {
-    position: sticky;
-    left: 54px;
-    z-index: 2;
-    background: inherit;
-    box-shadow: 8px 0 14px rgba(0, 0, 0, .06);
-  }
+    .dets__label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
 
-  .tbl thead .sticky-col { z-index: 4; }
-  .tbl thead .sticky-col2 { z-index: 4; }
+    .dets__label::before {
+        content: "";
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: #94a3b8;
+        flex: 0 0 auto;
+    }
 
-  .obac {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 52px;
-    height: 28px;
-    padding: 0 10px;
-    border-radius: 999px;
-    background: rgba(107, 28, 38, .10);
-    border: 1px solid rgba(107, 28, 38, .18);
-    color: #6B1C26;
-    font-weight: 900;
-  }
+    .dets--sit .dets__label::before {
+        background: rgba(107, 28, 38, .95);
+    }
 
-  .st {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    height: 28px;
-    padding: 0 10px;
-    border-radius: 999px;
-    font-weight: 900;
-    font-size: .72rem;
-    white-space: nowrap;
-  }
+    .dets--hist .dets__label::before {
+        background: rgba(15, 47, 90, .95);
+    }
 
-  .st-ok { background: rgba(22, 163, 74, .12); color: #166534; border: 1px solid rgba(22, 163, 74, .20); }
-  .st-warn { background: rgba(107, 28, 38, .12); color: #6B1C26; border: 1px solid rgba(107, 28, 38, .20); }
-  .st-muted { background: rgba(148, 163, 184, .16); color: #475569; border: 1px solid rgba(148, 163, 184, .25); }
+    .dets__chev {
+        width: 10px;
+        height: 10px;
+        border-right: 3px solid rgba(15, 47, 90, .45);
+        border-bottom: 3px solid rgba(15, 47, 90, .45);
+        transform: rotate(45deg);
+        transition: transform .16s ease;
+        flex: 0 0 auto;
+    }
 
-  /* =========================
-     RESUMEN
-     ========================= */
-  .res-grid {
-    display: grid;
-    grid-template-columns: 180px 140px repeat(3, 110px) 160px 120px 190px;
-    gap: 0;
-    overflow: auto;
-  }
+    .dets__body {
+        padding: 10px 12px;
+        border-top: 1px solid rgba(148, 163, 184, .18);
+        background: #fff;
+    }
 
-  .res-cell {
-    padding: 12px 10px;
-    border-right: 1px solid rgba(148, 163, 184, .18);
-    border-bottom: 1px solid rgba(148, 163, 184, .18);
-    background: #fff;
-    font-size: .85rem;
-  }
+    .dets[open] summary {
+        background: rgba(15, 47, 90, .08);
+    }
 
-  .res-h {
-    background: rgba(15, 47, 90, .06);
-    font-weight: 900;
-    color: #0f172a;
-  }
+    .dets[open] .dets__chev {
+        transform: rotate(-135deg);
+    }
 
-  .res-cell:last-child { border-right: none; }
+    .dets summary:active {
+        transform: scale(.995);
+    }
 
-  /* Default: mostrar cards, ocultar tabla */
-  .view-table { display: none; }
+    @media (max-width:420px) {
+        .dets summary {
+            padding: 9px 10px;
+        }
 
-  /* =========================
-     PRINT
-     ========================= */
-  @media print {
-    .noprint { display: none !important; }
-    .page-shell { max-width: none !important; margin: 0 !important; padding: 0 !important; }
-    .tbl { width: 100% !important; font-size: 10px !important; }
-    .tbl thead th { position: static !important; }
-    .tbl-wrap { overflow: visible !important; }
-    .tbl-card { box-shadow: none !important; border: 1px solid #ccc !important; }
-    .kpi { box-shadow: none !important; }
-    .view-cards { display: none !important; }
-    .view-table { display: block !important; }
-    .sticky-col, .sticky-col2 { position: static !important; box-shadow: none !important; }
-  }
+        .dets__body {
+            padding: 9px 10px;
+        }
+    }
+
+    .preline {
+        margin-top: 6px;
+        white-space: normal;
+        color: #334155;
+        font-size: .86rem;
+        font-weight: 450;
+        line-height: 1.45;
+        overflow-wrap: anywhere;
+    }
+
+    .mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        color: #475569;
+    }
+
+    /* =========================
+   BADGES / STATUS
+   ========================= */
+    .obac {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 52px;
+        height: 28px;
+        padding: 0 10px;
+        border-radius: 999px;
+        background: rgba(107, 28, 38, .10);
+        border: 1px solid rgba(107, 28, 38, .18);
+        color: var(--accent);
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .st {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 28px;
+        padding: 0 10px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: .72rem;
+        white-space: nowrap;
+        border: 1px solid transparent;
+    }
+
+    .st-ok {
+        background: rgba(22, 163, 74, .12);
+        color: #166534;
+        border-color: rgba(22, 163, 74, .20);
+    }
+
+    .st-warn {
+        background: rgba(107, 28, 38, .12);
+        color: var(--accent);
+        border-color: rgba(107, 28, 38, .20);
+    }
+
+    .st-muted {
+        background: rgba(148, 163, 184, .16);
+        color: #475569;
+        border-color: rgba(148, 163, 184, .25);
+    }
+
+    /* =========================
+   RESUMEN (CON TÍTULO SUPERIOR)
+   ========================= */
+    .tbl-card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+    }
+
+    .tbl-top {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--line2);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 10px;
+    }
+
+    .tbl-top p.text-sm {
+        font-weight: 750;
+        color: var(--text-strong);
+    }
+
+    .tbl-top p.text-xs {
+        font-weight: 600;
+        color: var(--muted);
+    }
+
+    .res-wrap {
+        overflow: auto;
+    }
+
+    .res-title {
+        min-width: 980px;
+        padding: 14px 16px;
+        text-align: center;
+        font-weight: 750;
+        color: var(--text-strong);
+        background: rgba(15, 47, 90, .06);
+        border-bottom: 1px solid var(--line2);
+        letter-spacing: .02em;
+    }
+
+    .res-grid {
+        display: grid;
+        min-width: 980px;
+        grid-template-columns: 220px 140px 110px 110px 110px 160px 120px 190px;
+        gap: 0;
+    }
+
+    .res-cell {
+        padding: 12px 10px;
+        border-right: 1px solid var(--line2);
+        border-bottom: 1px solid var(--line2);
+        background: #fff;
+        font-size: .85rem;
+        color: #334155;
+    }
+
+    .res-h {
+        background: rgba(15, 47, 90, .06);
+        font-weight: 650;
+        color: var(--text-strong);
+    }
+
+    .res-sub,
+    .res-total,
+    .res-foot {
+        background: #fff7d6;
+    }
+
+    .res-cell:last-child {
+        border-right: none;
+    }
+
+    /* =========================
+   UTILIDADES
+   ========================= */
+    .center {
+        text-align: center;
+    }
+
+    .right {
+        text-align: right;
+    }
+
+    .num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        color: var(--text-strong);
+    }
+
+    .strong {
+        font-weight: 750;
+        color: var(--text-strong);
+    }
+
+    /* =========================
+   PRINT (PDF)
+   ========================= */
+    @media print {
+        .noprint {
+            display: none !important;
+        }
+
+        .page-shell {
+            max-width: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            padding-bottom: 0 !important;
+        }
+
+        .tbl-card,
+        .kpi,
+        .card {
+            box-shadow: none !important;
+        }
+
+        details {
+            open: true;
+        }
+    }
+
+    /* =========================
+   CARD V2 – MÁS LIMPIA
+   ========================= */
+
+    .card-v2 {
+        padding: 18px;
+    }
+
+    .card-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .card-head-left {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .tp {
+        font-size: .75rem;
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    .meta-line {
+        display: flex;
+        gap: 18px;
+        font-size: .75rem;
+        color: #64748b;
+        margin-top: 6px;
+        margin-bottom: 14px;
+    }
+
+    .finance {
+        display: flex;
+        justify-content: space-between;
+        padding: 14px;
+        background: #f8fafc;
+        border-radius: 14px;
+        border: 1px solid rgba(148, 163, 184, .18);
+    }
+
+    .finance small {
+        display: block;
+        font-size: .70rem;
+        color: #64748b;
+        margin-bottom: 4px;
+        font-weight: 600;
+    }
+
+    .finance strong {
+        font-size: 1rem;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    .timeline {
+        margin-top: 14px;
+        border-top: 1px solid rgba(148, 163, 184, .18);
+        padding-top: 10px;
+    }
+
+    .timeline summary {
+        font-size: .80rem;
+        font-weight: 600;
+        color: #334155;
+        cursor: pointer;
+    }
+
+    .timeline-body {
+        margin-top: 8px;
+        font-size: .80rem;
+        color: #475569;
+        line-height: 1.4;
+    }
 </style>
