@@ -5,6 +5,86 @@ $usuario = 'Andres';
 
 require_once __DIR__ . '/../../layout/header.php';
 
+function parseDateAny($s)
+{
+    // soporta: 30/01/26, 30/01/2026, 06-02-2026, 06-02-26
+    if (!preg_match('/\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2}|\d{4})\b/', $s, $m)) return null;
+    $d = (int)$m[1];
+    $mo = (int)$m[2];
+    $y = (int)$m[3];
+    if ($y < 100) $y += 2000; // 2 dígitos -> 20xx
+    if (!checkdate($mo, $d, $y)) return null;
+    return sprintf('%04d-%02d-%02d', $y, $mo, $d);
+}
+
+function buildTimelineEvents($hist, $sit = '')
+{
+    $events = [];
+    $pushLine = function ($line, $type = 'hist') use (&$events) {
+        $line = trim($line);
+        if ($line === '') return;
+
+        $iso = parseDateAny($line);
+        $events[] = [
+            'date' => $iso,                // YYYY-MM-DD o null
+            'label' => $line,              // texto completo
+            'type' => $type,               // hist|sit
+            'ts' => $iso ? strtotime($iso) : null,
+        ];
+    };
+
+    // Divide por líneas y también por puntos cuando vienen en 1 sola línea
+    $splitSmart = function ($text) {
+        $text = str_replace(["\r\n", "\r"], "\n", (string)$text);
+        $parts = preg_split('/\n+/', $text);
+        $out = [];
+        foreach ($parts as $p) {
+            $p = trim($p);
+            if ($p === '') continue;
+            // Si viene "AAA. BBB. CCC." lo separa en items
+            $chunks = preg_split('/\.\s+(?=[A-ZÁÉÍÓÚÑ]|INVERSIÓN|PUBLICACIÓN|REGISTRO|SOLIC|RECEP|OBS|REITE|SUBSANA|EI|EC|CONV|ADJUD|BP|CONSENTIMIENTO)/u', $p);
+            foreach ($chunks as $c) {
+                $c = trim($c);
+                if ($c === '') continue;
+                // reponer punto si se perdió
+                $out[] = rtrim($c, '.') . '.';
+            }
+        }
+        return $out;
+    };
+
+    foreach ($splitSmart($sit) as $line) $pushLine($line, 'sit');
+    foreach ($splitSmart($hist) as $line) $pushLine($line, 'hist');
+
+    // Ordenar por fecha cuando exista; si no, queda al final manteniendo inserción
+    usort($events, function ($a, $b) {
+        if ($a['ts'] && $b['ts']) return $a['ts'] <=> $b['ts'];
+        if ($a['ts'] && !$b['ts']) return -1;
+        if (!$a['ts'] && $b['ts']) return 1;
+        return 0;
+    });
+
+    // Quitar duplicados exactos (opcional)
+    $seen = [];
+    $clean = [];
+    foreach ($events as $e) {
+        $k = $e['type'] . '|' . $e['date'] . '|' . $e['label'];
+        if (isset($seen[$k])) continue;
+        $seen[$k] = true;
+        $clean[] = $e;
+    }
+
+    return $clean;
+}
+
+function fmtIsoToShort($iso)
+{
+    if (!$iso) return '';
+    // YYYY-MM-DD -> DD/MM/YYYY
+    [$y, $m, $d] = explode('-', $iso);
+    return $d . '/' . $m . '/' . $y;
+}
+
 function money($n)
 {
     return 'S/ ' . number_format((float)$n, 2, '.', ',');
@@ -430,6 +510,37 @@ $isPrint = (isset($_GET['export']) && $_GET['export'] === 'print');
                         </details>
                     <?php endif; ?>
 
+                    <?php $events = buildTimelineEvents($r['hist'] ?? '', $r['sit'] ?? ''); ?>
+
+                    <?php if (!empty($events)): ?>
+                        <details class="tlx">
+                            <summary class="tlx-sum">
+                                <span class="tlx-title">Línea de tiempo</span>
+                                <span class="tlx-meta"><?= count($events) ?> eventos</span>
+                                <span class="tlx-chev" aria-hidden="true"></span>
+                            </summary>
+
+                            <div class="tlx-body">
+                                <ol class="timeline2-list">
+                                    <?php foreach ($events as $e): ?>
+                                        <li class="timeline2-item <?= $e['type'] === 'sit' ? 'is-sit' : 'is-hist' ?>">
+                                            <div class="timeline2-dot" aria-hidden="true"></div>
+
+                                            <div class="timeline2-content">
+                                                <?php if (!empty($e['date'])): ?>
+                                                    <div class="timeline2-date"><?= htmlspecialchars(fmtIsoToShort($e['date'])) ?></div>
+                                                <?php endif; ?>
+
+                                                <div class="timeline2-text">
+                                                    <?= htmlspecialchars($e['label']) ?>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ol>
+                            </div>
+                        </details>
+                    <?php endif; ?>
                 </article>
             <?php endforeach; ?>
 
@@ -1301,4 +1412,111 @@ $isPrint = (isset($_GET['export']) && $_GET['export'] === 'print');
         color: #475569;
         line-height: 1.4;
     }
+
+   /* =========================
+   TIMELINE DESPLEGABLE (DETAILS)
+   ========================= */
+.tlx{
+  margin-top:14px;
+  border:1px solid rgba(148,163,184,.18);
+  border-radius:14px;
+  overflow:hidden;
+  background:#fff;
+}
+
+.tlx-sum{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+  cursor:pointer;
+  user-select:none;
+  list-style:none;
+  background:rgba(15,47,90,.05);
+}
+
+.tlx-sum::-webkit-details-marker{ display:none; }
+
+.tlx-title{
+  font-weight:650;
+  color:#0f172a;
+}
+
+.tlx-meta{
+  margin-left:auto;
+  font-size:.75rem;
+  font-weight:600;
+  color:#64748b;
+}
+
+.tlx-chev{
+  width:10px;
+  height:10px;
+  border-right:3px solid rgba(15,47,90,.45);
+  border-bottom:3px solid rgba(15,47,90,.45);
+  transform:rotate(45deg);
+  transition:transform .16s ease;
+}
+
+.tlx[open] .tlx-chev{
+  transform:rotate(-135deg);
+}
+
+.tlx-body{
+  padding:10px 12px;
+  border-top:1px solid rgba(148,163,184,.16);
+}
+
+/* =========================
+   TIMELINE POR PROCESO
+   ========================= */
+.timeline2-list{
+  list-style:none;
+  margin:0;
+  padding:0;
+}
+
+.timeline2-item{
+  position:relative;
+  display:grid;
+  grid-template-columns:16px 1fr;
+  gap:10px;
+  padding:8px 0;
+}
+
+.timeline2-item:not(:last-child)::after{
+  content:"";
+  position:absolute;
+  left:7px;
+  top:18px;
+  bottom:-8px;
+  width:2px;
+  background:rgba(148,163,184,.22);
+}
+
+.timeline2-dot{
+  width:12px;
+  height:12px;
+  border-radius:999px;
+  margin-top:2px;
+  border:2px solid rgba(148,163,184,.55);
+  background:#fff;
+}
+
+.timeline2-item.is-hist .timeline2-dot{ border-color:rgba(15,47,90,.45); }
+.timeline2-item.is-sit  .timeline2-dot{ border-color:rgba(107,28,38,.50); }
+
+.timeline2-date{
+  font-size:.72rem;
+  font-weight:700;
+  color:#0f172a;
+  margin-bottom:2px;
+}
+
+.timeline2-text{
+  font-size:.82rem;
+  color:#475569;
+  line-height:1.35;
+  overflow-wrap:anywhere;
+}
 </style>
