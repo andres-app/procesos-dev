@@ -73,6 +73,10 @@ switch ($modulo) {
     require '../Vista/modulos/pac.php';
     break;
 
+  case 'presupuesto':
+    require '../Vista/modulos/presupuesto.php';
+    break;
+
   case 'logout':
     session_destroy();
     header("Location: login");

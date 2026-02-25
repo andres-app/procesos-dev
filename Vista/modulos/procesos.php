@@ -1,6 +1,6 @@
 <?php
 $titulo = 'Procesos | Procesos';
-$appName = 'Procesos';
+$appName = 'Seguimiento de Procesos';
 $usuario = 'Andres';
 
 require __DIR__ . '/../layout/header.php';
@@ -83,8 +83,10 @@ function statusClass($estado)
 <main class="page page-shell flex-1 px-5 pt-4 main-procesos">
 
   <!-- HEADER / FILTROS -->
+  <!-- HEADER / FILTROS (COMPACTO + SHEET) -->
   <section class="mb-5 filtros-sticky">
-    <div class="bg-white/90 text-slate-900 rounded-2xl p-5 shadow-lg">
+    <div class="bg-white/90 text-slate-900 rounded-2xl p-4 shadow-lg filtros-wrap">
+
       <div class="flex items-start justify-between gap-3">
         <div>
           <p class="text-sm text-slate-500">Gestión y seguimiento</p>
@@ -97,32 +99,68 @@ function statusClass($estado)
         </div>
       </div>
 
-      <!-- Chips OBAC -->
-      <div class="mt-4 flex gap-2 overflow-x-auto pb-1">
-        <button class="chip chip-active" type="button">Todos</button>
-        <button class="chip" type="button">EP</button>
-        <button class="chip" type="button">FAP</button>
-        <button class="chip" type="button">MGP</button>
-      </div>
-
-      <!-- Chips Estado -->
-      <div class="mt-3 flex gap-2 overflow-x-auto pb-1">
-        <button class="chip chip-soft" type="button">Convocado</button>
-        <button class="chip chip-soft" type="button">Publicado</button>
-        <button class="chip chip-soft" type="button">Adjudicado</button>
-        <button class="chip chip-soft" type="button">Observado</button>
-        <button class="chip chip-soft" type="button">Desierto</button>
-      </div>
-
-      <!-- Buscador -->
-      <div class="mt-4">
-        <div class="search">
+      <!-- BAR COMPACTA -->
+      <div class="mt-4 flex items-center gap-2">
+        <div class="search flex-1">
           <span class="search-ico">🔎</span>
-          <input id="q" type="text" placeholder="Buscar Proceso, PAC o descripción..." />
+          <input id="q" type="text" placeholder="Buscar Proceso o descripción..." />
+        </div>
+
+        <button id="btnFiltros" type="button" class="btn-filtros" aria-haspopup="dialog" aria-controls="sheetFiltros">
+          <span class="ico">⚙️</span>
+          <span class="txt">Filtros</span>
+          <span id="badgeCount" class="badge-count hidden">0</span>
+        </button>
+      </div>
+
+      <!-- CHIPS ACTIVOS (RESUMEN) -->
+      <div id="chipsActivos" class="mt-3 flex gap-2 overflow-x-auto pb-1 hidden"></div>
+
+    </div>
+  </section>
+
+  <!-- SHEET FILTROS (MÓVIL) -->
+  <div id="overlayFiltros" class="overlay hidden" aria-hidden="true"></div>
+
+  <div id="sheetFiltros" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="sheet-handle" aria-hidden="true"></div>
+
+    <div class="sheet-head">
+      <div>
+        <p class="text-xs text-slate-500">Filtra y encuentra rápido</p>
+        <h3 id="sheetTitle" class="text-lg font-black text-slate-900">Filtros</h3>
+      </div>
+      <button id="btnCerrarSheet" class="sheet-close" type="button" aria-label="Cerrar"></button>
+    </div>
+
+    <div class="sheet-body">
+      <div class="sheet-section">
+        <p class="sheet-label">OBAC</p>
+        <div class="chips-grid" id="fObac">
+          <button class="chip chip-active" type="button" data-filter="obac" data-value="ALL">Todos</button>
+          <button class="chip" type="button" data-filter="obac" data-value="EP">EP</button>
+          <button class="chip" type="button" data-filter="obac" data-value="FAP">FAP</button>
+          <button class="chip" type="button" data-filter="obac" data-value="MGP">MGP</button>
+        </div>
+      </div>
+
+      <div class="sheet-section">
+        <p class="sheet-label">Estado</p>
+        <div class="chips-grid" id="fEstado">
+          <button class="chip chip-soft" type="button" data-filter="estado" data-value="CONVOCADO">Convocado</button>
+          <button class="chip chip-soft" type="button" data-filter="estado" data-value="PUBLICADO">Publicado</button>
+          <button class="chip chip-soft" type="button" data-filter="estado" data-value="ADJUDICADO">Adjudicado</button>
+          <button class="chip chip-soft" type="button" data-filter="estado" data-value="OBSERVADO">Observado</button>
+          <button class="chip chip-soft" type="button" data-filter="estado" data-value="DESIERTO">Desierto</button>
         </div>
       </div>
     </div>
-  </section>
+
+    <div class="sheet-actions">
+      <button id="btnLimpiar" class="btn-secondary" type="button">Limpiar</button>
+      <button id="btnAplicar" class="btn-primary" type="button">Aplicar</button>
+    </div>
+  </div>
 
   <!-- LISTA (DATA COMO SISTEMA ANTIGUO) -->
   <section class="lista-scroll">
@@ -549,6 +587,210 @@ function statusClass($estado)
   #listaProcesos {
     padding-bottom: 12px;
   }
+
+  /* ===== Botón filtros compacto ===== */
+  .btn-filtros {
+    height: 48px;
+    padding: 0 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(148, 163, 184, .35);
+    background: #f8fafc;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 900;
+    color: #0f172a;
+    white-space: nowrap;
+  }
+
+  .btn-filtros .txt {
+    display: none;
+  }
+
+  .btn-filtros .ico {
+    font-size: 1rem;
+  }
+
+  .badge-count {
+    min-width: 22px;
+    height: 22px;
+    padding: 0 7px;
+    border-radius: 999px;
+    background: rgba(107, 28, 38, .12);
+    color: #6B1C26;
+    border: 1px solid rgba(107, 28, 38, .22);
+    font-size: .75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* En pantallas algo más grandes, muestra texto */
+  @media (min-width: 480px) {
+    .btn-filtros .txt {
+      display: inline;
+    }
+  }
+
+  /* ===== Chips activos (resumen) ===== */
+  .chip-x {
+    padding: 8px 10px;
+    border-radius: 9999px;
+    border: 1px solid rgba(148, 163, 184, .35);
+    background: rgba(255, 255, 255, .95);
+    font-weight: 900;
+    font-size: .78rem;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 0 0 auto;
+  }
+
+  .chip-x button {
+    width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, .35);
+    background: #f8fafc;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  /* ===== Overlay + Bottom Sheet ===== */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, .45);
+    z-index: 200;
+  }
+
+  .sheet {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 220;
+    background: #fff;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    box-shadow: 0 -20px 50px rgba(0, 0, 0, .25);
+    transform: translateY(0);
+    max-height: calc(100vh - 80px);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sheet-handle {
+    width: 54px;
+    height: 5px;
+    border-radius: 999px;
+    background: rgba(148, 163, 184, .55);
+    margin: 10px auto 6px;
+  }
+
+  .sheet-head {
+    padding: 10px 14px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    border-bottom: 1px solid rgba(148, 163, 184, .25);
+  }
+
+  .sheet-close {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, .35);
+    background: #f8fafc;
+    cursor: pointer;
+  }
+
+  /* Dibujar la X con líneas */
+  .sheet-close::before,
+  .sheet-close::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 18px;
+    height: 2px;
+    background: #0f172a;
+    border-radius: 2px;
+  }
+
+  .sheet-close::before {
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+
+  .sheet-close::after {
+    transform: translate(-50%, -50%) rotate(-45deg);
+  }
+
+  .sheet-body {
+    padding: 12px 14px 0;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .sheet-section {
+    margin-bottom: 14px;
+  }
+
+  .sheet-label {
+    font-weight: 900;
+    color: #334155;
+    font-size: .8rem;
+    margin-bottom: 8px;
+  }
+
+  .chips-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .sheet-actions {
+    padding: 12px 14px;
+    display: flex;
+    gap: 10px;
+    border-top: 1px solid rgba(148, 163, 184, .25);
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    height: 46px;
+    border-radius: 14px;
+    font-weight: 900;
+    flex: 1;
+  }
+
+  .btn-primary {
+    background: rgba(107, 28, 38, .95);
+    color: #fff;
+  }
+
+  .btn-secondary {
+    background: #f1f5f9;
+    border: 1px solid rgba(148, 163, 184, .35);
+    color: #0f172a;
+  }
+
+  /* Desktop: en vez de sheet, deja el bloque siempre visible (opcional) */
+  @media (min-width: 1024px) {
+
+    .overlay,
+    .sheet {
+      display: none !important;
+    }
+  }
+
+  .hidden {
+    display: none !important;
+  }
 </style>
 
 <script>
@@ -604,4 +846,156 @@ function statusClass($estado)
   q?.addEventListener('input', () => {
     // luego conectas a tu backend o filtrado real
   });
+
+  // ===== SHEET FILTROS =====
+  const btnFiltros = document.getElementById('btnFiltros');
+  const overlay = document.getElementById('overlayFiltros');
+  const sheet = document.getElementById('sheetFiltros');
+  const btnCerrar = document.getElementById('btnCerrarSheet');
+  const btnAplicar = document.getElementById('btnAplicar');
+  const btnLimpiar = document.getElementById('btnLimpiar');
+
+  const chipsActivos = document.getElementById('chipsActivos');
+  const badgeCount = document.getElementById('badgeCount');
+
+  // estado temporal (lo que el usuario toca en el sheet)
+  let draft = {
+    obac: 'ALL',
+    estado: null
+  };
+  // estado aplicado (lo que realmente filtra)
+  let applied = {
+    obac: 'ALL',
+    estado: null
+  };
+
+  const openSheet = () => {
+    overlay.classList.remove('hidden');
+    sheet.classList.remove('hidden');
+    overlay.setAttribute('aria-hidden', 'false');
+    syncUIToDraft();
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeSheet = () => {
+    overlay.classList.add('hidden');
+    sheet.classList.add('hidden');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  };
+
+  btnFiltros?.addEventListener('click', openSheet);
+  overlay?.addEventListener('click', closeSheet);
+  btnCerrar?.addEventListener('click', closeSheet);
+
+  // seleccionar chips dentro del sheet
+  sheet?.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-filter]');
+    if (!b) return;
+
+    const filter = b.getAttribute('data-filter');
+    const value = b.getAttribute('data-value');
+
+    if (filter === 'obac') {
+      draft.obac = value;
+      // solo uno activo
+      document.querySelectorAll('#fObac .chip').forEach(x => x.classList.remove('chip-active'));
+      b.classList.add('chip-active');
+    }
+
+    if (filter === 'estado') {
+      // toggle: si vuelves a tocar el mismo, lo desmarcas
+      const isSame = draft.estado === value;
+      draft.estado = isSame ? null : value;
+
+      document.querySelectorAll('#fEstado .chip').forEach(x => x.classList.remove('chip-active'));
+      if (!isSame) b.classList.add('chip-active');
+    }
+  });
+
+  btnLimpiar?.addEventListener('click', () => {
+    draft = {
+      obac: 'ALL',
+      estado: null
+    };
+    applied = {
+      obac: 'ALL',
+      estado: null
+    };
+    syncUIToDraft();
+    renderActiveChips();
+    // aquí conectarías tu filtrado real
+    closeSheet();
+  });
+
+  btnAplicar?.addEventListener('click', () => {
+    applied = {
+      ...draft
+    };
+    renderActiveChips();
+    // aquí conectarías tu filtrado real (backend o JS)
+    closeSheet();
+  });
+
+  const syncUIToDraft = () => {
+    // OBAC
+    document.querySelectorAll('#fObac .chip').forEach(x => x.classList.remove('chip-active'));
+    document.querySelectorAll(`#fObac .chip[data-value="${draft.obac}"]`).forEach(x => x.classList.add('chip-active'));
+
+    // Estado
+    document.querySelectorAll('#fEstado .chip').forEach(x => x.classList.remove('chip-active'));
+    if (draft.estado) {
+      document.querySelectorAll(`#fEstado .chip[data-value="${draft.estado}"]`).forEach(x => x.classList.add('chip-active'));
+    }
+  };
+
+  const renderActiveChips = () => {
+    const items = [];
+    if (applied.obac && applied.obac !== 'ALL') items.push({
+      k: 'obac',
+      v: applied.obac,
+      label: applied.obac
+    });
+    if (applied.estado) items.push({
+      k: 'estado',
+      v: applied.estado,
+      label: applied.estado
+    });
+
+    const count = items.length;
+    if (count > 0) {
+      chipsActivos.classList.remove('hidden');
+      badgeCount.classList.remove('hidden');
+      badgeCount.textContent = String(count);
+    } else {
+      chipsActivos.classList.add('hidden');
+      badgeCount.classList.add('hidden');
+    }
+
+    chipsActivos.innerHTML = items.map(it => `
+      <div class="chip-x" data-k="${it.k}">
+        <span>${it.label}</span>
+        <button type="button" aria-label="Quitar filtro">×</button>
+      </div>
+    `).join('');
+  };
+
+  chipsActivos?.addEventListener('click', (e) => {
+    const x = e.target.closest('.chip-x');
+    const btn = e.target.closest('button');
+    if (!x || !btn) return;
+
+    const k = x.getAttribute('data-k');
+    if (k === 'obac') applied.obac = 'ALL';
+    if (k === 'estado') applied.estado = null;
+
+    draft = {
+      ...applied
+    };
+    renderActiveChips();
+    // aquí conectarías tu filtrado real
+  });
+
+  // inicial
+  renderActiveChips();
 </script>
