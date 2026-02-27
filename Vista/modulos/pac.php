@@ -350,13 +350,15 @@ function selClass($sel)
         $obac = strtoupper(trim($p['obac']));
         $estado = strtoupper(trim($p['estado']));
         $sel = strtoupper(trim($p['seleccion']));
-        $haystack = strtolower($p['nopac'] . ' ' . $p['obac'] . ' ' . $p['seleccion'] . ' ' . $p['estado'] . ' ' . $p['descripcion']);
+        $haystack = strtoupper(trim(
+          $p['nopac'] . ' ' . $p['obac'] . ' ' . $p['seleccion'] . ' ' . $p['estado'] . ' ' . $p['descripcion']
+        ));
         ?>
         <div class="proc-item pac-item"
           data-obac="<?= htmlspecialchars($obac) ?>"
           data-estado="<?= htmlspecialchars($estado) ?>"
           data-sel="<?= htmlspecialchars($sel) ?>"
-          data-haystack="<?= htmlspecialchars($haystack) ?>"
+          data-hay="<?= htmlspecialchars($haystack) ?>"
           data-open="<?= BASE_URL ?>/pac/ver?id=<?= (int)$p['id'] ?>">
           <a class="proc-open" href="<?= BASE_URL ?>/pac/ver?id=<?= (int)$p['id'] ?>" aria-label="Abrir PAC"></a>
 
@@ -986,10 +988,21 @@ function selClass($sel)
       display: none !important;
     }
   }
+
+  /* iOS: evitar zoom al enfocar input (font-size >= 16px) */
+  @media (max-width: 1024px) {
+    .search input {
+      font-size: 16px !important;
+    }
+  }
+
+  .search input {
+    -webkit-text-size-adjust: 100%;
+  }
 </style>
 
 <script>
-  // ===== MENÚ KEBAB (IGUAL) =====
+  // ===== MENÚ KEBAB =====
   const closeAllMenus = () => {
     document.querySelectorAll('[data-menu]').forEach(m => m.classList.add('hidden'));
   };
@@ -1012,7 +1025,7 @@ function selClass($sel)
     closeAllMenus();
   });
 
-  // Eliminar (ajusta ruta si corresponde)
+  // Eliminar
   document.addEventListener('click', (e) => {
     const del = e.target.closest('[data-delete]');
     if (!del) return;
@@ -1027,34 +1040,46 @@ function selClass($sel)
     window.location.href = `<?= BASE_URL ?>/pac/eliminar?id=${id}`;
   });
 
-  // ===== FILTROS + BUSCADOR (SHEET) =====
-  const state = { obac: '', estado: '', sel: '', q: '' };
+  // ===== FILTROS + BUSCADOR =====
+  const q = document.getElementById('q');
+  const list = document.getElementById('listaProcesos');
+  const countText = document.getElementById('countText');
+
+  // estado aplicado
+  const state = {
+    obac: '',
+    estado: '',
+    sel: '',
+    q: ''
+  };
 
   const applyFilters = () => {
-    const cards = document.querySelectorAll('.pac-item');
+    const cards = list ? Array.from(list.querySelectorAll('.pac-item')) : [];
     let visible = 0;
 
+    const term = (state.q || '').trim().toUpperCase();
+
     cards.forEach(c => {
-      const obac = (c.getAttribute('data-obac') || '');
-      const estado = (c.getAttribute('data-estado') || '');
-      const sel = (c.getAttribute('data-sel') || '');
-      const hay = (c.getAttribute('data-haystack') || '');
+      const obac = (c.getAttribute('data-obac') || '').toUpperCase();
+      const estado = (c.getAttribute('data-estado') || '').toUpperCase();
+      const sel = (c.getAttribute('data-sel') || '').toUpperCase();
+      const hay = (c.getAttribute('data-hay') || '').toUpperCase();
 
       const okObac = !state.obac || obac === state.obac;
       const okEstado = !state.estado || estado === state.estado;
       const okSel = !state.sel || sel === state.sel;
-      const okQ = !state.q || hay.includes(state.q);
+      const okQ = !term || hay.includes(term);
 
       const ok = okObac && okEstado && okSel && okQ;
+
       c.style.display = ok ? '' : 'none';
       if (ok) visible++;
     });
 
-    const ct = document.getElementById('countText');
-    if (ct) ct.textContent = `Mostrando ${visible} PAC`;
+    if (countText) countText.textContent = `Mostrando ${visible} de ${cards.length} PAC`;
   };
 
-  // ===== SHEET FILTROS (PAC) =====
+  // ===== SHEET =====
   const btnFiltros = document.getElementById('btnFiltros');
   const overlay = document.getElementById('overlayFiltros');
   const sheet = document.getElementById('sheetFiltros');
@@ -1065,8 +1090,17 @@ function selClass($sel)
   const chipsActivos = document.getElementById('chipsActivos');
   const badgeCount = document.getElementById('badgeCount');
 
-  let draft = { obac: '', estado: '', sel: '' };
-  let applied = { obac: '', estado: '', sel: '' };
+  // estado temporal (draft) y aplicado (applied)
+  let draft = {
+    obac: '',
+    estado: '',
+    sel: ''
+  };
+  let applied = {
+    obac: '',
+    estado: '',
+    sel: ''
+  };
 
   const openSheet = () => {
     overlay.classList.remove('hidden');
@@ -1083,31 +1117,38 @@ function selClass($sel)
     document.body.style.overflow = '';
   };
 
-  // Nota: si tu navegador no soporta CSS.escape, este fallback evita crasheos.
-  const esc = (v) => (window.CSS && CSS.escape) ? CSS.escape(v) : v.replace(/"/g, '\\"');
+  const esc = (v) => (window.CSS && CSS.escape) ? CSS.escape(v) : (v || '').replace(/"/g, '\\"');
 
-  const setActiveInGroup = (groupEl, value) => {
-    if (!groupEl) return;
-    groupEl.querySelectorAll('button.chip').forEach(b => b.classList.remove('chip-active'));
-    const btn = groupEl.querySelector(`button[data-value="${esc(value)}"]`);
+  const setActiveInGroup = (groupId, value) => {
+    const group = document.getElementById(groupId);
+    if (!group) return;
+
+    group.querySelectorAll('button[data-filter]').forEach(b => b.classList.remove('chip-active'));
+
+    const btn = group.querySelector(`button[data-value="${esc(value)}"]`);
     if (btn) btn.classList.add('chip-active');
   };
 
   const syncUIToDraft = () => {
-    setActiveInGroup(document.getElementById('fObac'), draft.obac);
-    setActiveInGroup(document.getElementById('fEstado'), draft.estado);
-    setActiveInGroup(document.getElementById('fSel'), draft.sel);
+    setActiveInGroup('fObac', draft.obac);
+    setActiveInGroup('fEstado', draft.estado);
+    setActiveInGroup('fSel', draft.sel);
   };
-
-  const labelEstado = (v) => v === 'PUBLICADO' ? 'Publicado' : (v === 'SOLICITADO' ? 'Solicitado' : v);
-  const labelObac = (v) => v || 'Todos';
-  const labelSel = (v) => v || 'Todos';
 
   const renderActiveChips = () => {
     const items = [];
-    if (applied.obac) items.push({ k: 'obac', label: `OBAC: ${labelObac(applied.obac)}` });
-    if (applied.estado) items.push({ k: 'estado', label: `Estado: ${labelEstado(applied.estado)}` });
-    if (applied.sel) items.push({ k: 'sel', label: `Selección: ${labelSel(applied.sel)}` });
+    if (applied.obac) items.push({
+      k: 'obac',
+      label: `OBAC: ${applied.obac}`
+    });
+    if (applied.estado) items.push({
+      k: 'estado',
+      label: `Estado: ${applied.estado}`
+    });
+    if (applied.sel) items.push({
+      k: 'sel',
+      label: `Selección: ${applied.sel}`
+    });
 
     const count = items.length;
 
@@ -1134,7 +1175,7 @@ function selClass($sel)
   overlay?.addEventListener('click', closeSheet);
   btnCerrar?.addEventListener('click', closeSheet);
 
-  // Click en chips del sheet (delegado)
+  // Click en chips del sheet
   sheet?.addEventListener('click', (e) => {
     const b = e.target.closest('button[data-filter]');
     if (!b) return;
@@ -1149,13 +1190,25 @@ function selClass($sel)
     syncUIToDraft();
   });
 
+  // Limpiar
   btnLimpiar?.addEventListener('click', () => {
-    draft = { obac: '', estado: '', sel: '' };
-    applied = { obac: '', estado: '', sel: '' };
+    draft = {
+      obac: '',
+      estado: '',
+      sel: ''
+    };
+    applied = {
+      obac: '',
+      estado: '',
+      sel: ''
+    };
 
     state.obac = '';
     state.estado = '';
     state.sel = '';
+
+    if (q) q.value = '';
+    state.q = '';
 
     syncUIToDraft();
     renderActiveChips();
@@ -1163,8 +1216,11 @@ function selClass($sel)
     closeSheet();
   });
 
+  // Aplicar
   btnAplicar?.addEventListener('click', () => {
-    applied = { ...draft };
+    applied = {
+      ...draft
+    };
 
     state.obac = applied.obac;
     state.estado = applied.estado;
@@ -1175,7 +1231,7 @@ function selClass($sel)
     closeSheet();
   });
 
-  // Quitar chip activo desde el resumen
+  // Quitar chip desde resumen
   chipsActivos?.addEventListener('click', (e) => {
     const wrap = e.target.closest('.chip-x');
     const btn = e.target.closest('button');
@@ -1184,16 +1240,19 @@ function selClass($sel)
     const k = wrap.getAttribute('data-k');
 
     applied[k] = '';
-    draft = { ...applied };
+    draft = {
+      ...applied
+    };
     state[k] = '';
 
+    syncUIToDraft();
     renderActiveChips();
     applyFilters();
   });
 
   // Buscador
-  document.getElementById('q')?.addEventListener('input', (e) => {
-    state.q = (e.target.value || '').trim().toLowerCase();
+  q?.addEventListener('input', (e) => {
+    state.q = (e.target.value || '').trim();
     applyFilters();
   });
 
