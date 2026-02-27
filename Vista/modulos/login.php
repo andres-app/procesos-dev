@@ -53,6 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input
           type="text"
           name="usuario"
+          value="admin"
           class="w-full mt-2 h-12 px-4 rounded-xl border border-gray-300 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#D4AF37] transition"
           required />
       </div>
@@ -64,6 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input
           type="password"
           name="password"
+          value="123123"
           class="w-full mt-2 h-12 px-4 rounded-xl border border-gray-300 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#D4AF37] transition"
           required />
       </div>

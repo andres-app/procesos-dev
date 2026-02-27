@@ -6,7 +6,7 @@ require __DIR__ . '/../layout/header.php';
 ?>
 
 <!-- ✅ INICIO (AGREGA EL MÓDULO PAC CON EL MISMO ESTILO "APPLE-CARD") -->
-<main class="page flex-1 flex items-center px-5">
+<main class="page flex-1 px-5 pt-[calc(env(safe-area-inset-top)+12px)] pb-[calc(env(safe-area-inset-bottom)+110px)]">
   <div class="grid grid-cols-2 gap-5 w-full max-w-md mx-auto">
 
     <a href="<?= BASE_URL ?>/procesos"
