@@ -302,31 +302,79 @@ function topN($assoc, $n = 6) {
 
 </main>
 
-<?php require __DIR__ . '/../layout/bottom-nav.php'; ?>
+<?php require_once __DIR__ . '/../layout/bottom-nav.php'; ?>
 
 <style>
   .page-shell{width:100%}
-  @media (min-width:1024px){.page-shell{max-width:1120px;margin:0 auto;padding-left:24px;padding-right:24px}}
+  @media (min-width:1024px){
+    .page-shell{max-width:1120px;margin:0 auto;padding-left:24px;padding-right:24px}
+  }
+
   .main-ind{overflow:hidden}
+
   .filtros-sticky{position:sticky;top:0;z-index:80;padding-top:6px}
-  .filtros-sticky>div{background:rgba(255,255,255,.96)!important;border:1px solid rgba(148,163,184,.25);box-shadow:0 18px 40px rgba(0,0,0,.18);backdrop-filter:blur(12px)}
-  .year-pill{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:9999px;background:rgba(107,28,38,.10);color:#6B1C26;border:1px solid rgba(107,28,38,.15);font-weight:800;font-size:.85rem;white-space:nowrap}
-  .year-pill .dot{width:8px;height:8px;border-radius:9999px;background:#C9A227;box-shadow:0 0 0 3px rgba(201,162,39,.20)}
+  .filtros-sticky>div{
+    background:rgba(255,255,255,.96)!important;
+    border:1px solid rgba(148,163,184,.25);
+    box-shadow:0 18px 40px rgba(0,0,0,.18);
+    backdrop-filter:blur(12px)
+  }
+
+  .year-pill{
+    display:flex;align-items:center;gap:8px;
+    padding:10px 12px;border-radius:9999px;
+    background:rgba(107,28,38,.10);
+    color:#6B1C26;
+    border:1px solid rgba(107,28,38,.15);
+    font-weight:800;font-size:.85rem;white-space:nowrap
+  }
+  .year-pill .dot{
+    width:8px;height:8px;border-radius:9999px;
+    background:#C9A227;
+    box-shadow:0 0 0 3px rgba(201,162,39,.20)
+  }
+
   .tabs{display:flex;gap:10px}
-  .tab{height:44px;padding:0 14px;border-radius:9999px;border:1px solid rgba(148,163,184,.35);background:#f8fafc;font-weight:900;color:#0f172a}
-  .tab-active{background:rgba(107,28,38,.12);color:#6B1C26;border-color:rgba(107,28,38,.22)}
+
+  /* ✅ FIX: NO PISAR .tab GLOBAL DEL bottom-nav (scoped solo a indicadores) */
+  .main-ind .tab{
+    height:44px;
+    padding:0 14px;
+    border-radius:9999px;
+    border:1px solid rgba(148,163,184,.35);
+    background:#f8fafc;
+    font-weight:900;
+    color:#0f172a
+  }
+  .main-ind .tab-active{
+    background:rgba(107,28,38,.12);
+    color:#6B1C26;
+    border-color:rgba(107,28,38,.22)
+  }
+
   .kpis{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   @media (min-width:1024px){.kpis{grid-template-columns:1fr 1fr 1fr 1fr}}
-  .kpi{background:#fff;border-radius:18px;padding:14px;box-shadow:0 10px 25px rgba(0,0,0,.10);border:1px solid rgba(148,163,184,.18)}
+  .kpi{
+    background:#fff;border-radius:18px;padding:14px;
+    box-shadow:0 10px 25px rgba(0,0,0,.10);
+    border:1px solid rgba(148,163,184,.18)
+  }
   .kpi-label{font-weight:900;font-size:.82rem;color:#475569}
   .kpi-value{font-weight:950;font-size:1.15rem;color:#0f172a;margin-top:6px}
   .kpi-sub{font-weight:800;font-size:.78rem;color:#64748b;margin-top:4px}
+
   .grid2{display:grid;grid-template-columns:1fr;gap:12px}
   @media (min-width:1024px){.grid2{grid-template-columns:1fr 1fr}}
-  .card{background:#fff;border-radius:20px;padding:14px;box-shadow:0 10px 25px rgba(0,0,0,.10);border:1px solid rgba(148,163,184,.18)}
+
+  .card{
+    background:#fff;border-radius:20px;padding:14px;
+    box-shadow:0 10px 25px rgba(0,0,0,.10);
+    border:1px solid rgba(148,163,184,.18)
+  }
   .card-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px}
   .card h3{font-weight:950;color:#0f172a;font-size:1rem}
   .muted{color:#64748b;font-weight:800;font-size:.78rem}
+
   .bars{display:flex;flex-direction:column;gap:10px}
   .bar-row{display:flex;flex-direction:column;gap:6px}
   .bar-meta{display:flex;justify-content:space-between;gap:10px;align-items:center}
@@ -334,11 +382,13 @@ function topN($assoc, $n = 6) {
   .bar-num{font-weight:900;color:#475569;font-size:.82rem;white-space:nowrap}
   .bar-track{width:100%;height:10px;border-radius:999px;background:rgba(148,163,184,.18);overflow:hidden}
   .bar-fill{height:100%;border-radius:999px;background:rgba(107,28,38,.75)}
+
   .table{display:flex;flex-direction:column;gap:8px}
   .tr{display:flex;justify-content:space-between;gap:12px;padding:10px 12px;border-radius:14px;background:rgba(148,163,184,.10)}
   .td{font-weight:900;color:#0f172a;font-size:.85rem}
   .td.right{text-align:right}
   .td.strong{color:#6B1C26}
+
   .hidden{display:none!important}
 </style>
 
