@@ -17,7 +17,7 @@ require_once __DIR__ . '/../../Config/config.php';
   <link rel="apple-touch-icon" href="<?= BASE_URL ?>/icons/apple-touch-icon.png">
 
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Seguimiento de procesos">
 
   <!-- Tailwind -->
@@ -67,62 +67,135 @@ require_once __DIR__ . '/../../Config/config.php';
       }
     }
 
-    /* ===== HEADER ===== */
-    .app-header {
-      padding-top: calc(env(safe-area-inset-top) + 12px);
-      padding-left: calc(env(safe-area-inset-left) + 20px);
-      padding-right: calc(env(safe-area-inset-right) + 20px);
+    /* ===== HEADER (Premium / Apple-like) ===== */
+    /* ===== HEADER (iOS clean / premium) ===== */
+    .appbar {
+      position: sticky;
+      top: 0;
+      z-index: 90;
+
+      padding-top: calc(env(safe-area-inset-top) + 10px);
+      padding-left: calc(env(safe-area-inset-left) + 16px);
+      padding-right: calc(env(safe-area-inset-right) + 16px);
+      padding-bottom: 10px;
+
+      background: linear-gradient(to bottom, rgba(0, 0, 0, .18), rgba(0, 0, 0, .08));
+      backdrop-filter: blur(18px) saturate(160%);
+      -webkit-backdrop-filter: blur(18px) saturate(160%);
+      border-bottom: 1px solid rgba(255, 255, 255, .08);
     }
 
-    /* ===== iOS TAB BAR ===== */
-    .ios-tabbar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 84px;
-      background: rgba(255, 255, 255, .95);
-      backdrop-filter: blur(14px);
-      border-top: 1px solid rgba(0, 0, 0, .08);
+    .appbar-inner {
       display: flex;
-      justify-content: space-around;
       align-items: center;
-      z-index: 50;
+      justify-content: space-between;
+      gap: 14px;
     }
 
-    .tab {
+    .appbar-left {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 4px;
-      font-size: 0.7rem;
-      color: #94a3b8;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .app-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-weight: 900;
+      font-size: .90rem;
+
+      background: rgba(255, 255, 255, .12);
+      border: 1px solid rgba(255, 255, 255, .14);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14);
+    }
+
+    .appbar-titles {
+      min-width: 0;
+    }
+
+    .appbar-title {
+      font-size: 1.02rem;
+      font-weight: 800;
+      letter-spacing: -.2px;
+      line-height: 1.15;
+
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .appbar-sub {
+      margin-top: 2px;
+      font-size: .80rem;
+      color: rgba(219, 234, 254, .85);
+      line-height: 1.1;
+
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .appbar-sub strong {
+      color: rgba(255, 255, 255, .92);
+      font-weight: 800;
+    }
+
+    .appbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .appbar-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
       text-decoration: none;
-      transition: transform .15s ease;
+
+      background: rgba(255, 255, 255, .10);
+      border: 1px solid rgba(255, 255, 255, .12);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .10);
+
+      transition: transform .14s ease, background .14s ease;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
     }
 
-    .tab .icon {
-      width: 24px;
-      height: 24px;
-      stroke: currentColor;
+    .appbar-btn:active {
+      transform: scale(.94);
+    }
+
+    @media (hover:hover) {
+      .appbar-btn:hover {
+        background: rgba(255, 255, 255, .14);
+      }
+    }
+
+    .app-ico {
+      width: 18px;
+      height: 18px;
+      stroke: rgba(255, 255, 255, .92);
       fill: none;
-      stroke-width: 1.8;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
-    .tab.active {
-      color: #0F2F5A;
-    }
-
-    .tab.active .icon {
-      stroke-width: 2.2;
-    }
-
-    .tab:active {
-      transform: scale(.92);
-    }
-
+    /* ===== ESPACIO PARA BOTTOM NAV (FLOATING) ===== */
     .has-bottom-nav {
-      padding-bottom: calc(100px + var(--sab));
+      padding-bottom: calc(118px + var(--sab));
     }
 
     /* ===== PRELOADER ===== */
@@ -220,13 +293,33 @@ require_once __DIR__ . '/../../Config/config.php';
   </div>
 
   <!-- HEADER -->
-  <header class="app-header px-5 py-4 flex justify-between items-center">
-    <div>
-      <h1 class="text-xl font-semibold tracking-tight">
-        <?= $appName ?? 'Seguimiento de procesos' ?>
-      </h1>
-      <span class="text-sm text-blue-200">
-        Hola, <?= $usuario ?? 'Usuario' ?>
-      </span>
+  <header class="appbar">
+    <div class="appbar-inner">
+      <div class="appbar-left">
+        <div class="app-avatar" aria-hidden="true">
+          <?= strtoupper(substr($usuario ?? 'U', 0, 1)) ?>
+        </div>
+
+        <div class="appbar-titles">
+          <div class="appbar-title"><?= $appName ?? 'Seguimiento de procesos' ?></div>
+          <div class="appbar-sub">Hola, <strong><?= $usuario ?? 'Usuario' ?></strong></div>
+        </div>
+      </div>
+
+      <div class="appbar-actions">
+        <a class="appbar-btn" href="<?= BASE_URL ?>/alertas" aria-label="Alertas" title="Alertas">
+          <svg viewBox="0 0 24 24" class="app-ico" aria-hidden="true">
+            <path d="M12 22a2.2 2.2 0 0 0 2.2-2.2H9.8A2.2 2.2 0 0 0 12 22Z" />
+            <path d="M18 16.6V11a6 6 0 1 0-12 0v5.6L4.6 18h14.8L18 16.6Z" />
+          </svg>
+        </a>
+
+        <a class="appbar-btn" href="<?= BASE_URL ?>/perfil" aria-label="Perfil" title="Perfil">
+          <svg viewBox="0 0 24 24" class="app-ico" aria-hidden="true">
+            <circle cx="12" cy="8" r="4" />
+            <path d="M4 21a8 8 0 0 1 16 0" />
+          </svg>
+        </a>
+      </div>
     </div>
   </header>
