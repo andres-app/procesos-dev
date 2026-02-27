@@ -238,7 +238,19 @@ function statusClass($estado)
   <section class="lista-scroll">
     <section class="space-y-3" id="listaProcesos">
       <?php foreach ($procesos as $p): ?>
-        <div class="proc-item" data-open="<?= BASE_URL ?>/actividades?id=<?= (int)$p['id'] ?>">
+        <?php
+        $obacPrefix = badgeFromObac($p['obac']);   // EP/FAP/MGP/CORP...
+        $estadoUp   = strtoupper(trim($p['estado']));
+        $hay = strtoupper(trim(
+          $p['proceso'] . ' ' . $p['expediente'] . ' ' . $p['obac'] . ' ' . $p['descripcion'] . ' ' . $p['estado']
+        ));
+        ?>
+        <div
+          class="proc-item"
+          data-open="<?= BASE_URL ?>/actividades?id=<?= (int)$p['id'] ?>"
+          data-obac="<?= htmlspecialchars($obacPrefix) ?>"
+          data-estado="<?= htmlspecialchars($estadoUp) ?>"
+          data-hay="<?= htmlspecialchars($hay) ?>">
           <a class="proc-open" href="<?= BASE_URL ?>/actividades?id=<?= (int)$p['id'] ?>" aria-label="Abrir proceso"></a>
 
           <div class="left">
@@ -390,7 +402,8 @@ function statusClass($estado)
     border: none;
     color: #0f172a;
     font-weight: 700;
-    font-size: .95rem;
+    font-size: 16px !important;
+    -webkit-text-size-adjust: 100%;
   }
 
   .search input::placeholder {
@@ -1063,6 +1076,57 @@ function statusClass($estado)
     renderActiveChips();
     // aquí conectarías tu filtrado real
   });
+
+  const list = document.getElementById('listaProcesos');
+  const countEl = document.querySelector('.mt-4.text-xs.text-white\\/70');
+
+  const applyFilters = () => {
+    const term = (q?.value || '').trim().toUpperCase();
+
+    const cards = list ? Array.from(list.querySelectorAll('.proc-item')) : [];
+    let visible = 0;
+
+    cards.forEach(card => {
+      const obac = (card.getAttribute('data-obac') || '').toUpperCase();
+      const estado = (card.getAttribute('data-estado') || '').toUpperCase();
+      const hay = (card.getAttribute('data-hay') || '').toUpperCase();
+
+      const okSearch = !term || hay.includes(term);
+      const okObac = !applied.obac || applied.obac === 'ALL' || obac === applied.obac;
+      const okEstado = !applied.estado || estado === applied.estado;
+
+      const show = okSearch && okObac && okEstado;
+      card.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+
+    if (countEl) countEl.textContent = `Mostrando ${visible} de ${cards.length} procesos`;
+  };
+
+  // Buscar en tiempo real
+  q?.addEventListener('input', applyFilters);
+
+  // Aplicar / Limpiar también deben filtrar
+  const _oldAplicar = btnAplicar?.onclick;
+  btnAplicar?.addEventListener('click', () => {
+    // ya estás seteando applied en tu handler actual
+    applyFilters();
+  });
+
+  btnLimpiar?.addEventListener('click', () => {
+    // ya estás reseteando draft/applied en tu handler actual
+    if (q) q.value = '';
+    applyFilters();
+  });
+
+  // Cuando quitas chip activo
+  chipsActivos?.addEventListener('click', () => {
+    // tu handler ya actualiza applied/draft
+    applyFilters();
+  });
+
+  // Inicial
+  applyFilters();
 
   // inicial
   renderActiveChips();
