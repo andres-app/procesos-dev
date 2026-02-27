@@ -1464,6 +1464,17 @@ $isPrint = (isset($_GET['export']) && $_GET['export'] === 'print');
         color: #7f1d1d;
         /* rojo vino sutil */
     }
+
+    /* iOS: evitar zoom al enfocar input (font-size >= 16px) */
+    @media (max-width: 1024px) {
+        .search input {
+            font-size: 16px !important;
+        }
+    }
+
+    .search input {
+        -webkit-text-size-adjust: 100%;
+    }
 </style>
 
 <script>
@@ -1500,7 +1511,7 @@ $isPrint = (isset($_GET['export']) && $_GET['export'] === 'print');
 
             let visible = 0;
             for (const c of cards) {
-                const hay = (c.dataset.hay || "");
+                const hay = (c.dataset.hay || "").toUpperCase();
                 const ok = showAll || hay.includes(term);
                 c.style.display = ok ? "" : "none";
                 if (ok) visible++;
