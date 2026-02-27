@@ -37,13 +37,27 @@ require_once __DIR__ . '/../../Config/config.php';
 
   <!-- GLOBAL STYLES -->
   <style>
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-      min-height: 100dvh;
-    }
+html, body{
+  height: 100%;
+  background: #3E0F15;              /* fallback */
+}
+
+/* Si usas gradient en Tailwind, asegura que el html también lo tenga */
+body{
+  background: linear-gradient(135deg, #6B1C26 0%, #3E0F15 100%);
+  background-attachment: fixed;
+}
+
+/* Rellena SIEMPRE la zona del status bar (la franja de arriba) */
+body::before{
+  content:"";
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: env(safe-area-inset-top);
+  background: linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,0));
+  z-index: 9998;
+  pointer-events: none;
+}
 
     /* ===== SAFE AREA iOS ===== */
     :root {
