@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../../Config/config.php';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   header("Location: " . BASE_URL . "/dashboard");
   exit;
@@ -7,12 +9,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8" />
   <title>Login | ACFFAA</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
   <script src="https://cdn.tailwindcss.com"></script>
 
   <script>
@@ -35,19 +35,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <div class="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
 
-    <!-- HEADER INSTITUCIONAL -->
     <div class="bg-[#6B1C26] p-7 text-center">
-
       <h1 class="text-lg font-bold text-white tracking-wide">
         AGENCIA DE COMPRAS
       </h1>
-
       <p class="text-sm text-[#D4AF37] mt-1">
         Fuerzas Armadas del Perú
       </p>
     </div>
 
-    <!-- FORM -->
     <form method="POST" class="p-8 space-y-6">
 
       <div>
@@ -57,7 +53,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input
           type="text"
           name="usuario"
-          value="silvabasauri@gmail.com"
           class="w-full mt-2 h-12 px-4 rounded-xl border border-gray-300 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#D4AF37] transition"
           required />
       </div>
@@ -69,7 +64,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input
           type="password"
           name="password"
-          value="123456"
           class="w-full mt-2 h-12 px-4 rounded-xl border border-gray-300 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#D4AF37] transition"
           required />
       </div>
@@ -89,5 +83,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </div>
 
 </body>
-
 </html>

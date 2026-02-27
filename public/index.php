@@ -3,10 +3,11 @@ session_start();
 
 /*
 |--------------------------------------------------------------------------
-| BASE URL DINÁMICA (LOCAL + PRODUCCIÓN)
+| CONFIG (BASE_URL dinámico LOCAL + PRODUCCIÓN)
 |--------------------------------------------------------------------------
 */
-define('BASE_URL', '/public');
+require_once __DIR__ . '/../Config/config.php';
+
 /*
 |--------------------------------------------------------------------------
 | ROUTER
@@ -40,19 +41,17 @@ switch ($modulo) {
      ADMIN ( /admin/... )
      ========================= */
   case 'admin':
-    $sub = $ruta[1] ?? ''; // admin/login, admin/dashboard, admin/pac...
+    $sub = $ruta[1] ?? '';
 
-    // Si entran a /admin -> redirige
     if ($sub === '') {
       if (!empty($_SESSION['admin_user'])) {
-        header("Location: " . rtrim(BASE_URL, '/') . "/admin/dashboard");
+        header("Location: " . BASE_URL . "/admin/dashboard");
       } else {
         header("Location: " . BASE_URL . "/admin/login");
       }
       exit;
     }
 
-    // Rutas públicas admin
     if ($sub === 'login') {
       require __DIR__ . '/../Vista/modulos/admin/login.php';
       exit;
@@ -63,7 +62,6 @@ switch ($modulo) {
       exit;
     }
 
-    // Protegidas admin
     admin_require_login();
 
     switch ($sub) {
@@ -87,38 +85,32 @@ switch ($modulo) {
     break;
 
   /* =========================
-     PUBLICO (tu router actual)
+     PÚBLICO
      ========================= */
 
   case 'login':
-    require '../Controlador/CtrUsuario.php';
+    require __DIR__ . '/../Controlador/CtrUsuario.php';
     CtrUsuario::login();
     break;
 
-  case 'gastos':
-    require '../Controlador/CtrGasto.php';
-    CtrGasto::inicio();
-    break;
-
   case 'dashboard':
-    require '../Vista/modulos/dashboard.php';
+    require __DIR__ . '/../Vista/modulos/dashboard.php';
     break;
 
   case 'perfil':
-    require '../Vista/modulos/perfil.php';
+    require __DIR__ . '/../Vista/modulos/perfil.php';
     break;
 
   case 'indicadores':
-    require '../Vista/modulos/indicadores.php';
+    require __DIR__ . '/../Vista/modulos/indicadores.php';
     break;
 
   case 'alertas':
-    require '../Vista/modulos/alertas.php';
+    require __DIR__ . '/../Vista/modulos/alertas.php';
     break;
 
   case 'reportes':
     $sub = $ruta[1] ?? 'index';
-
     $baseVista = __DIR__ . '/../Vista/modulos';
 
     switch ($sub) {
@@ -149,20 +141,20 @@ switch ($modulo) {
     break;
 
   case 'procesos':
-    require '../Vista/modulos/procesos.php';
+    require __DIR__ . '/../Vista/modulos/procesos.php';
     break;
 
   case 'pac':
-    require '../Vista/modulos/pac.php';
+    require __DIR__ . '/../Vista/modulos/pac.php';
     break;
 
   case 'presupuesto':
-    require '../Vista/modulos/presupuesto.php';
+    require __DIR__ . '/../Vista/modulos/presupuesto.php';
     break;
 
   case 'logout':
     session_destroy();
-    header("Location: login");
+    header("Location: " . BASE_URL . "/login");
     exit;
 
   default:
