@@ -3,9 +3,12 @@
 // Apple-like UI + responsive desktop
 $titulo = 'PAC';
 $active = 'pac';
-require __DIR__ . '/../../layout/admin_header.php';
+require __DIR__ . '/../../layout/admin_layout.php';
 
-function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
+function h($s)
+{
+  return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
+}
 
 $pacs = [
   [
@@ -34,9 +37,76 @@ $pacs = [
     'ejecucion' => 'MAR',
     'fpc' => 'pend',
   ],
+  [
+    'id' => 2,
+    'nopac' => '0044',
+    'estado' => 'PUBLICADO',
+    'obac' => 'EP',
+    'tp' => 'CPA',
+    'fuente' => 'RO',
+    'descripcion' => 'ADQUISICIÓN DE PAPELERÍA EN GENERAL, ÚTILES DE OFICINA A TRAVÉS DE CATÁLOGOS ELECTRÓNICOS DE ACUERDOS MARCO',
+    'estimado' => 14775.70,
+    'publicacion' => '23/01/26',
+    'ejecucion' => 'MAR',
+    'fpc' => 'pend',
+  ],
+  [
+    'id' => 2,
+    'nopac' => '0044',
+    'estado' => 'PUBLICADO',
+    'obac' => 'EP',
+    'tp' => 'CPA',
+    'fuente' => 'RO',
+    'descripcion' => 'ADQUISICIÓN DE PAPELERÍA EN GENERAL, ÚTILES DE OFICINA A TRAVÉS DE CATÁLOGOS ELECTRÓNICOS DE ACUERDOS MARCO',
+    'estimado' => 14775.70,
+    'publicacion' => '23/01/26',
+    'ejecucion' => 'MAR',
+    'fpc' => 'pend',
+  ],
+  [
+    'id' => 2,
+    'nopac' => '0044',
+    'estado' => 'PUBLICADO',
+    'obac' => 'EP',
+    'tp' => 'CPA',
+    'fuente' => 'RO',
+    'descripcion' => 'ADQUISICIÓN DE PAPELERÍA EN GENERAL, ÚTILES DE OFICINA A TRAVÉS DE CATÁLOGOS ELECTRÓNICOS DE ACUERDOS MARCO',
+    'estimado' => 14775.70,
+    'publicacion' => '23/01/26',
+    'ejecucion' => 'MAR',
+    'fpc' => 'pend',
+  ],
+  [
+    'id' => 2,
+    'nopac' => '0044',
+    'estado' => 'PUBLICADO',
+    'obac' => 'EP',
+    'tp' => 'CPA',
+    'fuente' => 'RO',
+    'descripcion' => 'ADQUISICIÓN DE PAPELERÍA EN GENERAL, ÚTILES DE OFICINA A TRAVÉS DE CATÁLOGOS ELECTRÓNICOS DE ACUERDOS MARCO',
+    'estimado' => 14775.70,
+    'publicacion' => '23/01/26',
+    'ejecucion' => 'MAR',
+    'fpc' => 'pend',
+  ],
+  [
+    'id' => 2,
+    'nopac' => '0044',
+    'estado' => 'PUBLICADO',
+    'obac' => 'EP',
+    'tp' => 'CPA',
+    'fuente' => 'RO',
+    'descripcion' => 'ADQUISICIÓN DE PAPELERÍA EN GENERAL, ÚTILES DE OFICINA A TRAVÉS DE CATÁLOGOS ELECTRÓNICOS DE ACUERDOS MARCO',
+    'estimado' => 14775.70,
+    'publicacion' => '23/01/26',
+    'ejecucion' => 'MAR',
+    'fpc' => 'pend',
+  ],
+
 ];
 
-function pill($txt, $tone='slate'){
+function pill($txt, $tone = 'slate')
+{
   $map = [
     'slate' => 'bg-slate-100 text-slate-700 border-slate-200',
     'green' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
@@ -45,10 +115,11 @@ function pill($txt, $tone='slate'){
     'rose'  => 'bg-rose-50 text-rose-700 border-rose-200',
   ];
   $c = $map[$tone] ?? $map['slate'];
-  return '<span class="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium '.$c.'">'.$txt.'</span>';
+  return '<span class="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium ' . $c . '">' . $txt . '</span>';
 }
 
-function toneEstado($estado){
+function toneEstado($estado)
+{
   $e = strtoupper($estado);
   if ($e === 'PUBLICADO') return 'green';
   if ($e === 'BORRADOR') return 'slate';
@@ -58,42 +129,32 @@ function toneEstado($estado){
 }
 ?>
 
-<style>
-  .glass { background: rgba(255,255,255,.75); backdrop-filter: blur(10px); }
-  .shadow-soft { box-shadow: 0 12px 30px rgba(15,23,42,.08); }
-</style>
-
 <div class="space-y-5">
 
   <!-- Header -->
-  <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+  <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
     <div>
-      <div class="text-sm text-slate-500">Administrador</div>
-      <h1 class="text-2xl font-semibold tracking-tight">PAC</h1>
-      <div class="text-sm text-slate-500">Mantenimiento (maqueta)</div>
+      <div class="text-xs text-slate-500">Administrador</div>
+      <h1 class="text-xl font-semibold tracking-tight leading-tight">PAC</h1>
+      <div class="text-xs text-slate-500">Mantenimiento (maqueta)</div>
     </div>
 
     <div class="flex flex-col sm:flex-row gap-2">
       <div class="relative">
         <input
-          placeholder="Buscar por N° PAC, OBAC, descripción..."
-          class="w-full sm:w-96 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 pr-10 outline-none focus:ring-2 focus:ring-slate-200"
-        />
-        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">⌕</span>
+          placeholder="Buscar por N° PAC, OBAC, descripción…"
+          class="w-full sm:w-80 border border-slate-200 bg-white outline-none focus:ring-2 focus:ring-slate-200 inp" />
+        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">⌕</span>
       </div>
 
-      <button class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium hover:bg-slate-50">
-        Filtros
-      </button>
+      <button class="border border-slate-200 bg-white btn btn-ghost">Filtros</button>
 
-      <button id="btnNew" class="rounded-2xl bg-slate-900 text-white px-4 py-2.5 text-sm font-medium hover:bg-slate-800">
-        + Nuevo PAC
-      </button>
+      <button id="btnNew" class="btn btn-primary">+ Nuevo PAC</button>
     </div>
   </div>
 
   <!-- KPIs -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
     <div class="rounded-3xl bg-white border border-slate-200 p-4 shadow-soft">
       <div class="text-xs text-slate-500">Total PAC</div>
       <div class="mt-1 text-2xl font-semibold"><?= count($pacs) ?></div>
@@ -117,14 +178,14 @@ function toneEstado($estado){
   </div>
 
   <!-- Tabla -->
-  <div class="rounded-3xl border border-slate-200 bg-white shadow-soft overflow-hidden">
+  <div class="card border border-slate-200 bg-white shadow-soft overflow-hidden">
     <div class="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
       <div class="font-semibold">PAC registrados</div>
       <div class="text-sm text-slate-500">Acciones: editar / eliminar (maqueta)</div>
     </div>
 
     <div class="overflow-x-auto">
-      <table class="min-w-full text-sm">
+      <table class="min-w-full thc tbc">
         <thead class="bg-slate-50 text-slate-600">
           <tr>
             <th class="text-left font-medium px-4 py-3">N° PAC</th>
@@ -161,14 +222,27 @@ function toneEstado($estado){
               <td class="px-4 py-3 whitespace-nowrap"><?= h($r['ejecucion']) ?></td>
 
               <td class="px-4 py-3">
-                <div class="flex justify-end gap-2">
-                  <button class="rounded-2xl border border-slate-200 bg-white px-3 py-1.5 text-xs hover:bg-slate-50"
-                          onclick="openEdit(<?= (int)$r['id'] ?>, '<?= h($r['nopac']) ?>', '<?= h($r['estado']) ?>', '<?= h($r['obac']) ?>', '<?= h($r['tp']) ?>', '<?= h($r['fuente']) ?>', '<?= h($r['descripcion']) ?>', '<?= h($r['estimado']) ?>', '<?= h($r['publicacion']) ?>', '<?= h($r['ejecucion']) ?>')">
-                    Editar
+                <div class="flex justify-end gap-1.5">
+                  <button
+                    class="iconbtn"
+                    title="Editar"
+                    aria-label="Editar PAC <?= h($r['nopac']) ?>"
+                    onclick="openEdit(<?= (int)$r['id'] ?>, '<?= h($r['nopac']) ?>', '<?= h($r['estado']) ?>', '<?= h($r['obac']) ?>', '<?= h($r['tp']) ?>', '<?= h($r['fuente']) ?>', '<?= h($r['descripcion']) ?>', '<?= h($r['estimado']) ?>', '<?= h($r['publicacion']) ?>', '<?= h($r['ejecucion']) ?>')">
+                    <!-- pencil -->
+                    <svg viewBox="0 0 24 24" class="ico" aria-hidden="true">
+                      <path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm2.92 2.83H5v-.92l9.06-9.06.92.92L5.92 20.08zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                    </svg>
                   </button>
-                  <button class="rounded-2xl border border-rose-200 bg-rose-50 text-rose-700 px-3 py-1.5 text-xs hover:bg-rose-100"
-                          onclick="openDelete(<?= (int)$r['id'] ?>, '<?= h($r['nopac']) ?>')">
-                    Eliminar
+
+                  <button
+                    class="iconbtn iconbtn--danger"
+                    title="Eliminar"
+                    aria-label="Eliminar PAC <?= h($r['nopac']) ?>"
+                    onclick="openDelete(<?= (int)$r['id'] ?>, '<?= h($r['nopac']) ?>')">
+                    <!-- trash -->
+                    <svg viewBox="0 0 24 24" class="ico" aria-hidden="true">
+                      <path fill="currentColor" d="M6 7h12l-1 14H7L6 7zm3-3h6l1 2H8l1-2z" />
+                    </svg>
                   </button>
                 </div>
               </td>
@@ -198,7 +272,7 @@ function toneEstado($estado){
         <div id="modalTitle" class="text-lg font-semibold">Nuevo PAC</div>
       </div>
       <button class="rounded-2xl border border-slate-200 bg-white px-3 py-1.5 text-sm hover:bg-slate-50"
-              onclick="closeModal('modalForm')">Cerrar</button>
+        onclick="closeModal('modalForm')">Cerrar</button>
     </div>
 
     <form class="p-5 grid grid-cols-1 md:grid-cols-6 gap-3">
@@ -251,9 +325,9 @@ function toneEstado($estado){
 
       <div class="md:col-span-6 flex items-center justify-end gap-2 pt-2">
         <button type="button" class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm hover:bg-slate-50"
-                onclick="closeModal('modalForm')">Cancelar</button>
+          onclick="closeModal('modalForm')">Cancelar</button>
         <button type="button" class="rounded-2xl bg-slate-900 text-white px-4 py-2.5 text-sm font-medium hover:bg-slate-800"
-                onclick="fakeSave()">
+          onclick="fakeSave()">
           Guardar (maqueta)
         </button>
       </div>
@@ -275,20 +349,126 @@ function toneEstado($estado){
     </div>
     <div class="p-5 pt-0 flex justify-end gap-2">
       <button class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm hover:bg-slate-50"
-              onclick="closeModal('modalDelete')">Cancelar</button>
+        onclick="closeModal('modalDelete')">Cancelar</button>
       <button class="rounded-2xl border border-rose-200 bg-rose-50 text-rose-700 px-4 py-2.5 text-sm hover:bg-rose-100"
-              onclick="fakeDelete()">
+        onclick="fakeDelete()">
         Eliminar (maqueta)
       </button>
     </div>
   </div>
 </div>
 
+<style>
+  .glass {
+    background: rgba(255, 255, 255, .78);
+    backdrop-filter: blur(10px);
+  }
+
+  .shadow-soft {
+    box-shadow: 0 10px 24px rgba(15, 23, 42, .08);
+  }
+
+  /* Compact helpers */
+  .card {
+    border-radius: 14px;
+  }
+
+  .btn {
+    border-radius: 12px;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .btn-primary {
+    background: #0f172a;
+    color: #fff;
+  }
+
+  .btn-primary:hover {
+    background: #111827;
+  }
+
+  .btn-ghost:hover {
+    background: #f8fafc;
+  }
+
+  .inp {
+    border-radius: 14px;
+    padding: 9px 12px;
+    font-size: 13px;
+  }
+
+  .thc th {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .tbc td {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  /* Icon actions (sutil + compacto) */
+  .iconbtn {
+    width: 34px;
+    height: 34px;
+    border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, .45);
+    background: rgba(255, 255, 255, .9);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: rgb(71, 85, 105);
+    /* slate-600 */
+    transition: background .15s ease, border-color .15s ease, color .15s ease, transform .05s ease;
+  }
+
+  .iconbtn:hover {
+    background: rgb(248, 250, 252);
+    border-color: rgba(148, 163, 184, .7);
+    color: rgb(15, 23, 42);
+    /* slate-900 */
+  }
+
+  .iconbtn:active {
+    transform: scale(.98);
+  }
+
+  .iconbtn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(148, 163, 184, .35);
+  }
+
+  .iconbtn .ico {
+    width: 16px;
+    height: 16px;
+    display: block;
+  }
+
+  /* Danger solo en hover (no “grita” por defecto) */
+  .iconbtn--danger {
+    color: rgb(71, 85, 105);
+  }
+
+  .iconbtn--danger:hover {
+    background: rgba(244, 63, 94, .08);
+    border-color: rgba(244, 63, 94, .35);
+    color: rgb(190, 18, 60);
+  }
+</style>
+
 <script>
   const $ = (id) => document.getElementById(id);
 
-  function openModal(id){ $(id).classList.remove('hidden'); $(id).classList.add('flex'); }
-  function closeModal(id){ $(id).classList.add('hidden'); $(id).classList.remove('flex'); }
+  function openModal(id) {
+    $(id).classList.remove('hidden');
+    $(id).classList.add('flex');
+  }
+
+  function closeModal(id) {
+    $(id).classList.add('hidden');
+    $(id).classList.remove('flex');
+  }
 
   $('btnNew')?.addEventListener('click', () => {
     $('modalTitle').textContent = 'Nuevo PAC';
@@ -305,7 +485,7 @@ function toneEstado($estado){
     openModal('modalForm');
   });
 
-  function openEdit(id, nopac, estado, obac, tp, fuente, desc, estimado, pub, eje){
+  function openEdit(id, nopac, estado, obac, tp, fuente, desc, estimado, pub, eje) {
     $('modalTitle').textContent = 'Editar PAC #' + id;
     $('pac_id').value = id;
     $('pac_nopac').value = nopac;
@@ -320,17 +500,17 @@ function toneEstado($estado){
     openModal('modalForm');
   }
 
-  function openDelete(id, nopac){
+  function openDelete(id, nopac) {
     $('delPac').textContent = nopac + ' (ID ' + id + ')';
     openModal('modalDelete');
   }
 
-  function fakeSave(){
+  function fakeSave() {
     alert('Guardado (maqueta). Con BD, aquí harías POST al controlador.');
     closeModal('modalForm');
   }
 
-  function fakeDelete(){
+  function fakeDelete() {
     alert('Eliminado (maqueta). Con BD, aquí harías POST al controlador.');
     closeModal('modalDelete');
   }

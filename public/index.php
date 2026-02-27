@@ -77,6 +77,10 @@ switch ($modulo) {
         require __DIR__ . '/../Vista/modulos/admin/procesos.php';
         break;
 
+      case 'presupuesto':
+        require __DIR__ . '/../Vista/modulos/admin/presupuesto.php';
+        break;
+
       default:
         http_response_code(404);
         echo '<h1 style="color:white">404 - Admin: Página no encontrada</h1>';
@@ -107,6 +111,10 @@ switch ($modulo) {
 
   case 'alertas':
     require __DIR__ . '/../Vista/modulos/alertas.php';
+    break;
+
+  case 'presupuesto':
+    require __DIR__ . '/../Vista/modulos/presupuesto.php';
     break;
 
   case 'reportes':

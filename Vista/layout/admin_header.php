@@ -1,57 +1,62 @@
-<?php
-$titulo = $titulo ?? 'Admin';
-$active = $active ?? '';
-$adminUser = $_SESSION['admin_user'] ?? 'Admin';
-?>
-<!doctype html>
-<html lang="es">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><?= htmlspecialchars($titulo) ?></title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-slate-50 text-slate-900">
-  <div class="min-h-screen flex">
+<header class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-slate-200">
+  <div class="px-4 lg:px-6 py-2.5 flex items-center gap-3">
 
-    <!-- Sidebar desktop -->
-    <aside class="hidden lg:flex lg:w-72 lg:flex-col bg-white border-r border-slate-200">
-      <div class="px-5 py-4">
-        <div class="text-xs text-slate-500">PROCESOS-DEV</div>
-        <div class="text-lg font-semibold">Administrador</div>
+    <!-- ÚNICO botón: hamburguesa -->
+    <button id="btnToggle"
+      class="rounded-xl border border-slate-200 px-3 py-2 text-base hover:bg-slate-50"
+      type="button"
+      aria-label="Abrir menú">
+      ☰
+    </button>
+
+    <div class="flex-1 header-title">
+      <div class="text-xs text-slate-500 leading-none">Admin</div>
+      <div class="text-[15px] font-semibold truncate leading-tight">
+        <?= htmlspecialchars($titulo) ?>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2">
+
+      <!-- Notificaciones -->
+      <button class="relative rounded-xl border border-slate-200 px-3 py-2 hover:bg-slate-50"
+        title="Notificaciones">
+        🔔
+        <span class="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] px-1.5 rounded-full">
+          3
+        </span>
+      </button>
+
+      <!-- Tipo de cambio -->
+      <button class="rounded-xl border border-slate-200 px-3 py-2 hover:bg-slate-50"
+        title="Tipo de cambio">
+        💱
+      </button>
+
+      <!-- Configuración -->
+      <button class="rounded-xl border border-slate-200 px-3 py-2 hover:bg-slate-50"
+        title="Configuración">
+        ⚙️
+      </button>
+
+      <!-- Usuario dropdown simple -->
+      <div class="relative group">
+        <button class="h-9 w-9 rounded-xl bg-slate-900 text-white flex items-center justify-center text-xs font-semibold">
+          <?= strtoupper(substr((string)$adminUser, 0, 1)) ?>
+        </button>
+
+        <div class="hidden group-hover:block absolute right-0 mt-2 w-40 bg-white border border-slate-200 rounded-xl shadow-lg">
+          <div class="px-4 py-2 text-sm text-slate-700 truncate">
+            <?= htmlspecialchars($adminUser) ?>
+          </div>
+          <div class="border-t border-slate-200"></div>
+          <a href="<?= $hrefLogout ?>"
+            class="block px-4 py-2 text-sm hover:bg-slate-50">
+            Cerrar sesión
+          </a>
+        </div>
       </div>
 
-      <nav class="px-3 py-2 space-y-1">
-        <a class="block px-3 py-2 rounded-xl <?= $active==='dashboard'?'bg-slate-900 text-white':'hover:bg-slate-100' ?>" href="/public/admin/dashboard">Dashboard</a>
-        <a class="block px-3 py-2 rounded-xl <?= $active==='pac'?'bg-slate-900 text-white':'hover:bg-slate-100' ?>" href="/public/admin/pac">PAC</a>
-        <a class="block px-3 py-2 rounded-xl <?= $active==='procesos'?'bg-slate-900 text-white':'hover:bg-slate-100' ?>" href="/public/admin/procesos">Procesos</a>
-      </nav>
-
-      <div class="mt-auto p-4 border-t border-slate-200">
-        <div class="text-sm text-slate-600">Sesión: <b><?= htmlspecialchars($adminUser) ?></b></div>
-        <a class="inline-block mt-2 text-sm underline" href="/public/admin/logout">Salir</a>
-      </div>
-    </aside>
-
-    <!-- Main -->
-    <div class="flex-1 flex flex-col">
-      <header class="sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-slate-200">
-        <div class="px-4 lg:px-6 py-3 flex items-center gap-3">
-          <button id="btnMenu" class="lg:hidden rounded-xl border border-slate-200 px-3 py-2 text-sm">Menú</button>
-          <div class="flex-1">
-            <div class="text-sm text-slate-500">Admin</div>
-            <div class="text-lg font-semibold"><?= htmlspecialchars($titulo) ?></div>
-          </div>
-          <a class="rounded-xl border border-slate-200 px-3 py-2 text-sm" href="/public/admin/logout">Salir</a>
-        </div>
-
-        <div id="drawer" class="lg:hidden hidden border-t border-slate-200 bg-white">
-          <div class="p-3 space-y-1">
-            <a class="block px-3 py-2 rounded-xl <?= $active==='dashboard'?'bg-slate-900 text-white':'hover:bg-slate-100' ?>" href="/admin/dashboard">Dashboard</a>
-            <a class="block px-3 py-2 rounded-xl <?= $active==='pac'?'bg-slate-900 text-white':'hover:bg-slate-100' ?>" href="/admin/pac">PAC</a>
-            <a class="block px-3 py-2 rounded-xl <?= $active==='procesos'?'bg-slate-900 text-white':'hover:bg-slate-100' ?>" href="/admin/procesos">Procesos</a>
-          </div>
-        </div>
-      </header>
-
-      <main class="p-4 lg:p-6">
+    </div>
+  </div>
+</header>
