@@ -10,13 +10,13 @@ require __DIR__ . '/../layout/header.php';
   <div class="grid grid-cols-2 gap-5 w-full max-w-md mx-auto">
 
     <a href="<?= BASE_URL ?>/procesos"
-       class="apple-card bg-sky-100/80 text-sky-800">
+       class="apple-card bg-blue-100/80 text-blue-800">
       <div class="icon">📂</div>
       <span>Procesos</span>
     </a>
 
     <a href="<?= BASE_URL ?>/pac"
-       class="apple-card bg-indigo-100/80 text-indigo-800">
+       class="apple-card bg-slate-100/80 text-slate-800">
       <div class="icon">🗂️</div>
       <span>PAC</span>
     </a>
@@ -28,13 +28,13 @@ require __DIR__ . '/../layout/header.php';
     </a>
 
     <a href="<?= BASE_URL ?>/reportes"
-       class="apple-card bg-violet-100/80 text-violet-800">
+       class="apple-card bg-indigo-100/80 text-indigo-800">
       <div class="icon">📈</div>
       <span>Reportes</span>
     </a>
 
     <a href="<?= BASE_URL ?>/presupuesto"
-       class="apple-card bg-teal-100/80 text-teal-800">
+       class="apple-card bg-amber-100/80 text-amber-800">
       <div class="icon">💳</div>
       <span>Presupuesto</span>
     </a>
