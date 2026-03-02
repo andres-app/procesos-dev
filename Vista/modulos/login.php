@@ -2,11 +2,11 @@
 require_once __DIR__ . '/../../Config/config.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  // aquí iría tu validación real (sesión, etc.)
   header("Location: " . BASE_URL . "/dashboard");
   exit;
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -29,9 +29,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       }
     }
   </script>
+
+  <style>
+    /* ===== PRELOADER (login) ===== */
+    .preloader {
+      position: fixed;
+      inset: 0;
+      background: rgba(107, 28, 38, 0.88);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .20s ease;
+    }
+    .preloader.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .loader-card {
+      background: rgba(255, 255, 255, .96);
+      color: #6B1C26;
+      padding: 28px 32px;
+      border-radius: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, .25);
+      min-width: 220px;
+    }
+    .spinner {
+      width: 38px;
+      height: 38px;
+      border-radius: 999px;
+      border: 3px solid #E5E7EB;
+      border-top-color: #C9A227;
+      animation: spin .9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loader-card p {
+      font-size: .85rem;
+      font-weight: 700;
+      letter-spacing: .3px;
+    }
+  </style>
 </head>
 
 <body class="min-h-screen bg-gray-100 flex items-center justify-center px-4">
+
+  <!-- PRELOADER -->
+  <div id="preloader" class="preloader" aria-hidden="true">
+    <div class="loader-card" role="status" aria-live="polite">
+      <div class="spinner"></div>
+      <p>Ingresando…</p>
+    </div>
+  </div>
 
   <div class="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
 
@@ -44,12 +100,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </p>
     </div>
 
-    <form method="POST" class="p-8 space-y-6">
+    <form id="loginForm" method="POST" class="p-8 space-y-6" autocomplete="on">
 
       <div>
-        <label class="text-sm text-gray-500 font-medium">
-          Usuario
-        </label>
+        <label class="text-sm text-gray-500 font-medium">Usuario</label>
         <input
           type="text"
           name="usuario"
@@ -59,9 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </div>
 
       <div>
-        <label class="text-sm text-gray-500 font-medium">
-          Contraseña
-        </label>
+        <label class="text-sm text-gray-500 font-medium">Contraseña</label>
         <input
           type="password"
           name="password"
@@ -71,6 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </div>
 
       <button
+        id="btnLogin"
         type="submit"
         class="w-full h-12 rounded-xl bg-[#C9A227] text-gray-900 font-semibold text-lg hover:brightness-105 active:scale-95 transition shadow-md">
         Iniciar sesión
@@ -83,6 +136,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
   </div>
+
+  <script>
+    (function () {
+      const form = document.getElementById('loginForm');
+      const preloader = document.getElementById('preloader');
+      const btn = document.getElementById('btnLogin');
+
+      if (!form || !preloader) return;
+
+      form.addEventListener('submit', (e) => {
+        // si el browser bloquea el submit por required, no mostramos loader
+        if (!form.checkValidity()) return;
+
+        // muestra preloader inmediatamente
+        preloader.classList.add('show');
+        preloader.setAttribute('aria-hidden', 'false');
+
+        // evita doble submit
+        if (btn) {
+          btn.disabled = true;
+          btn.classList.add('opacity-80', 'cursor-not-allowed');
+        }
+
+        // deja que pinte el overlay antes de navegar
+        e.preventDefault();
+        requestAnimationFrame(() => form.submit());
+      });
+
+      // por si el usuario vuelve con "Atrás", ocultar overlay
+      window.addEventListener('pageshow', () => {
+        preloader.classList.remove('show');
+        preloader.setAttribute('aria-hidden', 'true');
+        if (btn) {
+          btn.disabled = false;
+          btn.classList.remove('opacity-80', 'cursor-not-allowed');
+        }
+      });
+    })();
+  </script>
 
 </body>
 </html>
