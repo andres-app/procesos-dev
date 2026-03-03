@@ -9,7 +9,8 @@ require_once __DIR__ . '/../../Config/config.php';
   <title><?= $titulo ?? 'Seguimiento de procesos' ?></title>
 
   <!-- Viewport iOS PWA FIX -->
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
 
   <!-- PWA -->
   <link rel="manifest" href="<?= BASE_URL ?>/manifest.json">
@@ -37,27 +38,31 @@ require_once __DIR__ . '/../../Config/config.php';
 
   <!-- GLOBAL STYLES -->
   <style>
-html, body{
-  height: 100%;
-  background: #3E0F15;              /* fallback */
-}
+    html,
+    body {
+      height: 100%;
+      background: #3E0F15;
+      /* fallback */
+    }
 
-/* Si usas gradient en Tailwind, asegura que el html también lo tenga */
-body{
-  background: linear-gradient(135deg, #6B1C26 0%, #3E0F15 100%);
-  background-attachment: fixed;
-}
+    /* Si usas gradient en Tailwind, asegura que el html también lo tenga */
+    body {
+      background: linear-gradient(135deg, #6B1C26 0%, #3E0F15 100%);
+      background-attachment: fixed;
+    }
 
-/* Rellena SIEMPRE la zona del status bar (la franja de arriba) */
-body::before{
-  content:"";
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  height: env(safe-area-inset-top);
-  background: linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,0));
-  z-index: 9998;
-  pointer-events: none;
-}
+    /* Rellena SIEMPRE la zona del status bar (la franja de arriba) */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: env(safe-area-inset-top);
+      background: linear-gradient(180deg, rgba(0, 0, 0, .18), rgba(0, 0, 0, 0));
+      z-index: 9998;
+      pointer-events: none;
+    }
 
     /* ===== SAFE AREA iOS ===== */
     :root {
@@ -263,6 +268,26 @@ body::before{
       font-weight: 600;
       letter-spacing: .3px;
     }
+
+    /* ===== ANTI-ZOOM iOS (inputs) ===== */
+    input,
+    select,
+    textarea {
+      font-size: 16px !important;
+      /* evita zoom al enfocar */
+    }
+
+    html {
+      -webkit-text-size-adjust: 100%;
+    }
+
+    /* reduce double-tap zoom en botones/links */
+    a,
+    button,
+    [role="button"],
+    .appbar-btn {
+      touch-action: manipulation;
+    }
   </style>
 
   <!-- SERVICE WORKER -->
@@ -272,6 +297,26 @@ body::before{
         navigator.serviceWorker.register('<?= BASE_URL ?>/service-worker.js');
       });
     }
+  </script>
+
+  <script>
+    // Bloquea gesto de zoom (iOS Safari)
+    document.addEventListener('gesturestart', e => e.preventDefault(), {
+      passive: false
+    });
+    document.addEventListener('gesturechange', e => e.preventDefault(), {
+      passive: false
+    });
+    document.addEventListener('gestureend', e => e.preventDefault(), {
+      passive: false
+    });
+
+    // Bloquea pinch (2 dedos)
+    document.addEventListener('touchmove', (e) => {
+      if (e.touches && e.touches.length > 1) e.preventDefault();
+    }, {
+      passive: false
+    });
   </script>
 
   <!-- PRELOADER CONTROL -->

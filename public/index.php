@@ -117,6 +117,11 @@ switch ($modulo) {
     require __DIR__ . '/../Vista/modulos/presupuesto.php';
     break;
 
+  case 'actividades':
+    require __DIR__ . '/../Controlador/CtrActividades.php';
+    CtrActividades::show();
+    break;
+
   case 'reportes':
     $sub = $ruta[1] ?? 'index';
     $baseVista = __DIR__ . '/../Vista/modulos';
