@@ -149,7 +149,8 @@ switch ($modulo) {
     break;
 
   case 'procesos':
-    require __DIR__ . '/../Vista/modulos/procesos.php';
+    require __DIR__ . '/../Controlador/CtrProceso.php';
+    CtrProceso::index();
     break;
 
   case 'pac':
