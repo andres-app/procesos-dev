@@ -1,178 +1,168 @@
 <?php
+declare(strict_types=1);
+
 session_start();
 
-/*
-|--------------------------------------------------------------------------
-| CONFIG (BASE_URL dinámico LOCAL + PRODUCCIÓN)
-|--------------------------------------------------------------------------
-*/
 require_once __DIR__ . '/../Config/config.php';
 
 /*
 |--------------------------------------------------------------------------
 | ROUTER
 |--------------------------------------------------------------------------
+| - Lee ?url=...
+| - /admin/... se maneja aparte
 */
-$url = $_GET['url'] ?? 'login';
-$ruta = explode('/', trim($url, '/'));
-$modulo = $ruta[0] ?? 'login';
+$path   = trim((string)($_GET['url'] ?? 'login'), '/');
+$parts  = $path === '' ? [] : explode('/', $path);
+$module = $parts[0] ?? 'login';
+$sub    = $parts[1] ?? null;
 
 /*
 |--------------------------------------------------------------------------
-| HELPERS ADMIN
+| HELPERS
 |--------------------------------------------------------------------------
 */
-function admin_require_login()
+function redirect(string $to): never
 {
-  if (empty($_SESSION['admin_user'])) {
-    header("Location: " . BASE_URL . "/admin/login");
+    header('Location: ' . $to);
     exit;
-  }
+}
+
+function require_admin_login(): void
+{
+    if (empty($_SESSION['admin_user'])) {
+        redirect(BASE_URL . '/admin/login');
+    }
+}
+
+function not_found(string $msg = '404 - Página no encontrada'): never
+{
+    http_response_code(404);
+    echo "<h1 style='color:white'>{$msg}</h1>";
+    exit;
+}
+
+function require_file(string $file): void
+{
+    if (!is_file($file)) {
+        not_found("404 - No existe: {$file}");
+    }
+    require $file;
 }
 
 /*
 |--------------------------------------------------------------------------
-| RUTAS
+| ADMIN ROUTES (/admin/...)
 |--------------------------------------------------------------------------
 */
-switch ($modulo) {
+if ($module === 'admin') {
+    $subRoute = (string)($sub ?? '');
 
-  /* =========================
-     ADMIN ( /admin/... )
-     ========================= */
-  case 'admin':
-    $sub = $ruta[1] ?? '';
-
-    if ($sub === '') {
-      if (!empty($_SESSION['admin_user'])) {
-        header("Location: " . BASE_URL . "/admin/dashboard");
-      } else {
-        header("Location: " . BASE_URL . "/admin/login");
-      }
-      exit;
+    // /admin -> redirección según sesión
+    if ($subRoute === '') {
+        redirect(!empty($_SESSION['admin_user'])
+            ? BASE_URL . '/admin/dashboard'
+            : BASE_URL . '/admin/login'
+        );
     }
 
-    if ($sub === 'login') {
-      require __DIR__ . '/../Vista/modulos/admin/login.php';
-      exit;
+    // públicas
+    if ($subRoute === 'login') {
+        require_file(__DIR__ . '/../Vista/modulos/admin/login.php');
+        exit;
     }
 
-    if ($sub === 'logout') {
-      require __DIR__ . '/../Vista/modulos/admin/logout.php';
-      exit;
+    if ($subRoute === 'logout') {
+        require_file(__DIR__ . '/../Vista/modulos/admin/logout.php');
+        exit;
     }
 
-    admin_require_login();
+    // privadas
+    require_admin_login();
 
-    switch ($sub) {
-      case 'dashboard':
-        require __DIR__ . '/../Vista/modulos/admin/dashboard.php';
-        break;
+    $adminViews = [
+        'dashboard'  => __DIR__ . '/../Vista/modulos/admin/dashboard.php',
+        'pac'        => __DIR__ . '/../Vista/modulos/admin/pac.php',
+        'procesos'   => __DIR__ . '/../Vista/modulos/admin/procesos.php',
+        'presupuesto'=> __DIR__ . '/../Vista/modulos/admin/presupuesto.php',
+    ];
 
-      case 'pac':
-        require __DIR__ . '/../Vista/modulos/admin/pac.php';
-        break;
-
-      case 'procesos':
-        require __DIR__ . '/../Vista/modulos/admin/procesos.php';
-        break;
-
-      case 'presupuesto':
-        require __DIR__ . '/../Vista/modulos/admin/presupuesto.php';
-        break;
-
-      default:
-        http_response_code(404);
-        echo '<h1 style="color:white">404 - Admin: Página no encontrada</h1>';
-        break;
-    }
-    break;
-
-  /* =========================
-     PÚBLICO
-     ========================= */
-
-  case 'login':
-    require __DIR__ . '/../Controlador/CtrUsuario.php';
-    CtrUsuario::login();
-    break;
-
-  case 'dashboard':
-    require __DIR__ . '/../Vista/modulos/dashboard.php';
-    break;
-
-  case 'perfil':
-    require __DIR__ . '/../Vista/modulos/perfil.php';
-    break;
-
-  case 'indicadores':
-    require __DIR__ . '/../Vista/modulos/indicadores.php';
-    break;
-
-  case 'alertas':
-    require __DIR__ . '/../Vista/modulos/alertas.php';
-    break;
-
-  case 'presupuesto':
-    require __DIR__ . '/../Vista/modulos/presupuesto.php';
-    break;
-
-  case 'actividades':
-    require __DIR__ . '/../Controlador/CtrActividades.php';
-    CtrActividades::show();
-    break;
-
-  case 'reportes':
-    $sub = $ruta[1] ?? 'index';
-    $baseVista = __DIR__ . '/../Vista/modulos';
-
-    switch ($sub) {
-      case 'derivados':
-        $file = $baseVista . '/reportes/derivados.php';
-        break;
-
-      case 'procesos':
-        $file = $baseVista . '/reportes/procesos.php';
-        break;
-
-      case 'consolidado':
-        $file = $baseVista . '/reportes/consolidado.php';
-        break;
-
-      default:
-        $file = $baseVista . '/reportes.php';
-        break;
+    if (!isset($adminViews[$subRoute])) {
+        not_found('404 - Admin: Página no encontrada');
     }
 
-    if (!is_file($file)) {
-      http_response_code(404);
-      echo "<h1 style='color:white'>404 - No existe: {$file}</h1>";
-      exit;
-    }
-
-    require $file;
-    break;
-
-  case 'procesos':
-    require __DIR__ . '/../Controlador/CtrProceso.php';
-    CtrProceso::index();
-    break;
-
-  case 'pac':
-    require __DIR__ . '/../Vista/modulos/pac.php';
-    break;
-
-  case 'presupuesto':
-    require __DIR__ . '/../Vista/modulos/presupuesto.php';
-    break;
-
-  case 'logout':
-    session_destroy();
-    header("Location: " . BASE_URL . "/login");
+    require_file($adminViews[$subRoute]);
     exit;
-
-  default:
-    http_response_code(404);
-    echo '<h1 style="color:white">404 - Página no encontrada</h1>';
-    break;
 }
+
+/*
+|--------------------------------------------------------------------------
+| PUBLIC ROUTES
+|--------------------------------------------------------------------------
+*/
+$routes = [
+    'login'       => static function (): void {
+        require_once __DIR__ . '/../Controlador/CtrUsuario.php';
+        CtrUsuario::login();
+    },
+
+    'dashboard'   => static function (): void {
+        require_file(__DIR__ . '/../Vista/modulos/dashboard.php');
+    },
+
+    'perfil'      => static function (): void {
+        require_file(__DIR__ . '/../Vista/modulos/perfil.php');
+    },
+
+    'indicadores' => static function (): void {
+        require_file(__DIR__ . '/../Vista/modulos/indicadores.php');
+    },
+
+    'alertas'     => static function (): void {
+        require_file(__DIR__ . '/../Vista/modulos/alertas.php');
+    },
+
+    'presupuesto' => static function (): void {
+        require_file(__DIR__ . '/../Vista/modulos/presupuesto.php');
+    },
+
+    'actividades' => static function (): void {
+        require_once __DIR__ . '/../Controlador/CtrActividades.php';
+        CtrActividades::show();
+    },
+
+    'procesos'    => static function (): void {
+        require_once __DIR__ . '/../Controlador/CtrProceso.php';
+        CtrProceso::index();
+    },
+
+    'pac'         => static function (): void {
+        require_file(__DIR__ . '/../Vista/modulos/pac.php');
+    },
+
+    'logout'      => static function (): void {
+        session_destroy();
+        redirect(BASE_URL . '/login');
+    },
+
+    'reportes'    => static function () use ($sub): void {
+        $subRoute = (string)($sub ?? 'index');
+        $base     = __DIR__ . '/../Vista/modulos/reportes';
+
+        $reportFiles = [
+            'derivados'    => $base . '/derivados.php',
+            'procesos'     => $base . '/procesos.php',
+            'consolidado'  => $base . '/consolidado.php',
+            'index'        => __DIR__ . '/../Vista/modulos/reportes.php',
+        ];
+
+        $file = $reportFiles[$subRoute] ?? $reportFiles['index'];
+        require_file($file);
+    },
+];
+
+if (!isset($routes[$module])) {
+    not_found();
+}
+
+$routes[$module]();

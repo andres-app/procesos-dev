@@ -1,30 +1,59 @@
 <?php
-$titulo = 'Detalle | Proceso';
+/**
+ * Vista: Detalle del Proceso
+ * - Resumen del proceso (OBAC, descripción, estimado, estado, etc.)
+ * - Línea de tiempo de actividades
+ *
+ * Requisitos esperados desde el controller:
+ * - $proceso (array): ['proceso','estado','obac','descripcion','estimado','anio_convocatoria', ...]
+ * - $actividades (array): cada item ['titulo','fecha','comentario','tipo_codigo','tipo_nombre', ...]
+ */
+
+$titulo  = 'Detalle | Proceso';
 $appName = 'Seguimiento de Procesos';
 $usuario = 'Andres';
 
 require __DIR__ . '/../layout/header.php';
 
-function h($s)
+/* =========================================================
+   Helpers (escapes / formatos)
+   ========================================================= */
+
+/** Escape HTML seguro (XSS). */
+function h($s): string
 {
     return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
 }
-function fmt_money($n)
+
+/** Formato moneda (S/). */
+function fmt_money($n): string
 {
     return 'S/ ' . number_format((float)$n, 2, '.', ',');
 }
-function fmt_date($d)
+
+/** Formato fecha dd/mm/YYYY. Acepta string compatible con strtotime(). */
+function fmt_date($d): string
 {
     if (!$d) return '-';
-    $ts = strtotime($d);
+    $ts = strtotime((string)$d);
     return $ts ? date('d/m/Y', $ts) : h($d);
 }
-function badgeFromObac($obac)
+
+/**
+ * Obtiene un “badge” a partir del OBAC.
+ * Ej: "FAP-0268" => "FAP"
+ */
+function badgeFromObac($obac): string
 {
     $p = explode('-', (string)$obac);
     return strtoupper(trim($p[0] ?? (string)$obac));
 }
-function statusClass($estado)
+
+/**
+ * Clase CSS del estado (para “pill” de estado).
+ * Nota: En topbar se sobreescribe el look para mantener contraste.
+ */
+function statusClass($estado): string
 {
     $e = strtoupper(trim((string)$estado));
     return match ($e) {
@@ -37,38 +66,87 @@ function statusClass($estado)
     };
 }
 
-$last = !empty($actividades) ? $actividades[count($actividades) - 1] : null;
-?>
+/**
+ * Normaliza OBAC en chips.
+ * Soporta separadores: "/", ",", "|", ";"
+ */
+function parseObacs($raw): array
+{
+    $raw = (string)$raw;
+    $parts = preg_split('/[\/,\|;]+/', $raw);
+    $obacs = array_values(array_filter(array_map('trim', $parts)));
 
+    // Si no hubo separadores pero sí hay valor, mantén el raw.
+    if (empty($obacs) && $raw !== '') $obacs = [$raw];
+
+    return $obacs;
+}
+
+/**
+ * Devuelve clase del “dot” del timeline según tipo_codigo.
+ * Importante: en tu HTML el dot estaba fijo en "dot-gray" (bug visual).
+ * Aquí lo dejamos correcto: se aplica dinámicamente.
+ */
+function dotClassFromTipo($tipoCodigo): string
+{
+    $cod = strtoupper((string)($tipoCodigo ?? ''));
+    return match ($cod) {
+        'CONVOCATORIA' => 'dot-wine',
+        'CONSULTAS'    => 'dot-amber',
+        'ABSOLUCION'   => 'dot-blue',
+        'PROPUESTAS'   => 'dot-indigo',
+        'BUENA_PRO'    => 'dot-green',
+        'DESIERTO'     => 'dot-gray',
+        default        => 'dot-gray',
+    };
+}
+
+/* =========================================================
+   Datos derivados (para mostrar “última actividad”)
+   ========================================================= */
+$actividades = $actividades ?? [];
+$proceso     = $proceso ?? [];
+
+$last = !empty($actividades) ? $actividades[count($actividades) - 1] : null;
+$obacs = parseObacs($proceso['obac'] ?? '');
+
+?>
 <main class="page page-shell flex-1 px-5 pt-4 pb-28">
 
+    <!-- =========================
+         TOPBAR (sticky + glass)
+         ========================= -->
     <div class="topbar">
         <a class="back" href="<?= BASE_URL ?>/procesos" aria-label="Volver">←</a>
+
         <div class="tt">
             <div class="kicker">Detalle del proceso</div>
-            <div class="title"><?= h($proceso['proceso']) ?></div>
+            <div class="title"><?= h($proceso['proceso'] ?? '-') ?></div>
         </div>
-        <span class="status <?= statusClass($proceso['estado']) ?>"><?= h($proceso['estado']) ?></span>
+
+        <span class="status <?= statusClass($proceso['estado'] ?? '') ?>">
+            <?= h($proceso['estado'] ?? '-') ?>
+        </span>
     </div>
 
+    <!-- =========================
+         CARD: RESUMEN DEL PROCESO
+         ========================= -->
     <section class="card">
         <div class="card-head">
-            <div class="badge"><?= h(badgeFromObac($proceso['obac'])) ?></div>
-            <div class="meta">
-                <div class="h1"><?= h($proceso['proceso']) ?></div>
+            <div class="badge"><?= h(badgeFromObac($proceso['obac'] ?? '')) ?></div>
 
+            <div class="meta">
+                <div class="h1"><?= h($proceso['proceso'] ?? '-') ?></div>
+
+                <!-- OBAC chips (múltiples si viene separado) -->
                 <div class="obac-row">
-                    <?php
-                    $raw = (string)($proceso['obac'] ?? '');
-                    $parts = preg_split('/[\/,\|;]+/', $raw);     // soporta "/", "," "|" ";"
-                    $obacs = array_values(array_filter(array_map('trim', $parts)));
-                    if (empty($obacs) && $raw !== '') $obacs = [$raw];
-                    ?>
                     <?php foreach ($obacs as $ob): ?>
                         <span class="obac-chip"><?= h($ob) ?></span>
                     <?php endforeach; ?>
                 </div>
             </div>
+
             <div class="money"><?= fmt_money($proceso['estimado'] ?? 0) ?></div>
         </div>
 
@@ -79,21 +157,27 @@ $last = !empty($actividades) ? $actividades[count($actividades) - 1] : null;
                 <div class="k">Estado</div>
                 <div class="v"><?= h($proceso['estado'] ?? '-') ?></div>
             </div>
+
             <div class="kv">
                 <div class="k">Año convocatoria</div>
                 <div class="v"><?= h($proceso['anio_convocatoria'] ?? '-') ?></div>
             </div>
+
             <div class="kv">
                 <div class="k">Última actividad</div>
-                <div class="v"><?= $last ? h($last['titulo']) : '-' ?></div>
+                <div class="v"><?= $last ? h($last['titulo'] ?? '-') : '-' ?></div>
             </div>
+
             <div class="kv">
                 <div class="k">Fecha última</div>
-                <div class="v"><?= $last ? fmt_date($last['fecha']) : '-' ?></div>
+                <div class="v"><?= $last ? fmt_date($last['fecha'] ?? null) : '-' ?></div>
             </div>
         </div>
     </section>
 
+    <!-- =========================
+         CARD: TIMELINE
+         ========================= -->
     <section class="card mt">
         <div class="section-head">
             <div>
@@ -108,27 +192,18 @@ $last = !empty($actividades) ? $actividades[count($actividades) - 1] : null;
         <?php else: ?>
             <ol class="timeline">
                 <?php foreach ($actividades as $a): ?>
+                    <?php $dot = dotClassFromTipo($a['tipo_codigo'] ?? ''); ?>
+
                     <li class="titem">
                         <div class="tline"></div>
-                        <div class="dot dot-gray"></div>
+
+                        <!-- FIX: dot dinámico según tipo (antes estaba fijo dot-gray) -->
+                        <div class="dot <?= h($dot) ?>"></div>
 
                         <div class="tcard">
-
-                            <?php
-                            $cod = strtoupper((string)($a['tipo_codigo'] ?? ''));
-                            $dot = match ($cod) {
-                                'CONVOCATORIA' => 'dot-wine',
-                                'CONSULTAS'    => 'dot-amber',
-                                'ABSOLUCION'   => 'dot-blue',
-                                'PROPUESTAS'   => 'dot-indigo',
-                                'BUENA_PRO'    => 'dot-green',
-                                'DESIERTO'     => 'dot-gray',
-                                default        => 'dot-gray',
-                            };
-                            ?>
-
                             <div class="trow">
                                 <div class="ttitle"><?= h($a['titulo'] ?? '-') ?></div>
+
                                 <?php if (!empty($a['tipo_nombre'])): ?>
                                     <span class="tbadge"><?= h($a['tipo_nombre']) ?></span>
                                 <?php endif; ?>
@@ -136,11 +211,13 @@ $last = !empty($actividades) ? $actividades[count($actividades) - 1] : null;
 
                             <div class="tmeta">
                                 <span class="tdate"><?= fmt_date($a['fecha'] ?? null) ?></span>
+
                                 <?php if (!empty($a['tipo_codigo'])): ?>
                                     <span class="sep">·</span>
                                     <span class="tcode"><?= h($a['tipo_codigo']) ?></span>
                                 <?php endif; ?>
                             </div>
+
                             <?php if (!empty($a['comentario'])): ?>
                                 <div class="tdesc"><?= nl2br(h($a['comentario'])) ?></div>
                             <?php endif; ?>
@@ -156,9 +233,9 @@ $last = !empty($actividades) ? $actividades[count($actividades) - 1] : null;
 <?php require __DIR__ . '/../layout/bottom-nav.php'; ?>
 
 <style>
-    /* =========================
+/* =========================================================
    LAYOUT / CONTENEDOR
-   ========================= */
+   ========================================================= */
 .page-shell { width: 100%; }
 @media (min-width:1024px){
   .page-shell{
@@ -169,9 +246,9 @@ $last = !empty($actividades) ? $actividades[count($actividades) - 1] : null;
   }
 }
 
-/* =========================
+/* =========================================================
    TOPBAR (glass)
-   ========================= */
+   ========================================================= */
 .topbar{
   position: sticky;
   top: 0;
@@ -221,7 +298,7 @@ $last = !empty($actividades) ? $actividades[count($actividades) - 1] : null;
   text-shadow: 0 2px 10px rgba(0,0,0,.35);
 }
 
-/* status legible en topbar */
+/* Estado (pill) */
 .status{
   font-weight:900;
   font-size:.7rem;
@@ -233,6 +310,7 @@ $last = !empty($actividades) ? $actividades[count($actividades) - 1] : null;
 .status-vino{ background:rgba(107,28,38,.12); color:#6B1C26; }
 .status-gris{ background:rgba(148,163,184,.15); color:#475569; }
 
+/* En topbar: forzamos contraste y legibilidad */
 .topbar .status{
   font-weight:950;
   font-size:.72rem;
@@ -260,9 +338,9 @@ $last = !empty($actividades) ? $actividades[count($actividades) - 1] : null;
   border-color: rgba(148,163,184,.28);
 }
 
-/* =========================
+/* =========================================================
    CARD / RESUMEN
-   ========================= */
+   ========================================================= */
 .card{
   background:#fff;
   border-radius:20px;
@@ -293,7 +371,6 @@ $last = !empty($actividades) ? $actividades[count($actividades) - 1] : null;
 
 .meta{ min-width:0; flex:1; }
 .h1{ font-weight:900; color:#0f172a; line-height:1.2; }
-.h2{ margin-top:4px; font-size:.82rem; font-weight:800; color:#64748b; }
 .money{ font-weight:900; color:#0f172a; white-space:nowrap; }
 
 .desc{
@@ -349,9 +426,9 @@ $last = !empty($actividades) ? $actividades[count($actividades) - 1] : null;
   white-space:nowrap;
 }
 
-/* =========================
+/* =========================================================
    SECCIÓN TIMELINE
-   ========================= */
+   ========================================================= */
 .section-head{
   display:flex;
   align-items:flex-start;
@@ -394,7 +471,6 @@ $last = !empty($actividades) ? $actividades[count($actividades) - 1] : null;
   border-radius:999px;
   margin-left:4px;
   margin-top:10px;
-  box-shadow: 0 0 0 4px rgba(148,163,184,.15);
   z-index:2;
 }
 
@@ -404,10 +480,10 @@ $last = !empty($actividades) ? $actividades[count($actividades) - 1] : null;
   border-radius:18px;
   padding:12px;
   box-shadow: 0 8px 18px rgba(0,0,0,.08);
-  overflow:hidden; /* evita que algo “se salga” */
+  overflow:hidden;
 }
 
-/* fila título + badge (FIX overflow) */
+/* fila título + badge */
 .trow{
   display:flex;
   align-items:flex-start;
@@ -473,11 +549,11 @@ $last = !empty($actividades) ? $actividades[count($actividades) - 1] : null;
   color:#64748b;
 }
 
-/* dots por tipo */
-.dot-wine{ background:#6B1C26; box-shadow:0 0 0 4px rgba(107,28,38,.18); }
-.dot-amber{ background:#C9A227; box-shadow:0 0 0 4px rgba(201,162,39,.22); }
-.dot-blue{ background:#2563eb; box-shadow:0 0 0 4px rgba(37,99,235,.18); }
+/* Dots por tipo */
+.dot-wine  { background:#6B1C26; box-shadow:0 0 0 4px rgba(107,28,38,.18); }
+.dot-amber { background:#C9A227; box-shadow:0 0 0 4px rgba(201,162,39,.22); }
+.dot-blue  { background:#2563eb; box-shadow:0 0 0 4px rgba(37,99,235,.18); }
 .dot-indigo{ background:#4f46e5; box-shadow:0 0 0 4px rgba(79,70,229,.18); }
-.dot-green{ background:#16a34a; box-shadow:0 0 0 4px rgba(22,163,74,.18); }
-.dot-gray{ background:#64748b; box-shadow:0 0 0 4px rgba(148,163,184,.20); }
+.dot-green { background:#16a34a; box-shadow:0 0 0 4px rgba(22,163,74,.18); }
+.dot-gray  { background:#64748b; box-shadow:0 0 0 4px rgba(148,163,184,.20); }
 </style>
