@@ -161,11 +161,6 @@ function statusClass($estado)
       <?php endforeach; ?>
     </section>
   </section>
-
-  <div class="mt-4 text-xs text-white/70">
-    Mostrando un total de <?= count($procesos) ?> procesos
-  </div>
-
 </main>
 
 <?php require __DIR__ . '/../layout/bottom-nav.php'; ?>
