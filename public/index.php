@@ -9,8 +9,6 @@ require_once __DIR__ . '/../Config/config.php';
 |--------------------------------------------------------------------------
 | ROUTER
 |--------------------------------------------------------------------------
-| - Lee ?url=...
-| - /admin/... se maneja aparte
 */
 $path   = trim((string)($_GET['url'] ?? 'login'), '/');
 $parts  = $path === '' ? [] : explode('/', $path);
@@ -56,6 +54,7 @@ function require_file(string $file): void
 |--------------------------------------------------------------------------
 */
 if ($module === 'admin') {
+
     $subRoute = (string)($sub ?? '');
 
     // /admin -> redirección según sesión
@@ -80,11 +79,31 @@ if ($module === 'admin') {
     // privadas
     require_admin_login();
 
+    /*
+    |--------------------------------------------------------------------------
+    | RUTA ESPECIAL: ACTIVIDADES (DETALLE PROCESO)
+    |--------------------------------------------------------------------------
+    | Esta NO debe cargar vista directa.
+    | Debe pasar por controlador para llenar:
+    |   - $proceso
+    |   - $actividades
+    */
+    if ($subRoute === 'actividades') {
+        require_once __DIR__ . '/../Controlador/CtrProcesoAdmin.php';
+        CtrProcesoAdmin::actividades();
+        exit;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | VISTAS ADMIN NORMALES (directas)
+    |--------------------------------------------------------------------------
+    */
     $adminViews = [
-        'dashboard'  => __DIR__ . '/../Vista/modulos/admin/dashboard.php',
-        'pac'        => __DIR__ . '/../Vista/modulos/admin/pac.php',
-        'procesos'   => __DIR__ . '/../Vista/modulos/admin/procesos.php',
-        'presupuesto'=> __DIR__ . '/../Vista/modulos/admin/presupuesto.php',
+        'dashboard'   => __DIR__ . '/../Vista/modulos/admin/dashboard.php',
+        'pac'         => __DIR__ . '/../Vista/modulos/admin/pac.php',
+        'procesos'    => __DIR__ . '/../Vista/modulos/admin/procesos.php',
+        'presupuesto' => __DIR__ . '/../Vista/modulos/admin/presupuesto.php',
     ];
 
     if (!isset($adminViews[$subRoute])) {
@@ -101,16 +120,17 @@ if ($module === 'admin') {
 |--------------------------------------------------------------------------
 */
 $routes = [
-    'login'       => static function (): void {
+
+    'login' => static function (): void {
         require_once __DIR__ . '/../Controlador/CtrUsuario.php';
         CtrUsuario::login();
     },
 
-    'dashboard'   => static function (): void {
+    'dashboard' => static function (): void {
         require_file(__DIR__ . '/../Vista/modulos/dashboard.php');
     },
 
-    'perfil'      => static function (): void {
+    'perfil' => static function (): void {
         require_file(__DIR__ . '/../Vista/modulos/perfil.php');
     },
 
@@ -118,7 +138,7 @@ $routes = [
         require_file(__DIR__ . '/../Vista/modulos/indicadores.php');
     },
 
-    'alertas'     => static function (): void {
+    'alertas' => static function (): void {
         require_file(__DIR__ . '/../Vista/modulos/alertas.php');
     },
 
@@ -131,29 +151,29 @@ $routes = [
         CtrActividades::show();
     },
 
-    'procesos'    => static function (): void {
+    'procesos' => static function (): void {
         require_once __DIR__ . '/../Controlador/CtrProceso.php';
         CtrProceso::index();
     },
 
-    'pac'         => static function (): void {
+    'pac' => static function (): void {
         require_file(__DIR__ . '/../Vista/modulos/pac.php');
     },
 
-    'logout'      => static function (): void {
+    'logout' => static function (): void {
         session_destroy();
         redirect(BASE_URL . '/login');
     },
 
-    'reportes'    => static function () use ($sub): void {
+    'reportes' => static function () use ($sub): void {
         $subRoute = (string)($sub ?? 'index');
         $base     = __DIR__ . '/../Vista/modulos/reportes';
 
         $reportFiles = [
-            'derivados'    => $base . '/derivados.php',
-            'procesos'     => $base . '/procesos.php',
-            'consolidado'  => $base . '/consolidado.php',
-            'index'        => __DIR__ . '/../Vista/modulos/reportes.php',
+            'derivados'   => $base . '/derivados.php',
+            'procesos'    => $base . '/procesos.php',
+            'consolidado' => $base . '/consolidado.php',
+            'index'       => __DIR__ . '/../Vista/modulos/reportes.php',
         ];
 
         $file = $reportFiles[$subRoute] ?? $reportFiles['index'];

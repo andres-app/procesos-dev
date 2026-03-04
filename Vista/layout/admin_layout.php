@@ -3,6 +3,8 @@ $titulo = $titulo ?? 'Admin';
 $active = $active ?? '';
 $adminUser = $_SESSION['admin_user'] ?? 'Admin';
 
+require_once __DIR__ . '/../../Config/config.php';
+
 function acls($isActive)
 {
     return $isActive

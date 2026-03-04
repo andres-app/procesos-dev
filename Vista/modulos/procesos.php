@@ -154,29 +154,7 @@ function statusClass($estado)
               <span class="status <?= statusClass($p['estado']) ?>">
                 <?= htmlspecialchars($p['estado']) ?>
               </span>
-
-              <div class="actions">
-                <button class="kebab" type="button" aria-label="Acciones" data-menu-btn></button>
-
-                <div class="menu hidden" data-menu>
-                  <a class="menu-item" href="<?= BASE_URL ?>/actividades?id=<?= (int)$p['id'] ?>">
-                    <span class="mi">👁️</span> Ver
-                  </a>
-
-                  <a class="menu-item" href="<?= BASE_URL ?>/procesos/editar?id=<?= (int)$p['id'] ?>">
-                    <span class="mi">✏️</span> Editar
-                  </a>
-
-                  <button class="menu-item danger" type="button"
-                    data-delete
-                    data-id="<?= (int)$p['id'] ?>"
-                    data-name="<?= htmlspecialchars($p['proceso']) ?>">
-                    <span class="mi">🗑️</span> Eliminar
-                  </button>
-                </div>
-              </div>
             </div>
-
             <p class="money"><?= fmt_money($p['estimado']) ?></p>
           </div>
         </div>

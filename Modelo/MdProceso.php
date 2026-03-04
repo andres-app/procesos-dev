@@ -71,8 +71,7 @@ class MdProceso
       p.descripcion,
       COALESCE(ep.codigo,'') AS estado,
       p.estimado,
-      p.anio_convocatoria,
-      p.periodo
+      p.anio_convocatoria
     FROM procesos p
     LEFT JOIN estados_proceso ep ON ep.id = p.estado_id
     WHERE p.id = :id
