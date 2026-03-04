@@ -38,11 +38,8 @@ require_once __DIR__ . '/../../Config/config.php';
 
   <!-- GLOBAL STYLES -->
   <style>
-    html,
-    body {
-      height: 100%;
-      background: #3E0F15;
-      /* fallback */
+    body.lock-scroll {
+      overflow: hidden;
     }
 
     /* Si usas gradient en Tailwind, asegura que el html también lo tenga */
@@ -212,10 +209,6 @@ require_once __DIR__ . '/../../Config/config.php';
       stroke-linejoin: round;
     }
 
-    /* ===== ESPACIO PARA BOTTOM NAV (FLOATING) ===== */
-    .has-bottom-nav {
-      padding-bottom: calc(118px + var(--sab));
-    }
 
     /* ===== PRELOADER ===== */
     .preloader {
@@ -288,6 +281,27 @@ require_once __DIR__ . '/../../Config/config.php';
     .appbar-btn {
       touch-action: manipulation;
     }
+
+    /* Permite que un hijo flex pueda scrollear (CLAVE en layouts con flex) */
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    main {
+      min-height: 0;
+    }
+
+    /* Evita que el body haga scroll (el scroll real será el contenedor interno) */
+    body.lock-scroll {
+      overflow: hidden;
+    }
+
+    body.lock-scroll {
+      overflow: hidden;
+    }
+
+    /* CLAVE: sin esto, overflow no funciona bien en flex */
   </style>
 
   <!-- SERVICE WORKER -->
@@ -341,8 +355,7 @@ require_once __DIR__ . '/../../Config/config.php';
 
 </head>
 
-<body class="bg-gradient-to-br from-[#6B1C26] to-[#3E0F15] text-white flex flex-col min-h-[100dvh] has-bottom-nav">
-
+<body class="bg-gradient-to-br from-[#6B1C26] to-[#3E0F15] text-white flex flex-col min-h-[100dvh]">
   <!-- PRELOADER -->
   <div id="preloader" class="preloader">
     <div class="loader-card">

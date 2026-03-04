@@ -51,17 +51,22 @@ function isActive($m, $actual)
 
 </nav>
 
-<style>
-  /* =========================
-   APPLE FLOATING TABBAR
-========================= */
+<div class="bottom-nav-spacer" aria-hidden="true"></div>
 
+<style>
+  :root {
+    --bn-h: 76px;
+    --bn-gap: 12px;
+    --bn-pad: calc(var(--bn-h) + var(--bn-gap) + env(safe-area-inset-bottom) + 18px);
+  }
+
+  /* TABBAR FIXED (iOS) */
   .ios-tabbar {
     position: fixed;
     left: 14px;
     right: 14px;
-    bottom: calc(12px + env(safe-area-inset-bottom));
-    height: 76px;
+    bottom: calc(var(--bn-gap) + env(safe-area-inset-bottom));
+    height: var(--bn-h);
 
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -69,12 +74,10 @@ function isActive($m, $actual)
 
     padding: 8px 6px;
 
-    background: rgba(255,255,255,.96);
-    backdrop-filter: blur(22px) saturate(160%);
-    -webkit-backdrop-filter: blur(22px) saturate(160%);
+    /* CLAVE: opaco para que NO se vea el contenido debajo */
+    background: rgba(255, 255, 255, 1);
 
     border-radius: 24px;
-
     border: 1px solid rgba(255, 255, 255, .25);
 
     box-shadow:
@@ -84,20 +87,14 @@ function isActive($m, $actual)
     z-index: 50;
   }
 
-  /* espacio para que no tape contenido */
+  /* ESPACIO REAL PARA QUE EL CONTENIDO TERMINE ARRIBA DEL TABBAR */
   body.has-bottom-nav {
-    padding-bottom: calc(110px + env(safe-area-inset-bottom));
+    padding-bottom: 0 !important;
   }
 
-
-  /* =========================
-   TAB ITEM
-========================= */
-
+  /* TAB ITEM */
   .ios-tab {
-    position: relative;
     height: 100%;
-
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -106,14 +103,9 @@ function isActive($m, $actual)
 
     text-decoration: none;
     border-radius: 18px;
-
     color: rgba(15, 23, 42, .45);
 
-    transition:
-      transform .14s ease,
-      color .18s ease,
-      background .18s ease;
-
+    transition: transform .14s ease, color .18s ease;
     -webkit-tap-highlight-color: transparent;
     user-select: none;
   }
@@ -122,11 +114,7 @@ function isActive($m, $actual)
     transform: scale(.94);
   }
 
-
-  /* =========================
-   ICON STYLE
-========================= */
-
+  /* ICONS */
   .ios-ico {
     width: 26px;
     height: 26px;
@@ -139,39 +127,22 @@ function isActive($m, $actual)
     stroke-linecap: round;
     stroke-linejoin: round;
     opacity: .9;
-
-    transition:
-      opacity .2s ease,
-      transform .2s ease;
   }
 
   .ios-ico .fill {
     fill: currentColor;
     opacity: 0;
-
-    transition:
-      opacity .2s ease,
-      transform .2s ease;
   }
 
-
-  /* =========================
-   LABEL
-========================= */
-
+  /* LABEL */
   .ios-label {
     font-size: .70rem;
     font-weight: 700;
     letter-spacing: .2px;
     line-height: 1;
-    transition: opacity .2s ease;
   }
 
-
-  /* =========================
-   ACTIVE STATE
-========================= */
-
+  /* ACTIVE */
   .ios-tab.is-active {
     color: #0F2F5A;
   }
@@ -184,30 +155,10 @@ function isActive($m, $actual)
     opacity: 1;
   }
 
-  .ios-tab.is-active .ios-label {
-    opacity: 1;
-  }
-
-
-  /* =========================
-   HOVER (Desktop)
-========================= */
-
   @media (hover:hover) {
     .ios-tab:hover {
       color: #0F2F5A;
     }
-  }
-
-
-  /* =========================
-   SMOOTH TRANSITION
-========================= */
-
-  .ios-tab,
-  .ios-ico,
-  .ios-label {
-    will-change: transform, opacity;
   }
 </style>
 
