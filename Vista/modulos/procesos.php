@@ -286,23 +286,32 @@ function statusClass($estado)
     backdrop-filter: blur(12px);
   }
 
-  /* SOLO la lista scrollea y NO se parte el último card */
+  :root {
+    --tabbar-h: 76px;
+    /* height real del .ios-tabbar */
+    --tabbar-gap: 12px;
+    /* tu bottom: 12px + safe-area */
+    --tabbar-side-gap: 14px;
+    /* no influye en altura, solo referencia */
+  }
+
+  /* SOLO la lista scrollea */
   .lista-scroll {
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
 
-    /* ocupa el alto disponible del main */
-    height: calc(100vh - 290px);
+    /* usa dvh (mejor en móvil) y RESTA el tabbar + safe-area */
+    height: calc(100dvh - 290px - (var(--tabbar-h) + var(--tabbar-gap) + env(safe-area-inset-bottom)));
 
-    /* espacio real para el bottom-nav + safe area */
-    padding-bottom: calc(140px + env(safe-area-inset-bottom));
+    /* padding interno para que el último item nunca quede pegado */
+    padding-bottom: 18px;
   }
 
-  /* Desktop: normalmente el bottom-nav no estorba tanto */
+  /* Desktop */
   @media (min-width: 1024px) {
     .lista-scroll {
-      height: calc(100vh - 260px);
-      padding-bottom: 40px;
+      height: calc(100dvh - 260px - 40px);
+      padding-bottom: 12px;
     }
   }
 

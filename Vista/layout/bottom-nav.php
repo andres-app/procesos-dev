@@ -69,7 +69,7 @@ function isActive($m, $actual)
 
     padding: 8px 6px;
 
-    background: rgba(255, 255, 255, .78);
+    background: rgba(255,255,255,.96);
     backdrop-filter: blur(22px) saturate(160%);
     -webkit-backdrop-filter: blur(22px) saturate(160%);
 
@@ -210,3 +210,8 @@ function isActive($m, $actual)
     will-change: transform, opacity;
   }
 </style>
+
+<script>
+  document.documentElement.classList.add('has-bottom-nav');
+  document.body.classList.add('has-bottom-nav');
+</script>
