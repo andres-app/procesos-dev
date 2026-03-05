@@ -13,96 +13,354 @@ function h($s)
 $pacs = [
   [
     'id' => 1,
+    'nopac' => '0002',
+    'pn' => 'NP',
+    'estado' => 'PUBLICADO',
+    'descripcion' => 'ADQUISICION DE EQUIPO Y MATERIAL DE COMUNICACIONES PARA LA CIRDS CUI: 2385483',
+    'obac' => 'CCFFAA',
+    'tp' => 'LP',
+    'fuente' => '-',
+    'estimado' => 1494900.00,
+    'publicacion' => '',
+    'ejecucion' => '',
+    'fpc' => '',
+  ],
+  [
+    'id' => 2,
+    'nopac' => '0001',
+    'pn' => 'NP',
+    'estado' => 'PUBLICADO',
+    'descripcion' => 'ADQUISICION DE MATERIAL PARA TRABAJOS DE RESCATE (REPEL) CUI: 2385483',
+    'obac' => 'CCFFAA',
+    'tp' => 'RES',
+    'fuente' => '-',
+    'estimado' => 3777218.90,
+    'publicacion' => '',
+    'ejecucion' => '',
+    'fpc' => '',
+  ],
+  [
+    'id' => 3,
+    'nopac' => '24',
+    'pn' => 'NP',
+    'estado' => 'PUBLICADO',
+    'descripcion' => 'ADQUISICIÓN DE AERONAVE DE MEDIANO ALCANCE Y MEDIANA CAPACIDAD DE CARGA PARA LA RECUPERACIÓN DE LA CAPACIDAD DE MOVILIDAD AÉREA EFICAZ DE LA FUERZA AÉREA DEL PERÚ - GRUPO AÉREO N 8 CUI 2234934 PP-0135',
+    'obac' => 'FAP',
+    'tp' => 'RES',
+    'fuente' => '-',
+    'estimado' => 239850000.00,
+    'publicacion' => '',
+    'ejecucion' => '',
+    'fpc' => '',
+  ],
+  [
+    'id' => 4,
     'nopac' => '0043',
+    'pn' => 'P',
     'estado' => 'PUBLICADO',
-    'obac' => 'MGP',
-    'tp' => 'CATAL',
-    'fuente' => 'RO',
     'descripcion' => 'CONTRATACIÓN CORPORATIVA DEL SEGURO DE EMBARCACIONES MARÍTIMAS Y FLUVIALES /SERVICIO PP 0135/REQ.0009-2026-DIRECOMAR',
-    'estimado' => 50699.30,
-    'publicacion' => '23/01/26',
-    'ejecucion' => 'FEB',
-    'fpc' => 'bien',
+    'obac' => 'MGP',
+    'tp' => 'CPA',
+    'fuente' => '-',
+    'estimado' => 90000.00,
+    'publicacion' => '',
+    'ejecucion' => '',
+    'fpc' => '',
   ],
   [
-    'id' => 2,
-    'nopac' => '0044',
+    'id' => 5,
+    'nopac' => '0041',
+    'pn' => 'P',
     'estado' => 'PUBLICADO',
-    'obac' => 'EP',
-    'tp' => 'CPA',
-    'fuente' => 'RO',
-    'descripcion' => 'ADQUISICIÓN DE PAPELERÍA EN GENERAL, ÚTILES DE OFICINA A TRAVÉS DE CATÁLOGOS ELECTRÓNICOS DE ACUERDOS MARCO',
-    'estimado' => 14775.70,
-    'publicacion' => '23/01/26',
-    'ejecucion' => 'MAR',
-    'fpc' => 'pend',
+    'descripcion' => 'CONTRATACIÓN CORPORATIVA DEL SEGURO DE VEHÍCULOS /SERVICIO PP 0135/REQ.0007-2026-DIRECOMAR',
+    'obac' => 'MGP',
+    'tp' => 'CP',
+    'fuente' => '-',
+    'estimado' => 570000.00,
+    'publicacion' => '',
+    'ejecucion' => '',
+    'fpc' => '',
   ],
   [
-    'id' => 2,
-    'nopac' => '0044',
-    'estado' => 'PUBLICADO',
-    'obac' => 'EP',
-    'tp' => 'CPA',
-    'fuente' => 'RO',
-    'descripcion' => 'ADQUISICIÓN DE PAPELERÍA EN GENERAL, ÚTILES DE OFICINA A TRAVÉS DE CATÁLOGOS ELECTRÓNICOS DE ACUERDOS MARCO',
-    'estimado' => 14775.70,
-    'publicacion' => '23/01/26',
-    'ejecucion' => 'MAR',
-    'fpc' => 'pend',
+    'id' => 6,
+    'nopac' => '0040',
+    'pn' => 'P',
+    'estado' => 'SOLICITADO',
+    'descripcion' => 'CONTRATACIÓN CORPORATIVA DEL SEGURO OBLIGATORIO DE ACCIDENTES DE TRÁNSITO (SOAT) /SERVICIO PP 0135/REQ.0006-2026-DIRECOMAR',
+    'obac' => 'MGP',
+    'tp' => 'SIE',
+    'fuente' => '-',
+    'estimado' => 44860.00,
+    'publicacion' => '',
+    'ejecucion' => '',
+    'fpc' => '',
   ],
   [
-    'id' => 2,
-    'nopac' => '0044',
-    'estado' => 'PUBLICADO',
-    'obac' => 'EP',
-    'tp' => 'CPA',
-    'fuente' => 'RO',
-    'descripcion' => 'ADQUISICIÓN DE PAPELERÍA EN GENERAL, ÚTILES DE OFICINA A TRAVÉS DE CATÁLOGOS ELECTRÓNICOS DE ACUERDOS MARCO',
-    'estimado' => 14775.70,
-    'publicacion' => '23/01/26',
-    'ejecucion' => 'MAR',
-    'fpc' => 'pend',
+    'id' => 7,
+    'nopac' => '0028',
+    'pn' => 'P',
+    'estado' => 'SOLICITADO',
+    'descripcion' => 'SERVICIO DE MANTENIMIENTO Y REPARACIÓN DE VEHÍCULOS TÁCTICOS DE LA COMANDANCIA DE LA FUERZA DE INFANTERÍA DE MARINA /SERVICIO PP 0135/REQ.0008-2026-COMFUINMAR',
+    'obac' => 'MGP',
+    'tp' => 'CPS',
+    'fuente' => '-',
+    'estimado' => 610000.00,
+    'publicacion' => '',
+    'ejecucion' => '',
+    'fpc' => '',
   ],
   [
-    'id' => 2,
-    'nopac' => '0044',
-    'estado' => 'PUBLICADO',
-    'obac' => 'EP',
-    'tp' => 'CPA',
-    'fuente' => 'RO',
-    'descripcion' => 'ADQUISICIÓN DE PAPELERÍA EN GENERAL, ÚTILES DE OFICINA A TRAVÉS DE CATÁLOGOS ELECTRÓNICOS DE ACUERDOS MARCO',
-    'estimado' => 14775.70,
-    'publicacion' => '23/01/26',
-    'ejecucion' => 'MAR',
-    'fpc' => 'pend',
+    'id' => 8,
+    'nopac' => '0008',
+    'pn' => 'P',
+    'estado' => 'OBSERVADO',
+    'descripcion' => 'ADQUISICIÓN DE KITS DE 1500 HORAS PARA LOS DIÉSEL PROPULSORES Y DIÉSEL ALTERNADORES DE LAS UNIDADES DE LA FUERZA DE SUPERFICIE /BIEN PP0135/REQ.0007-2026-COMFAS',
+    'obac' => 'MGP',
+    'tp' => 'LP',
+    'fuente' => '-',
+    'estimado' => 490000.00,
+    'publicacion' => '',
+    'ejecucion' => '',
+    'fpc' => '',
   ],
   [
-    'id' => 2,
-    'nopac' => '0044',
-    'estado' => 'PUBLICADO',
-    'obac' => 'EP',
-    'tp' => 'CPA',
-    'fuente' => 'RO',
-    'descripcion' => 'ADQUISICIÓN DE PAPELERÍA EN GENERAL, ÚTILES DE OFICINA A TRAVÉS DE CATÁLOGOS ELECTRÓNICOS DE ACUERDOS MARCO',
-    'estimado' => 14775.70,
-    'publicacion' => '23/01/26',
-    'ejecucion' => 'MAR',
-    'fpc' => 'pend',
+    'id' => 9,
+    'nopac' => '0086',
+    'pn' => 'P',
+    'estado' => 'SOLICITADO',
+    'descripcion' => 'ADQUISICIÓN DE EXPLOSIVOS PARA EL SISTEMA DE EYECCIÓN MKPE-16LF KT-1P PP-0135',
+    'obac' => 'FAP',
+    'tp' => 'RES',
+    'fuente' => '-',
+    'estimado' => 5943990.63,
+    'publicacion' => '',
+    'ejecucion' => '',
+    'fpc' => '',
   ],
   [
-    'id' => 2,
-    'nopac' => '0044',
-    'estado' => 'PUBLICADO',
-    'obac' => 'EP',
-    'tp' => 'CPA',
-    'fuente' => 'RO',
-    'descripcion' => 'ADQUISICIÓN DE PAPELERÍA EN GENERAL, ÚTILES DE OFICINA A TRAVÉS DE CATÁLOGOS ELECTRÓNICOS DE ACUERDOS MARCO',
-    'estimado' => 14775.70,
-    'publicacion' => '23/01/26',
-    'ejecucion' => 'MAR',
-    'fpc' => 'pend',
+    'id' => 10,
+    'nopac' => '0085',
+    'pn' => 'P',
+    'estado' => 'SOLICITADO',
+    'descripcion' => 'ADQUISICIÓN DE COMPONENTES PARA EL MANTENIMIENTO DEL SISTEMA DE EYECCIÓN MKPE-16LF KT-1P PP-0135',
+    'obac' => 'FAP',
+    'tp' => 'RES',
+    'fuente' => '-',
+    'estimado' => 5141785.00,
+    'publicacion' => '',
+    'ejecucion' => '',
+    'fpc' => '',
   ],
-
+  [
+    'id' => 11,
+    'nopac' => '0067',
+    'pn' => 'P',
+    'estado' => 'OBSERVADO',
+    'descripcion' => 'ADQUISICION DE KIT DE EQUIPAMIENTO PARA EXTINCION DE INCENDIOS APLICABLE A LOS HELICOPTEROS MI-17/171SH Y HELICOPTEROS BELL-212/412 PP-0135 CUI 2662544',
+    'obac' => 'FAP',
+    'tp' => 'RES',
+    'fuente' => '-',
+    'estimado' => 5703825.12,
+    'publicacion' => '',
+    'ejecucion' => '',
+    'fpc' => '',
+  ],
+  [
+    'id' => 12,
+    'nopac' => '0066',
+    'pn' => 'P',
+    'estado' => 'OBSERVADO',
+    'descripcion' => 'SERVICIO DE OVERHAUL DE MOTOR PT6A-34 APLICABLE A LA FLOTA DHC-6-400 PP-0135',
+    'obac' => 'FAP',
+    'tp' => 'RES',
+    'fuente' => '-',
+    'estimado' => 11333280.00,
+    'publicacion' => '',
+    'ejecucion' => '',
+    'fpc' => '',
+  ],
+  [
+    'id' => 13,
+    'nopac' => '0062',
+    'pn' => 'P',
+    'estado' => 'SOLICITADO',
+    'descripcion' => 'ADQUISICION DE LUCES DE BALIZAMIENTO PORTATIL - EN EL GRUPO AEREO NUMERO 11 PARA LA OPTIMIZACION DEL SERVICIO DE APROXIMACION DE AERONAVES EN OPERACIONES AEREAS NOCTURNAS MEDIANTE LA ADQUISICION DE UN SISTEMA MOVIL EN EL DISTRITO DE PARIÑAS PROVINCIA DE TALARA, DEPARTAMENTO DE PIURA PP-0135',
+    'obac' => 'FAP',
+    'tp' => 'LP',
+    'fuente' => '-',
+    'estimado' => 3181162.00,
+    'publicacion' => '',
+    'ejecucion' => '',
+    'fpc' => '',
+  ],
+  [
+    'id' => 14,
+    'nopac' => '0022',
+    'pn' => 'P',
+    'estado' => 'SOLICITADO',
+    'descripcion' => '0135 - SEGURO OBLIGATORIO DE ACCIDENTES DE TRANSITO - SOAT PP-0135',
+    'obac' => 'FAP',
+    'tp' => 'CC',
+    'fuente' => '-',
+    'estimado' => 29113.00,
+    'publicacion' => '',
+    'ejecucion' => '',
+    'fpc' => '',
+  ],
+  [
+    'id' => 15,
+    'nopac' => '0005',
+    'pn' => 'P',
+    'estado' => 'ESTUDIO DE MERCADO',
+    'descripcion' => 'ADQUISICIÓN DE EQUIPOS DE SEGURIDAD DE LAS COMUNICACIONES Y LICENCIA DE OPERACIÓN PARA EL SISTEMA CRIPTOLOGICO DE LA FAP PP-0135',
+    'obac' => 'FAP',
+    'tp' => 'RES',
+    'fuente' => '-',
+    'estimado' => 5240386.00,
+    'publicacion' => '',
+    'ejecucion' => '',
+    'fpc' => '',
+  ],
+  [
+    'id' => 16,
+    'nopac' => '0004',
+    'pn' => 'P',
+    'estado' => 'SOLICITADO',
+    'descripcion' => 'ADQUISICION DE EQUIPAMIENTO DE COMUNICACIÓN SATELITAL TACTICO TIPO MANPACK PP-0135',
+    'obac' => 'FAP',
+    'tp' => 'RES',
+    'fuente' => '-',
+    'estimado' => 1390640.00,
+    'publicacion' => '',
+    'ejecucion' => '',
+    'fpc' => '',
+  ],
+  [
+    'id' => 17,
+    'nopac' => '0001',
+    'pn' => 'P',
+    'estado' => 'SOLICITADO',
+    'descripcion' => 'SERVICIO DE RASTREO SATELITAL UUDD FAP Y VRAEM PP-0135 PP-032',
+    'obac' => 'FAP',
+    'tp' => 'RES',
+    'fuente' => '-',
+    'estimado' => 1230441.00,
+    'publicacion' => '',
+    'ejecucion' => '',
+    'fpc' => '',
+  ],
+  [
+    'id' => 18,
+    'nopac' => '0136',
+    'pn' => 'P',
+    'estado' => 'SOLICITADO',
+    'descripcion' => 'ADQUISICIÓN DE EQUIPOS DE PARACAIDAS AF-2026',
+    'obac' => 'EP',
+    'tp' => 'RES',
+    'fuente' => '-',
+    'estimado' => 5999999.99,
+    'publicacion' => '',
+    'ejecucion' => '',
+    'fpc' => '',
+  ],
+  [
+    'id' => 19,
+    'nopac' => '0083',
+    'pn' => 'P',
+    'estado' => 'SOLICITADO',
+    'descripcion' => 'SERVICIO DE RENOVACIÓN DEL PROGRAMA PRO ADVANTAGE (POWER ADVANTAGE + PRO PARTS) PARA EL AVIÓN CESSNA CITATION XLS EP-861 DE LA AVIACIÓN DEL EJÉRCITO',
+    'obac' => 'EP',
+    'tp' => 'RES',
+    'fuente' => '-',
+    'estimado' => 1275000.00,
+    'publicacion' => '',
+    'ejecucion' => '',
+    'fpc' => '',
+  ],
+  [
+    'id' => 20,
+    'nopac' => '0076',
+    'pn' => 'P',
+    'estado' => 'SOLICITADO',
+    'descripcion' => 'ADQUISICIÓN DE CAMIONETAS PARA EL PROYECTO DE INVERSIÓN MI PERU',
+    'obac' => 'EP',
+    'tp' => 'RES',
+    'fuente' => '-',
+    'estimado' => 5356144.00,
+    'publicacion' => '',
+    'ejecucion' => '',
+    'fpc' => '',
+  ],
+  [
+    'id' => 21,
+    'nopac' => '0075',
+    'pn' => 'P',
+    'estado' => 'SOLICITADO',
+    'descripcion' => 'ADQUISICIÓN DE VEHÍCULOS DE APOYO DE COMBATE PARA EL PROYECTO DE INVERSIÓN PURISUNCHU',
+    'obac' => 'EP',
+    'tp' => 'RES',
+    'fuente' => '-',
+    'estimado' => 14000000.00,
+    'publicacion' => '',
+    'ejecucion' => '',
+    'fpc' => '',
+  ],
+  [
+    'id' => 22,
+    'nopac' => '0060',
+    'pn' => 'P',
+    'estado' => 'PUBLICADO',
+    'descripcion' => 'CONTRATACIÓN CORPORATIVA DEL SEGURO DE VEHÍCULOS E HIDROCARBUROS-135',
+    'obac' => 'EP',
+    'tp' => 'CPS',
+    'fuente' => '-',
+    'estimado' => 1300000.00,
+    'publicacion' => '',
+    'ejecucion' => '',
+    'fpc' => '',
+  ],
+  [
+    'id' => 23,
+    'nopac' => '0059',
+    'pn' => 'P',
+    'estado' => 'PUBLICADO',
+    'descripcion' => 'CONTRATACIÓN CORPORATIVA DEL SEGURO DE EMBARCACIONES FLUVIALES -PP 135',
+    'obac' => 'EP',
+    'tp' => 'CPS',
+    'fuente' => '-',
+    'estimado' => 849963.00,
+    'publicacion' => '',
+    'ejecucion' => '',
+    'fpc' => '',
+  ],
+  [
+    'id' => 24,
+    'nopac' => '0057',
+    'pn' => 'P',
+    'estado' => 'SOLICITADO',
+    'descripcion' => 'CONTRATACIÓN CORPORATIVA DEL SEGURO OBLIGATORIO DE ACCIDENTES DE TRÁNSITO (SOAT)-PP 135-',
+    'obac' => 'EP',
+    'tp' => 'SIE',
+    'fuente' => '-',
+    'estimado' => 120867.00,
+    'publicacion' => '',
+    'ejecucion' => '',
+    'fpc' => '',
+  ],
+  [
+    'id' => 25,
+    'nopac' => '0001',
+    'pn' => 'P',
+    'estado' => 'SOLICITADO',
+    'descripcion' => 'SERVICIO DE SOPORTE TECNICO PARA SISTEMA SATELITAL',
+    'obac' => 'CONIDA',
+    'tp' => 'RES',
+    'fuente' => '-',
+    'estimado' => 8200000.00,
+    'publicacion' => '',
+    'ejecucion' => '',
+    'fpc' => '',
+  ],
 ];
 
 function pill($txt, $tone = 'slate')
@@ -126,6 +384,28 @@ function toneEstado($estado)
   if ($e === 'OBSERVADO') return 'amber';
   if ($e === 'ANULADO') return 'rose';
   return 'slate';
+}
+
+?>
+
+<?php
+// ===== KPIs (Programables / No programables) =====
+$cntP  = 0;
+$cntNP = 0;
+$sumP  = 0.0;
+$sumNP = 0.0;
+
+foreach ($pacs as $r) {
+  $pn  = strtoupper(trim((string)($r['pn'] ?? 'NP')));
+  $est = (float)($r['estimado'] ?? 0);
+
+  if ($pn === 'P') {
+    $cntP++;
+    $sumP += $est;
+  } else {
+    $cntNP++;
+    $sumNP += $est;
+  }
 }
 ?>
 
@@ -155,25 +435,36 @@ function toneEstado($estado)
 
   <!-- KPIs -->
   <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+    <!-- Total PAC Programables -->
     <div class="rounded-3xl bg-white border border-slate-200 p-4 shadow-soft">
-      <div class="text-xs text-slate-500">Total PAC</div>
-      <div class="mt-1 text-2xl font-semibold"><?= count($pacs) ?></div>
-      <div class="mt-2 text-xs text-slate-500">Vista maqueta</div>
+      <div class="text-xs text-slate-500">Total PAC Programables</div>
+      <div class="mt-1 text-2xl font-semibold"><?= (int)$cntP ?></div>
+      <div class="mt-2 text-xs text-slate-500">P</div>
     </div>
+
+    <!-- Total PAC No Programables -->
     <div class="rounded-3xl bg-white border border-slate-200 p-4 shadow-soft">
-      <div class="text-xs text-slate-500">Publicados</div>
-      <div class="mt-1 text-2xl font-semibold">—</div>
-      <div class="mt-2 text-xs text-slate-500">Pendiente de data real</div>
+      <div class="text-xs text-slate-500">Total PAC No Programables</div>
+      <div class="mt-1 text-2xl font-semibold"><?= (int)$cntNP ?></div>
+      <div class="mt-2 text-xs text-slate-500">NP</div>
     </div>
+
+    <!-- Estimado total Programables -->
     <div class="rounded-3xl bg-white border border-slate-200 p-4 shadow-soft">
-      <div class="text-xs text-slate-500">Estimado total</div>
-      <div class="mt-1 text-2xl font-semibold">—</div>
-      <div class="mt-2 text-xs text-slate-500">Pendiente de data real</div>
+      <div class="text-xs text-slate-500">Estimado total Programables</div>
+      <div class="mt-1 text-2xl font-semibold">
+        S/ <?= number_format($sumP, 2, '.', ',') ?>
+      </div>
+      <div class="mt-2 text-xs text-slate-500">Suma de estimados (P)</div>
     </div>
+
+    <!-- Estimado total No Programables -->
     <div class="rounded-3xl bg-white border border-slate-200 p-4 shadow-soft">
-      <div class="text-xs text-slate-500">Alertas</div>
-      <div class="mt-1 text-2xl font-semibold">—</div>
-      <div class="mt-2 text-xs text-slate-500">Pendiente de reglas</div>
+      <div class="text-xs text-slate-500">Estimado total No Programables</div>
+      <div class="mt-1 text-2xl font-semibold">
+        S/ <?= number_format($sumNP, 2, '.', ',') ?>
+      </div>
+      <div class="mt-2 text-xs text-slate-500">Suma de estimados (NP)</div>
     </div>
   </div>
 
@@ -181,7 +472,6 @@ function toneEstado($estado)
   <div class="card border border-slate-200 bg-white shadow-soft overflow-hidden">
     <div class="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
       <div class="font-semibold">PAC registrados</div>
-      <div class="text-sm text-slate-500">Acciones: editar / eliminar (maqueta)</div>
     </div>
 
     <div class="overflow-x-auto">
@@ -189,14 +479,12 @@ function toneEstado($estado)
         <thead class="bg-slate-50 text-slate-600">
           <tr>
             <th class="text-left font-medium px-4 py-3">N° PAC</th>
-            <th class="text-left font-medium px-4 py-3">Estado</th>
-            <th class="text-left font-medium px-4 py-3">OBAC</th>
-            <th class="text-left font-medium px-4 py-3">TP</th>
-            <th class="text-left font-medium px-4 py-3">Fuente</th>
+            <th class="text-left font-medium px-4 py-3">P/NP</th>
             <th class="text-left font-medium px-4 py-3">Descripción</th>
+            <th class="text-left font-medium px-4 py-3">OBAC</th>
+            <th class="text-left font-medium px-4 py-3">Fuente</th>
+            <th class="text-left font-medium px-4 py-3">Estado</th>
             <th class="text-left font-medium px-4 py-3">Estimado</th>
-            <th class="text-left font-medium px-4 py-3">Publicación</th>
-            <th class="text-left font-medium px-4 py-3">Ejecución</th>
             <th class="text-right font-medium px-4 py-3">Acciones</th>
           </tr>
         </thead>
@@ -204,56 +492,101 @@ function toneEstado($estado)
         <tbody class="divide-y divide-slate-100">
           <?php foreach ($pacs as $r): ?>
             <tr class="hover:bg-slate-50">
-              <td class="px-4 py-3 font-semibold text-slate-900"><?= h($r['nopac']) ?></td>
+
+              <!-- N° PAC -->
+              <td class="px-4 py-3 font-semibold text-slate-900">
+                <?= h($r['nopac']) ?>
+              </td>
+
+              <!-- P / NP -->
+              <td class="px-4 py-3">
+                <?= pill(h($r['pn'] ?? 'NP'), ($r['pn'] ?? 'NP') === 'P' ? 'blue' : 'slate') ?>
+              </td>
+
+              <!-- Descripción (3ra columna) -->
+              <td class="px-4 py-3 max-w-[520px]">
+                <div class="text-slate-900 line-clamp-2" title="<?= h($r['descripcion']) ?>">
+                  <?= h($r['descripcion']) ?>
+                </div>
+                <div class="mt-1 text-xs text-slate-500">ID: <?= (int)$r['id'] ?></div>
+              </td>
+              <!-- OBAC -->
+              <td class="px-4 py-3">
+                <?= pill(h($r['obac']), 'blue') ?>
+              </td>
+
+              <!-- Fuente -->
+              <td class="px-4 py-3">
+                <?= pill(h($r['fuente']), 'amber') ?>
+              </td>
+
+              <!-- Estado -->
               <td class="px-4 py-3">
                 <?= pill(h($r['estado']), toneEstado($r['estado'])) ?>
               </td>
-              <td class="px-4 py-3"><?= pill(h($r['obac']), 'blue') ?></td>
-              <td class="px-4 py-3"><?= pill(h($r['tp']), 'slate') ?></td>
-              <td class="px-4 py-3"><?= pill(h($r['fuente']), 'amber') ?></td>
-              <td class="px-4 py-3 max-w-[520px]">
-                <div class="text-slate-900 line-clamp-2"><?= h($r['descripcion']) ?></div>
-                <div class="mt-1 text-xs text-slate-500">ID: <?= (int)$r['id'] ?></div>
-              </td>
+
+              <!-- Estimado -->
               <td class="px-4 py-3 whitespace-nowrap">
                 S/ <?= number_format((float)$r['estimado'], 2) ?>
               </td>
-              <td class="px-4 py-3 whitespace-nowrap"><?= h($r['publicacion']) ?></td>
-              <td class="px-4 py-3 whitespace-nowrap"><?= h($r['ejecucion']) ?></td>
 
+              <!-- Acciones -->
               <td class="px-4 py-3">
                 <div class="flex justify-end gap-1.5">
+                  <!-- Editar -->
                   <button
                     class="iconbtn"
                     title="Editar"
                     aria-label="Editar PAC <?= h($r['nopac']) ?>"
-                    onclick="openEdit(<?= (int)$r['id'] ?>, '<?= h($r['nopac']) ?>', '<?= h($r['estado']) ?>', '<?= h($r['obac']) ?>', '<?= h($r['tp']) ?>', '<?= h($r['fuente']) ?>', '<?= h($r['descripcion']) ?>', '<?= h($r['estimado']) ?>', '<?= h($r['publicacion']) ?>', '<?= h($r['ejecucion']) ?>')">
-                    <!-- pencil -->
+                    onclick="openEdit(
+          <?= (int)$r['id'] ?>,
+          '<?= h($r['nopac']) ?>',
+          '<?= h($r['pn'] ?? 'NP') ?>',
+          '<?= h($r['estado']) ?>',
+          '<?= h($r['obac']) ?>',
+          '<?= h($r['tp']) ?>',
+          '<?= h($r['fuente']) ?>',
+          '<?= h($r['descripcion']) ?>',
+          '<?= h($r['estimado']) ?>',
+          '<?= h($r['publicacion'] ?? '') ?>',
+          '<?= h($r['ejecucion'] ?? '') ?>'
+        )">
                     <svg viewBox="0 0 24 24" class="ico" aria-hidden="true">
-                      <path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm2.92 2.83H5v-.92l9.06-9.06.92.92L5.92 20.08zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                      <path fill="currentColor"
+                        d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm2.92 
+            2.83H5v-.92l9.06-9.06.92.92L5.92 
+            20.08zM20.71 7.04a1 1 0 0 0 
+            0-1.41l-2.34-2.34a1 1 0 0 
+            0-1.41 0l-1.83 1.83 
+            3.75 3.75 1.83-1.83z" />
                     </svg>
                   </button>
 
+                  <!-- Eliminar -->
                   <button
                     class="iconbtn iconbtn--danger"
                     title="Eliminar"
                     aria-label="Eliminar PAC <?= h($r['nopac']) ?>"
                     onclick="openDelete(<?= (int)$r['id'] ?>, '<?= h($r['nopac']) ?>')">
-                    <!-- trash -->
                     <svg viewBox="0 0 24 24" class="ico" aria-hidden="true">
-                      <path fill="currentColor" d="M6 7h12l-1 14H7L6 7zm3-3h6l1 2H8l1-2z" />
+                      <path fill="currentColor"
+                        d="M6 7h12l-1 14H7L6 7zm3-3h6l1 2H8l1-2z" />
                     </svg>
                   </button>
                 </div>
               </td>
+
             </tr>
           <?php endforeach; ?>
 
           <?php if (count($pacs) === 0): ?>
             <tr>
-              <td colspan="10" class="px-4 py-10 text-center text-slate-500">No hay registros (maqueta).</td>
+              <td colspan="8" class="px-4 py-10 text-center text-slate-500">
+                No hay registros (maqueta).
+              </td>
             </tr>
           <?php endif; ?>
+
         </tbody>
       </table>
     </div>
@@ -279,8 +612,11 @@ function toneEstado($estado)
       <input type="hidden" id="pac_id" value="">
 
       <div class="md:col-span-1">
-        <label class="block text-xs text-slate-500 mb-1">N° PAC</label>
-        <input id="pac_nopac" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
+        <label class="block text-xs text-slate-500 mb-1">P/NP</label>
+        <select id="pac_pn" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
+          <option value="P">P</option>
+          <option value="NP">NP</option>
+        </select>
       </div>
 
       <div class="md:col-span-2">
@@ -485,10 +821,11 @@ function toneEstado($estado)
     openModal('modalForm');
   });
 
-  function openEdit(id, nopac, estado, obac, tp, fuente, desc, estimado, pub, eje) {
+  function openEdit(id, nopac, pn, estado, obac, tp, fuente, desc, estimado, pub, eje) {
     $('modalTitle').textContent = 'Editar PAC #' + id;
     $('pac_id').value = id;
     $('pac_nopac').value = nopac;
+    $('pac_pn').value = pn;
     $('pac_estado').value = estado;
     $('pac_obac').value = obac;
     $('pac_tp').value = tp;
