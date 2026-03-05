@@ -475,7 +475,7 @@ foreach ($pacs as $r) {
     </div>
 
     <div class="overflow-x-auto">
-      <table class="min-w-full thc tbc">
+      <table id="tblPac" class="min-w-full thc tbc">
         <thead class="bg-slate-50 text-slate-600">
           <tr>
             <th class="text-left font-medium px-4 py-3">N° PAC</th>
@@ -508,7 +508,6 @@ foreach ($pacs as $r) {
                 <div class="text-slate-900 line-clamp-2" title="<?= h($r['descripcion']) ?>">
                   <?= h($r['descripcion']) ?>
                 </div>
-                <div class="mt-1 text-xs text-slate-500">ID: <?= (int)$r['id'] ?></div>
               </td>
               <!-- OBAC -->
               <td class="px-4 py-3">
@@ -594,23 +593,39 @@ foreach ($pacs as $r) {
 
 </div>
 
-<!-- Modal (Nuevo/Editar) -->
-<div id="modalForm" class="fixed inset-0 hidden items-center justify-center p-4">
+<!-- Modal (Nuevo/Editar) — ADAPTADO a columnas del DataTable -->
+<div id="modalForm" class="fixed inset-0 hidden items-center justify-center p-4 z-50">
   <div class="absolute inset-0 bg-slate-900/30" onclick="closeModal('modalForm')"></div>
 
-  <div class="relative w-full max-w-3xl rounded-3xl border border-slate-200 glass shadow-soft">
+  <div class="relative w-full max-w-3xl rounded-3xl border border-slate-200 glass shadow-soft overflow-hidden">
+    <!-- Header -->
     <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
-      <div>
+      <div class="min-w-0">
         <div class="text-xs text-slate-500">PAC</div>
-        <div id="modalTitle" class="text-lg font-semibold">Nuevo PAC</div>
+        <div id="modalTitle" class="text-lg font-semibold truncate">Nuevo PAC</div>
       </div>
-      <button class="rounded-2xl border border-slate-200 bg-white px-3 py-1.5 text-sm hover:bg-slate-50"
+
+      <button
+        type="button"
+        class="rounded-2xl border border-slate-200 bg-white px-3 py-1.5 text-sm hover:bg-slate-50"
         onclick="closeModal('modalForm')">Cerrar</button>
     </div>
 
-    <form class="p-5 grid grid-cols-1 md:grid-cols-6 gap-3">
+    <!-- Body -->
+    <form class="p-5 grid grid-cols-1 md:grid-cols-6 gap-3" onsubmit="return false;">
       <input type="hidden" id="pac_id" value="">
 
+      <!-- N° PAC -->
+      <div class="md:col-span-2">
+        <label class="block text-xs text-slate-500 mb-1">N° PAC</label>
+        <input
+          id="pac_nopac"
+          class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5"
+          placeholder="Ej: 0043"
+          autocomplete="off">
+      </div>
+
+      <!-- P/NP -->
       <div class="md:col-span-1">
         <label class="block text-xs text-slate-500 mb-1">P/NP</label>
         <select id="pac_pn" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
@@ -619,50 +634,77 @@ foreach ($pacs as $r) {
         </select>
       </div>
 
-      <div class="md:col-span-2">
-        <label class="block text-xs text-slate-500 mb-1">Estado</label>
-        <input id="pac_estado" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
-      </div>
-
+      <!-- OBAC -->
       <div class="md:col-span-1">
         <label class="block text-xs text-slate-500 mb-1">OBAC</label>
-        <input id="pac_obac" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
+        <select id="pac_obac" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
+          <option value="">Seleccionar…</option>
+          <option value="EP">EP</option>
+          <option value="FAP">FAP</option>
+          <option value="MGP">MGP</option>
+          <option value="CCFFAA">CCFFAA</option>
+          <option value="CONIDA">CONIDA</option>
+        </select>
       </div>
 
-      <div class="md:col-span-1">
-        <label class="block text-xs text-slate-500 mb-1">TP</label>
-        <input id="pac_tp" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
-      </div>
-
+      <!-- Fuente -->
       <div class="md:col-span-1">
         <label class="block text-xs text-slate-500 mb-1">Fuente</label>
-        <input id="pac_fuente" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
+        <input
+          id="pac_fuente"
+          class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5"
+          placeholder="Ej: RO"
+          autocomplete="off">
       </div>
 
+      <!-- Estado -->
+      <div class="md:col-span-1">
+        <label class="block text-xs text-slate-500 mb-1">Estado</label>
+        <select id="pac_estado" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
+          <option value="PUBLICADO">PUBLICADO</option>
+        </select>
+      </div>
+
+      <!-- Descripción -->
       <div class="md:col-span-6">
-        <label class="block text-xs text-slate-500 mb-1">Descripción</label>
-        <textarea id="pac_desc" rows="3" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5"></textarea>
+        <div class="flex items-end justify-between gap-2">
+          <label class="block text-xs text-slate-500 mb-1">Descripción</label>
+          <div class="text-[11px] text-slate-400 mb-1">
+            <span id="descCount">0</span>/400
+          </div>
+        </div>
+        <textarea
+          id="pac_desc"
+          rows="4"
+          maxlength="400"
+          class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5"
+          placeholder="Describe el requerimiento…"></textarea>
       </div>
 
+      <!-- Estimado -->
       <div class="md:col-span-2">
         <label class="block text-xs text-slate-500 mb-1">Estimado (S/.)</label>
-        <input id="pac_estimado" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
+        <input
+          id="pac_estimado"
+          inputmode="decimal"
+          class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5"
+          placeholder="Ej: 90000.00"
+          autocomplete="off">
+        <div class="mt-1 text-[11px] text-slate-400">
+          Vista: <span id="sum_estimado">S/ 0.00</span>
+        </div>
       </div>
 
-      <div class="md:col-span-2">
-        <label class="block text-xs text-slate-500 mb-1">Publicación</label>
-        <input id="pac_pub" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5" placeholder="dd/mm/aa">
-      </div>
-
-      <div class="md:col-span-2">
-        <label class="block text-xs text-slate-500 mb-1">Ejecución</label>
-        <input id="pac_eje" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5" placeholder="FEB/MAR/...">
-      </div>
-
+      <!-- Footer -->
       <div class="md:col-span-6 flex items-center justify-end gap-2 pt-2">
-        <button type="button" class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm hover:bg-slate-50"
+        <button
+          type="button"
+          class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm hover:bg-slate-50"
           onclick="closeModal('modalForm')">Cancelar</button>
-        <button type="button" class="rounded-2xl bg-slate-900 text-white px-4 py-2.5 text-sm font-medium hover:bg-slate-800"
+
+        <button
+          type="button"
+          class="rounded-2xl bg-slate-900 text-white px-4 py-2.5 text-sm font-medium hover:bg-slate-800"
           onclick="fakeSave()">
           Guardar (maqueta)
         </button>
@@ -670,6 +712,26 @@ foreach ($pacs as $r) {
     </form>
   </div>
 </div>
+
+<style>
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .25rem .55rem;
+    border-radius: 999px;
+    font-size: 12px;
+    border: 1px solid rgba(148, 163, 184, .45);
+    background: rgba(255, 255, 255, .85);
+    color: rgb(71, 85, 105);
+    max-width: 100%;
+  }
+
+  .chip--muted span {
+    color: rgb(15, 23, 42);
+    font-weight: 600;
+  }
+</style>
 
 <!-- Modal delete -->
 <div id="modalDelete" class="fixed inset-0 hidden items-center justify-center p-4">
@@ -797,60 +859,97 @@ foreach ($pacs as $r) {
   const $ = (id) => document.getElementById(id);
 
   function openModal(id) {
-    $(id).classList.remove('hidden');
-    $(id).classList.add('flex');
+    const el = $(id);
+    if (!el) return;
+    el.classList.remove('hidden');
+    el.classList.add('flex');
+    if (id === 'modalForm') refreshSummary();
   }
 
   function closeModal(id) {
-    $(id).classList.add('hidden');
-    $(id).classList.remove('flex');
+    const el = $(id);
+    if (!el) return;
+    el.classList.add('hidden');
+    el.classList.remove('flex');
   }
 
+  function fmtMoney(n) {
+    const v = Number(String(n ?? '').replace(/,/g, ''));
+    if (Number.isNaN(v)) return 'S/ 0.00';
+    return 'S/ ' + v.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function refreshSummary() {
+    const nopacEl = $('pac_nopac');
+    const pnEl = $('pac_pn');
+    const obacEl = $('pac_obac');
+    const estadoEl = $('pac_estado');
+    const estEl = $('pac_estimado');
+    const descEl = $('pac_desc');
+
+    $('sum_nopac').textContent = (nopacEl?.value || '-').trim() || '-';
+    $('sum_pn').textContent = (pnEl?.value || '-').trim() || '-';
+    $('sum_obac').textContent = (obacEl?.value || '-').trim() || '-';
+    $('sum_estado').textContent = (estadoEl?.value || '-').trim() || '-';
+    $('sum_estimado').textContent = fmtMoney(estEl?.value || '0');
+
+    const d = descEl?.value || '';
+    $('descCount').textContent = String(d.length);
+  }
+
+  // Live updates
+  ['pac_nopac', 'pac_pn', 'pac_obac', 'pac_fuente', 'pac_estado', 'pac_desc', 'pac_estimado'].forEach((id) => {
+    $(id)?.addEventListener('input', refreshSummary);
+    $(id)?.addEventListener('change', refreshSummary);
+  });
+
+  // Nuevo
   $('btnNew')?.addEventListener('click', () => {
     $('modalTitle').textContent = 'Nuevo PAC';
     $('pac_id').value = '';
     $('pac_nopac').value = '';
-    $('pac_estado').value = 'PUBLICADO';
+    $('pac_pn').value = 'NP';
     $('pac_obac').value = '';
-    $('pac_tp').value = 'CATAL';
-    $('pac_fuente').value = 'RO';
+    $('pac_fuente').value = '-';
+    $('pac_estado').value = 'PUBLICADO';
     $('pac_desc').value = '';
     $('pac_estimado').value = '';
-    $('pac_pub').value = '';
-    $('pac_eje').value = '';
     openModal('modalForm');
   });
 
+  // Editar (mantiene tu firma actual del onclick con 11 params, pero solo usa los necesarios)
   function openEdit(id, nopac, pn, estado, obac, tp, fuente, desc, estimado, pub, eje) {
     $('modalTitle').textContent = 'Editar PAC #' + id;
-    $('pac_id').value = id;
-    $('pac_nopac').value = nopac;
-    $('pac_pn').value = pn;
-    $('pac_estado').value = estado;
-    $('pac_obac').value = obac;
-    $('pac_tp').value = tp;
-    $('pac_fuente').value = fuente;
-    $('pac_desc').value = desc;
-    $('pac_estimado').value = estimado;
-    $('pac_pub').value = pub;
-    $('pac_eje').value = eje;
+    $('pac_id').value = id ?? '';
+    $('pac_nopac').value = nopac ?? '';
+    $('pac_pn').value = pn ?? 'NP';
+    $('pac_estado').value = estado ?? 'PUBLICADO';
+    $('pac_obac').value = obac ?? '';
+    $('pac_fuente').value = fuente ?? '-';
+    $('pac_desc').value = desc ?? '';
+    $('pac_estimado').value = estimado ?? '';
     openModal('modalForm');
   }
+  window.openEdit = openEdit;
 
+  // Delete
   function openDelete(id, nopac) {
-    $('delPac').textContent = nopac + ' (ID ' + id + ')';
+    $('delPac').textContent = (nopac ?? '-') + ' (ID ' + (id ?? '-') + ')';
     openModal('modalDelete');
   }
+  window.openDelete = openDelete;
 
   function fakeSave() {
     alert('Guardado (maqueta). Con BD, aquí harías POST al controlador.');
     closeModal('modalForm');
   }
+  window.fakeSave = fakeSave;
 
   function fakeDelete() {
     alert('Eliminado (maqueta). Con BD, aquí harías POST al controlador.');
     closeModal('modalDelete');
   }
+  window.fakeDelete = fakeDelete;
 </script>
 
 <?php require __DIR__ . '/../../layout/admin_footer.php'; ?>
