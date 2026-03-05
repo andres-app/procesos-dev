@@ -30,6 +30,12 @@
             <span class="sb-ico w-6 text-center">≡</span>
             <span class="sb-label">Presupuesto</span>
         </a>
+
+        <a href="<?= $hrefReportes ?>"
+            class="flex items-center gap-3 px-3 py-2 rounded-xl <?= acls($active === 'reportes') ?>">
+            <span class="sb-ico w-6 text-center">≡</span>
+            <span class="sb-label">Reportes</span>
+        </a>
     </nav>
 
     <div class="sb-footer border-t border-slate-200 p-3">

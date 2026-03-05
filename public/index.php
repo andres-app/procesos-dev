@@ -20,9 +20,16 @@ $sub    = $parts[1] ?? null;
 | HELPERS
 |--------------------------------------------------------------------------
 */
-function redirect(string $to): never
+function redirect(string $to): void
 {
     header('Location: ' . $to);
+    exit;
+}
+
+function not_found(string $msg = '404 - Página no encontrada'): void
+{
+    http_response_code(404);
+    echo "<h1 style='color:white'>{$msg}</h1>";
     exit;
 }
 
@@ -33,12 +40,6 @@ function require_admin_login(): void
     }
 }
 
-function not_found(string $msg = '404 - Página no encontrada'): never
-{
-    http_response_code(404);
-    echo "<h1 style='color:white'>{$msg}</h1>";
-    exit;
-}
 
 function require_file(string $file): void
 {
@@ -104,6 +105,7 @@ if ($module === 'admin') {
         'pac'         => __DIR__ . '/../Vista/modulos/admin/pac.php',
         'procesos'    => __DIR__ . '/../Vista/modulos/admin/procesos.php',
         'presupuesto' => __DIR__ . '/../Vista/modulos/admin/presupuesto.php',
+        'reportes' => __DIR__ . '/../Vista/modulos/admin/reportes.php',
     ];
 
     if (!isset($adminViews[$subRoute])) {

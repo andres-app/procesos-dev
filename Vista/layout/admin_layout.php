@@ -16,6 +16,7 @@ $hrefDashboard = "/public/admin/dashboard";
 $hrefPac       = "/public/admin/pac";
 $hrefProcesos  = "/public/admin/procesos";
 $hrefPresupuesto  = "/public/admin/presupuesto";
+$hrefReportes  = "/public/admin/reportes";
 $hrefLogout    = "/public/admin/logout";
 ?>
 <!doctype html>
