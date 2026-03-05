@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 session_start();
@@ -60,9 +61,10 @@ if ($module === 'admin') {
 
     // /admin -> redirección según sesión
     if ($subRoute === '') {
-        redirect(!empty($_SESSION['admin_user'])
-            ? BASE_URL . '/admin/dashboard'
-            : BASE_URL . '/admin/login'
+        redirect(
+            !empty($_SESSION['admin_user'])
+                ? BASE_URL . '/admin/dashboard'
+                : BASE_URL . '/admin/login'
         );
     }
 
@@ -79,6 +81,26 @@ if ($module === 'admin') {
 
     // privadas
     require_admin_login();
+
+    /*
+|----------------------------------------------------------------------
+| EXPORTS (ADMIN) - MAQUETA
+| URLs:
+|   /admin/export_excel/estado
+|   /admin/export_pdf/estado
+|----------------------------------------------------------------------
+*/
+    if ($subRoute === 'export_excel') {
+        $type = $parts[2] ?? 'estado'; // /admin/export_excel/{type}
+        require_file(__DIR__ . '/../Vista/modulos/admin/exports/excel.php');
+        exit;
+    }
+
+    if ($subRoute === 'export_pdf') {
+        $type = $parts[2] ?? 'estado'; // /admin/export_pdf/{type}
+        require_file(__DIR__ . '/../Vista/modulos/admin/exports/pdf.php');
+        exit;
+    }
 
     /*
     |--------------------------------------------------------------------------
