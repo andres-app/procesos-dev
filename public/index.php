@@ -118,6 +118,12 @@ if ($module === 'admin') {
         exit;
     }
 
+    if ($subRoute === 'pac_guardar') {
+        require_once __DIR__ . '/../Controlador/CtrPacAdmin.php';
+        CtrPacAdmin::guardar();
+        exit;
+    }
+
     /*
     |--------------------------------------------------------------------------
     | VISTAS ADMIN NORMALES (directas)

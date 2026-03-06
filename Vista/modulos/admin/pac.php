@@ -589,9 +589,37 @@ foreach ($pacs as $r) {
   }
   window.openDelete = openDelete;
 
-  function fakeSave() {
-    alert('Guardado (maqueta). Con BD, aquí harías POST al controlador.');
-    closeModal('modalForm');
+  async function fakeSave() {
+    const fd = new FormData();
+    fd.append('nopac', $('pac_nopac').value);
+    fd.append('pn', $('pac_pn').value);
+    fd.append('estado', $('pac_estado').value);
+    fd.append('descripcion', $('pac_desc').value);
+    fd.append('obac', $('pac_obac').value);
+    fd.append('fuente', $('pac_fuente').value);
+    fd.append('estimado', $('pac_estimado').value);
+    fd.append('periodo', new Date().getFullYear());
+
+    try {
+      const resp = await fetch('<?= BASE_URL ?>/admin/pac_guardar', {
+        method: 'POST',
+        body: fd
+      });
+
+      const data = await resp.json();
+
+      if (!data.ok) {
+        alert(data.msg || 'No se pudo guardar.');
+        return;
+      }
+
+      alert(data.msg || 'Guardado correctamente.');
+      window.location.reload();
+
+    } catch (err) {
+      alert('Error al guardar el PAC.');
+      console.error(err);
+    }
   }
   window.fakeSave = fakeSave;
 

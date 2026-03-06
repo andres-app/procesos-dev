@@ -105,4 +105,42 @@ class MdPacAdmin
 
         return $row ?: null;
     }
+
+    public static function guardar(array $data): bool
+    {
+        $db = db();
+
+        $sql = "INSERT INTO pac (
+                nopac,
+                pn,
+                estado,
+                descripcion,
+                obac,
+                fuente,
+                estimado,
+                periodo
+            ) VALUES (
+                :nopac,
+                :pn,
+                :estado,
+                :descripcion,
+                :obac,
+                :fuente,
+                :estimado,
+                :periodo
+            )";
+
+        $st = $db->prepare($sql);
+
+        return $st->execute([
+            ':nopac'       => trim((string)($data['nopac'] ?? '')),
+            ':pn'          => strtoupper(trim((string)($data['pn'] ?? 'NP'))),
+            ':estado'      => strtoupper(trim((string)($data['estado'] ?? 'PUBLICADO'))),
+            ':descripcion' => trim((string)($data['descripcion'] ?? '')),
+            ':obac'        => (int)($data['obac'] ?? 0),
+            ':fuente'      => (int)($data['fuente'] ?? 0),
+            ':estimado'    => (float)($data['estimado'] ?? 0),
+            ':periodo'     => (int)($data['periodo'] ?? date('Y')),
+        ]);
+    }
 }
