@@ -41,7 +41,6 @@ function require_admin_login(): void
     }
 }
 
-
 function require_file(string $file): void
 {
     if (!is_file($file)) {
@@ -83,13 +82,13 @@ if ($module === 'admin') {
     require_admin_login();
 
     /*
-|----------------------------------------------------------------------
-| EXPORTS (ADMIN) - MAQUETA
-| URLs:
-|   /admin/export_excel/estado
-|   /admin/export_pdf/estado
-|----------------------------------------------------------------------
-*/
+    |--------------------------------------------------------------------------
+    | EXPORTS (ADMIN) - MAQUETA
+    | URLs:
+    |   /admin/export_excel/estado
+    |   /admin/export_pdf/estado
+    |--------------------------------------------------------------------------
+    */
     if ($subRoute === 'export_excel') {
         $type = $parts[2] ?? 'estado'; // /admin/export_excel/{type}
         require_file(__DIR__ . '/../Vista/modulos/admin/exports/excel.php');
@@ -104,16 +103,18 @@ if ($module === 'admin') {
 
     /*
     |--------------------------------------------------------------------------
-    | RUTA ESPECIAL: ACTIVIDADES (DETALLE PROCESO)
+    | RUTAS ESPECIALES ADMIN (con controlador)
     |--------------------------------------------------------------------------
-    | Esta NO debe cargar vista directa.
-    | Debe pasar por controlador para llenar:
-    |   - $proceso
-    |   - $actividades
     */
     if ($subRoute === 'actividades') {
         require_once __DIR__ . '/../Controlador/CtrProcesoAdmin.php';
         CtrProcesoAdmin::actividades();
+        exit;
+    }
+
+    if ($subRoute === 'pac') {
+        require_once __DIR__ . '/../Controlador/CtrPacAdmin.php';
+        CtrPacAdmin::index();
         exit;
     }
 
@@ -124,10 +125,9 @@ if ($module === 'admin') {
     */
     $adminViews = [
         'dashboard'   => __DIR__ . '/../Vista/modulos/admin/dashboard.php',
-        'pac'         => __DIR__ . '/../Vista/modulos/admin/pac.php',
         'procesos'    => __DIR__ . '/../Vista/modulos/admin/procesos.php',
         'presupuesto' => __DIR__ . '/../Vista/modulos/admin/presupuesto.php',
-        'reportes' => __DIR__ . '/../Vista/modulos/admin/reportes.php',
+        'reportes'    => __DIR__ . '/../Vista/modulos/admin/reportes.php',
     ];
 
     if (!isset($adminViews[$subRoute])) {

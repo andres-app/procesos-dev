@@ -75,6 +75,7 @@ lengthMenu:[10,25,50,100],
 paging:true,
 info:true,
 ordering:true,
+order: [],
 searching:true,
 
 autoWidth:false,
