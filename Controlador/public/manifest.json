@@ -1,0 +1,32 @@
+{
+  "id": "/public/",
+  "name": "Seguimiento de procesos",
+  "short_name": "Seguimiento de procesos",
+  "description": "Control de gastos personales",
+  "start_url": "/public/",
+  "scope": "/public/",
+  "display": "standalone",
+  "background_color": "#0F2F5A",
+  "theme_color": "#0F2F5A",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/public/icons/apple-touch-icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/public/icons/apple-touch-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/public/icons/apple-touch-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

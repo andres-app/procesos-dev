@@ -1,0 +1,1 @@
+<h1>Usuarios</h1><script src='/js/usuario.js'></script>

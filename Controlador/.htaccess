@@ -1,0 +1,7 @@
+RewriteEngine On
+
+# Evita bucle si ya estás en /public
+RewriteCond %{REQUEST_URI} !^/procesos-dev/public/
+
+# Reescribe hacia /public manteniendo la ruta
+RewriteRule ^(.*)$ public/$1 [L]
