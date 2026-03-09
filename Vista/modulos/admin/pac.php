@@ -10,101 +10,6 @@ function h($s)
   return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
 }
 
-$pacs = [
-  [
-    'id' => 1,
-    'nopac' => '0043',
-    'estado' => 'PUBLICADO',
-    'obac' => 'MGP',
-    'tp' => 'CATAL',
-    'fuente' => 'RO',
-    'descripcion' => 'CONTRATACIÓN CORPORATIVA DEL SEGURO DE EMBARCACIONES MARÍTIMAS Y FLUVIALES /SERVICIO PP 0135/REQ.0009-2026-DIRECOMAR',
-    'estimado' => 50699.30,
-    'publicacion' => '23/01/26',
-    'ejecucion' => 'FEB',
-    'fpc' => 'bien',
-  ],
-  [
-    'id' => 2,
-    'nopac' => '0044',
-    'estado' => 'PUBLICADO',
-    'obac' => 'EP',
-    'tp' => 'CPA',
-    'fuente' => 'RO',
-    'descripcion' => 'ADQUISICIÓN DE PAPELERÍA EN GENERAL, ÚTILES DE OFICINA A TRAVÉS DE CATÁLOGOS ELECTRÓNICOS DE ACUERDOS MARCO',
-    'estimado' => 14775.70,
-    'publicacion' => '23/01/26',
-    'ejecucion' => 'MAR',
-    'fpc' => 'pend',
-  ],
-  [
-    'id' => 2,
-    'nopac' => '0044',
-    'estado' => 'PUBLICADO',
-    'obac' => 'EP',
-    'tp' => 'CPA',
-    'fuente' => 'RO',
-    'descripcion' => 'ADQUISICIÓN DE PAPELERÍA EN GENERAL, ÚTILES DE OFICINA A TRAVÉS DE CATÁLOGOS ELECTRÓNICOS DE ACUERDOS MARCO',
-    'estimado' => 14775.70,
-    'publicacion' => '23/01/26',
-    'ejecucion' => 'MAR',
-    'fpc' => 'pend',
-  ],
-  [
-    'id' => 2,
-    'nopac' => '0044',
-    'estado' => 'PUBLICADO',
-    'obac' => 'EP',
-    'tp' => 'CPA',
-    'fuente' => 'RO',
-    'descripcion' => 'ADQUISICIÓN DE PAPELERÍA EN GENERAL, ÚTILES DE OFICINA A TRAVÉS DE CATÁLOGOS ELECTRÓNICOS DE ACUERDOS MARCO',
-    'estimado' => 14775.70,
-    'publicacion' => '23/01/26',
-    'ejecucion' => 'MAR',
-    'fpc' => 'pend',
-  ],
-  [
-    'id' => 2,
-    'nopac' => '0044',
-    'estado' => 'PUBLICADO',
-    'obac' => 'EP',
-    'tp' => 'CPA',
-    'fuente' => 'RO',
-    'descripcion' => 'ADQUISICIÓN DE PAPELERÍA EN GENERAL, ÚTILES DE OFICINA A TRAVÉS DE CATÁLOGOS ELECTRÓNICOS DE ACUERDOS MARCO',
-    'estimado' => 14775.70,
-    'publicacion' => '23/01/26',
-    'ejecucion' => 'MAR',
-    'fpc' => 'pend',
-  ],
-  [
-    'id' => 2,
-    'nopac' => '0044',
-    'estado' => 'PUBLICADO',
-    'obac' => 'EP',
-    'tp' => 'CPA',
-    'fuente' => 'RO',
-    'descripcion' => 'ADQUISICIÓN DE PAPELERÍA EN GENERAL, ÚTILES DE OFICINA A TRAVÉS DE CATÁLOGOS ELECTRÓNICOS DE ACUERDOS MARCO',
-    'estimado' => 14775.70,
-    'publicacion' => '23/01/26',
-    'ejecucion' => 'MAR',
-    'fpc' => 'pend',
-  ],
-  [
-    'id' => 2,
-    'nopac' => '0044',
-    'estado' => 'PUBLICADO',
-    'obac' => 'EP',
-    'tp' => 'CPA',
-    'fuente' => 'RO',
-    'descripcion' => 'ADQUISICIÓN DE PAPELERÍA EN GENERAL, ÚTILES DE OFICINA A TRAVÉS DE CATÁLOGOS ELECTRÓNICOS DE ACUERDOS MARCO',
-    'estimado' => 14775.70,
-    'publicacion' => '23/01/26',
-    'ejecucion' => 'MAR',
-    'fpc' => 'pend',
-  ],
-
-];
-
 function pill($txt, $tone = 'slate')
 {
   $map = [
@@ -127,6 +32,28 @@ function toneEstado($estado)
   if ($e === 'ANULADO') return 'rose';
   return 'slate';
 }
+
+?>
+
+<?php
+// ===== KPIs (Programables / No programables) =====
+$cntP  = 0;
+$cntNP = 0;
+$sumP  = 0.0;
+$sumNP = 0.0;
+
+foreach ($pacs as $r) {
+  $pn  = strtoupper(trim((string)($r['pn'] ?? 'NP')));
+  $est = (float)($r['estimado'] ?? 0);
+
+  if ($pn === 'P') {
+    $cntP++;
+    $sumP += $est;
+  } else {
+    $cntNP++;
+    $sumNP += $est;
+  }
+}
 ?>
 
 <div class="space-y-5">
@@ -136,7 +63,7 @@ function toneEstado($estado)
     <div>
       <div class="text-xs text-slate-500">Administrador</div>
       <h1 class="text-xl font-semibold tracking-tight leading-tight">PAC</h1>
-      <div class="text-xs text-slate-500">Mantenimiento (maqueta)</div>
+      <div class="text-xs text-slate-500">Mantenimiento</div>
     </div>
 
     <div class="flex flex-col sm:flex-row gap-2">
@@ -155,25 +82,36 @@ function toneEstado($estado)
 
   <!-- KPIs -->
   <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+    <!-- Total PAC Programables -->
     <div class="rounded-3xl bg-white border border-slate-200 p-4 shadow-soft">
-      <div class="text-xs text-slate-500">Total PAC</div>
-      <div class="mt-1 text-2xl font-semibold"><?= count($pacs) ?></div>
-      <div class="mt-2 text-xs text-slate-500">Vista maqueta</div>
+      <div class="text-xs text-slate-500">Total PAC Programables</div>
+      <div class="mt-1 text-2xl font-semibold"><?= (int)$cntP ?></div>
+      <div class="mt-2 text-xs text-slate-500">P</div>
     </div>
+
+    <!-- Total PAC No Programables -->
     <div class="rounded-3xl bg-white border border-slate-200 p-4 shadow-soft">
-      <div class="text-xs text-slate-500">Publicados</div>
-      <div class="mt-1 text-2xl font-semibold">—</div>
-      <div class="mt-2 text-xs text-slate-500">Pendiente de data real</div>
+      <div class="text-xs text-slate-500">Total PAC No Programables</div>
+      <div class="mt-1 text-2xl font-semibold"><?= (int)$cntNP ?></div>
+      <div class="mt-2 text-xs text-slate-500">NP</div>
     </div>
+
+    <!-- Estimado total Programables -->
     <div class="rounded-3xl bg-white border border-slate-200 p-4 shadow-soft">
-      <div class="text-xs text-slate-500">Estimado total</div>
-      <div class="mt-1 text-2xl font-semibold">—</div>
-      <div class="mt-2 text-xs text-slate-500">Pendiente de data real</div>
+      <div class="text-xs text-slate-500">Estimado total Programables</div>
+      <div class="mt-1 text-2xl font-semibold">
+        S/ <?= number_format($sumP, 2, '.', ',') ?>
+      </div>
+      <div class="mt-2 text-xs text-slate-500">Suma de estimados (P)</div>
     </div>
+
+    <!-- Estimado total No Programables -->
     <div class="rounded-3xl bg-white border border-slate-200 p-4 shadow-soft">
-      <div class="text-xs text-slate-500">Alertas</div>
-      <div class="mt-1 text-2xl font-semibold">—</div>
-      <div class="mt-2 text-xs text-slate-500">Pendiente de reglas</div>
+      <div class="text-xs text-slate-500">Estimado total No Programables</div>
+      <div class="mt-1 text-2xl font-semibold">
+        S/ <?= number_format($sumNP, 2, '.', ',') ?>
+      </div>
+      <div class="mt-2 text-xs text-slate-500">Suma de estimados (NP)</div>
     </div>
   </div>
 
@@ -181,22 +119,19 @@ function toneEstado($estado)
   <div class="card border border-slate-200 bg-white shadow-soft overflow-hidden">
     <div class="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
       <div class="font-semibold">PAC registrados</div>
-      <div class="text-sm text-slate-500">Acciones: editar / eliminar (maqueta)</div>
     </div>
 
     <div class="overflow-x-auto">
-      <table class="min-w-full thc tbc">
+      <table id="tblPac" class="min-w-full thc tbc">
         <thead class="bg-slate-50 text-slate-600">
           <tr>
             <th class="text-left font-medium px-4 py-3">N° PAC</th>
-            <th class="text-left font-medium px-4 py-3">Estado</th>
-            <th class="text-left font-medium px-4 py-3">OBAC</th>
-            <th class="text-left font-medium px-4 py-3">TP</th>
-            <th class="text-left font-medium px-4 py-3">Fuente</th>
+            <th class="text-left font-medium px-4 py-3">P/NP</th>
             <th class="text-left font-medium px-4 py-3">Descripción</th>
+            <th class="text-left font-medium px-4 py-3">OBAC</th>
+            <th class="text-left font-medium px-4 py-3">Fuente</th>
+            <th class="text-left font-medium px-4 py-3">Estado</th>
             <th class="text-left font-medium px-4 py-3">Estimado</th>
-            <th class="text-left font-medium px-4 py-3">Publicación</th>
-            <th class="text-left font-medium px-4 py-3">Ejecución</th>
             <th class="text-right font-medium px-4 py-3">Acciones</th>
           </tr>
         </thead>
@@ -204,56 +139,100 @@ function toneEstado($estado)
         <tbody class="divide-y divide-slate-100">
           <?php foreach ($pacs as $r): ?>
             <tr class="hover:bg-slate-50">
-              <td class="px-4 py-3 font-semibold text-slate-900"><?= h($r['nopac']) ?></td>
+
+              <!-- N° PAC -->
+              <td class="px-4 py-3 font-semibold text-slate-900">
+                <?= h($r['nopac']) ?>
+              </td>
+
+              <!-- P / NP -->
+              <td class="px-4 py-3">
+                <?= pill(h($r['pn'] ?? 'NP'), ($r['pn'] ?? 'NP') === 'P' ? 'blue' : 'slate') ?>
+              </td>
+
+              <!-- Descripción (3ra columna) -->
+              <td class="px-4 py-3 max-w-[520px]">
+                <div class="text-slate-900 line-clamp-2" title="<?= h($r['descripcion']) ?>">
+                  <?= h($r['descripcion']) ?>
+                </div>
+              </td>
+              <!-- OBAC -->
+              <td class="px-4 py-3">
+                <?= pill(h($r['obac_nombre'] ?? '-'), 'blue') ?>
+              </td>
+
+              <!-- Fuente -->
+              <td class="px-4 py-3">
+                <?= pill(h($r['fuente_nombre'] ?? '-'), 'amber') ?>
+              </td>
+
+              <!-- Estado -->
               <td class="px-4 py-3">
                 <?= pill(h($r['estado']), toneEstado($r['estado'])) ?>
               </td>
-              <td class="px-4 py-3"><?= pill(h($r['obac']), 'blue') ?></td>
-              <td class="px-4 py-3"><?= pill(h($r['tp']), 'slate') ?></td>
-              <td class="px-4 py-3"><?= pill(h($r['fuente']), 'amber') ?></td>
-              <td class="px-4 py-3 max-w-[520px]">
-                <div class="text-slate-900 line-clamp-2"><?= h($r['descripcion']) ?></div>
-                <div class="mt-1 text-xs text-slate-500">ID: <?= (int)$r['id'] ?></div>
-              </td>
+
+              <!-- Estimado -->
               <td class="px-4 py-3 whitespace-nowrap">
                 S/ <?= number_format((float)$r['estimado'], 2) ?>
               </td>
-              <td class="px-4 py-3 whitespace-nowrap"><?= h($r['publicacion']) ?></td>
-              <td class="px-4 py-3 whitespace-nowrap"><?= h($r['ejecucion']) ?></td>
 
+              <!-- Acciones -->
               <td class="px-4 py-3">
                 <div class="flex justify-end gap-1.5">
+                  <!-- Editar -->
                   <button
                     class="iconbtn"
                     title="Editar"
                     aria-label="Editar PAC <?= h($r['nopac']) ?>"
-                    onclick="openEdit(<?= (int)$r['id'] ?>, '<?= h($r['nopac']) ?>', '<?= h($r['estado']) ?>', '<?= h($r['obac']) ?>', '<?= h($r['tp']) ?>', '<?= h($r['fuente']) ?>', '<?= h($r['descripcion']) ?>', '<?= h($r['estimado']) ?>', '<?= h($r['publicacion']) ?>', '<?= h($r['ejecucion']) ?>')">
-                    <!-- pencil -->
+                    onclick="openEdit(
+          <?= (int)$r['id'] ?>,
+          '<?= h($r['nopac']) ?>',
+          '<?= h($r['pn'] ?? 'NP') ?>',
+          '<?= h($r['estado']) ?>',
+          '<?= h($r['obac']) ?>',
+          '<?= h($r['tp']) ?>',
+          '<?= h($r['fuente']) ?>',
+          '<?= h($r['descripcion']) ?>',
+          '<?= h($r['estimado']) ?>',
+          '<?= h($r['publicacion'] ?? '') ?>',
+          '<?= h($r['ejecucion'] ?? '') ?>'
+        )">
                     <svg viewBox="0 0 24 24" class="ico" aria-hidden="true">
-                      <path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm2.92 2.83H5v-.92l9.06-9.06.92.92L5.92 20.08zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                      <path fill="currentColor"
+                        d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm2.92 
+            2.83H5v-.92l9.06-9.06.92.92L5.92 
+            20.08zM20.71 7.04a1 1 0 0 0 
+            0-1.41l-2.34-2.34a1 1 0 0 
+            0-1.41 0l-1.83 1.83 
+            3.75 3.75 1.83-1.83z" />
                     </svg>
                   </button>
 
+                  <!-- Eliminar -->
                   <button
                     class="iconbtn iconbtn--danger"
                     title="Eliminar"
                     aria-label="Eliminar PAC <?= h($r['nopac']) ?>"
                     onclick="openDelete(<?= (int)$r['id'] ?>, '<?= h($r['nopac']) ?>')">
-                    <!-- trash -->
                     <svg viewBox="0 0 24 24" class="ico" aria-hidden="true">
-                      <path fill="currentColor" d="M6 7h12l-1 14H7L6 7zm3-3h6l1 2H8l1-2z" />
+                      <path fill="currentColor"
+                        d="M6 7h12l-1 14H7L6 7zm3-3h6l1 2H8l1-2z" />
                     </svg>
                   </button>
                 </div>
               </td>
+
             </tr>
           <?php endforeach; ?>
 
           <?php if (count($pacs) === 0): ?>
             <tr>
-              <td colspan="10" class="px-4 py-10 text-center text-slate-500">No hay registros (maqueta).</td>
+              <td colspan="8" class="px-4 py-10 text-center text-slate-500">
+                No hay registros.
+              </td>
             </tr>
           <?php endif; ?>
+
         </tbody>
       </table>
     </div>
@@ -261,72 +240,130 @@ function toneEstado($estado)
 
 </div>
 
-<!-- Modal (Nuevo/Editar) -->
-<div id="modalForm" class="fixed inset-0 hidden items-center justify-center p-4">
+<!-- Modal (Nuevo/Editar) — ADAPTADO a columnas del DataTable -->
+<div id="modalForm" class="fixed inset-0 hidden items-center justify-center p-4 z-50">
   <div class="absolute inset-0 bg-slate-900/30" onclick="closeModal('modalForm')"></div>
 
-  <div class="relative w-full max-w-3xl rounded-3xl border border-slate-200 glass shadow-soft">
+  <div class="relative w-full max-w-3xl rounded-3xl border border-slate-200 glass shadow-soft overflow-hidden">
+    <!-- Header -->
     <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
-      <div>
+      <div class="min-w-0">
         <div class="text-xs text-slate-500">PAC</div>
-        <div id="modalTitle" class="text-lg font-semibold">Nuevo PAC</div>
+        <div id="modalTitle" class="text-lg font-semibold truncate">Nuevo PAC</div>
       </div>
-      <button class="rounded-2xl border border-slate-200 bg-white px-3 py-1.5 text-sm hover:bg-slate-50"
+
+      <button
+        type="button"
+        class="rounded-2xl border border-slate-200 bg-white px-3 py-1.5 text-sm hover:bg-slate-50"
         onclick="closeModal('modalForm')">Cerrar</button>
     </div>
 
-    <form class="p-5 grid grid-cols-1 md:grid-cols-6 gap-3">
+    <!-- Body -->
+    <form class="p-5 grid grid-cols-1 md:grid-cols-6 gap-3" onsubmit="return false;">
       <input type="hidden" id="pac_id" value="">
 
-      <div class="md:col-span-1">
-        <label class="block text-xs text-slate-500 mb-1">N° PAC</label>
-        <input id="pac_nopac" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
-      </div>
-
+      <!-- N° PAC -->
       <div class="md:col-span-2">
-        <label class="block text-xs text-slate-500 mb-1">Estado</label>
-        <input id="pac_estado" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
+        <label class="block text-xs text-slate-500 mb-1">N° PAC</label>
+        <input
+          id="pac_nopac"
+          class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5"
+          placeholder="Ej: 0043"
+          autocomplete="off">
       </div>
 
+      <!-- P/NP -->
+      <div class="md:col-span-1">
+        <label class="block text-xs text-slate-500 mb-1">P/NP</label>
+        <select id="pac_pn" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
+          <option value="P">P</option>
+          <option value="NP">NP</option>
+        </select>
+      </div>
+
+      <!-- OBAC -->
       <div class="md:col-span-1">
         <label class="block text-xs text-slate-500 mb-1">OBAC</label>
-        <input id="pac_obac" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
+        <select id="pac_obac" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
+          <option value="">Seleccionar…</option>
+
+          <?php foreach ($obacs as $o): ?>
+
+            <option value="<?= (int)$o['id'] ?>">
+              <?= h($o['nombre']) ?>
+            </option>
+
+          <?php endforeach; ?>
+
+        </select>
       </div>
 
-      <div class="md:col-span-1">
-        <label class="block text-xs text-slate-500 mb-1">TP</label>
-        <input id="pac_tp" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
-      </div>
-
+      <!-- Fuente -->
       <div class="md:col-span-1">
         <label class="block text-xs text-slate-500 mb-1">Fuente</label>
-        <input id="pac_fuente" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
+        <select id="pac_fuente" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
+
+          <option value="">Seleccionar…</option>
+
+          <?php foreach ($fuentes as $f): ?>
+
+            <option value="<?= (int)$f['id'] ?>">
+              <?= h($f['nombre']) ?>
+            </option>
+
+          <?php endforeach; ?>
+
+        </select>
       </div>
 
+      <!-- Estado -->
+      <div class="md:col-span-1">
+        <label class="block text-xs text-slate-500 mb-1">Estado</label>
+        <select id="pac_estado" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
+          <option value="PUBLICADO">PUBLICADO</option>
+        </select>
+      </div>
+
+      <!-- Descripción -->
       <div class="md:col-span-6">
-        <label class="block text-xs text-slate-500 mb-1">Descripción</label>
-        <textarea id="pac_desc" rows="3" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5"></textarea>
+        <div class="flex items-end justify-between gap-2">
+          <label class="block text-xs text-slate-500 mb-1">Descripción</label>
+          <div class="text-[11px] text-slate-400 mb-1">
+            <span id="descCount">0</span>/400
+          </div>
+        </div>
+        <textarea
+          id="pac_desc"
+          rows="4"
+          maxlength="400"
+          class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5"
+          placeholder="Describe el requerimiento…"></textarea>
       </div>
 
+      <!-- Estimado -->
       <div class="md:col-span-2">
         <label class="block text-xs text-slate-500 mb-1">Estimado (S/.)</label>
-        <input id="pac_estimado" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
+        <input
+          id="pac_estimado"
+          inputmode="decimal"
+          class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5"
+          placeholder="Ej: 90000.00"
+          autocomplete="off">
+        <div class="mt-1 text-[11px] text-slate-400">
+          Vista: <span id="sum_estimado">S/ 0.00</span>
+        </div>
       </div>
 
-      <div class="md:col-span-2">
-        <label class="block text-xs text-slate-500 mb-1">Publicación</label>
-        <input id="pac_pub" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5" placeholder="dd/mm/aa">
-      </div>
-
-      <div class="md:col-span-2">
-        <label class="block text-xs text-slate-500 mb-1">Ejecución</label>
-        <input id="pac_eje" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5" placeholder="FEB/MAR/...">
-      </div>
-
+      <!-- Footer -->
       <div class="md:col-span-6 flex items-center justify-end gap-2 pt-2">
-        <button type="button" class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm hover:bg-slate-50"
+        <button
+          type="button"
+          class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm hover:bg-slate-50"
           onclick="closeModal('modalForm')">Cancelar</button>
-        <button type="button" class="rounded-2xl bg-slate-900 text-white px-4 py-2.5 text-sm font-medium hover:bg-slate-800"
+
+        <button
+          type="button"
+          class="rounded-2xl bg-slate-900 text-white px-4 py-2.5 text-sm font-medium hover:bg-slate-800"
           onclick="fakeSave()">
           Guardar (maqueta)
         </button>
@@ -334,6 +371,26 @@ function toneEstado($estado)
     </form>
   </div>
 </div>
+
+<style>
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .25rem .55rem;
+    border-radius: 999px;
+    font-size: 12px;
+    border: 1px solid rgba(148, 163, 184, .45);
+    background: rgba(255, 255, 255, .85);
+    color: rgb(71, 85, 105);
+    max-width: 100%;
+  }
+
+  .chip--muted span {
+    color: rgb(15, 23, 42);
+    font-weight: 600;
+  }
+</style>
 
 <!-- Modal delete -->
 <div id="modalDelete" class="fixed inset-0 hidden items-center justify-center p-4">
@@ -461,59 +518,128 @@ function toneEstado($estado)
   const $ = (id) => document.getElementById(id);
 
   function openModal(id) {
-    $(id).classList.remove('hidden');
-    $(id).classList.add('flex');
+    const el = $(id);
+    if (!el) return;
+    el.classList.remove('hidden');
+    el.classList.add('flex');
+    if (id === 'modalForm') refreshSummary();
   }
 
   function closeModal(id) {
-    $(id).classList.add('hidden');
-    $(id).classList.remove('flex');
+    const el = $(id);
+    if (!el) return;
+    el.classList.add('hidden');
+    el.classList.remove('flex');
   }
 
+  function fmtMoney(n) {
+    const v = Number(String(n ?? '').replace(/,/g, ''));
+    if (Number.isNaN(v)) return 'S/ 0.00';
+    return 'S/ ' + v.toLocaleString('es-PE', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  function refreshSummary() {
+    const nopacEl = $('pac_nopac');
+    const pnEl = $('pac_pn');
+    const obacEl = $('pac_obac');
+    const estadoEl = $('pac_estado');
+    const estEl = $('pac_estimado');
+    const descEl = $('pac_desc');
+
+    $('sum_nopac').textContent = (nopacEl?.value || '-').trim() || '-';
+    $('sum_pn').textContent = (pnEl?.value || '-').trim() || '-';
+    $('sum_obac').textContent = (obacEl?.value || '-').trim() || '-';
+    $('sum_estado').textContent = (estadoEl?.value || '-').trim() || '-';
+    $('sum_estimado').textContent = fmtMoney(estEl?.value || '0');
+
+    const d = descEl?.value || '';
+    $('descCount').textContent = String(d.length);
+  }
+
+  // Live updates
+  ['pac_nopac', 'pac_pn', 'pac_obac', 'pac_fuente', 'pac_estado', 'pac_desc', 'pac_estimado'].forEach((id) => {
+    $(id)?.addEventListener('input', refreshSummary);
+    $(id)?.addEventListener('change', refreshSummary);
+  });
+
+  // Nuevo
   $('btnNew')?.addEventListener('click', () => {
     $('modalTitle').textContent = 'Nuevo PAC';
     $('pac_id').value = '';
     $('pac_nopac').value = '';
-    $('pac_estado').value = 'PUBLICADO';
+    $('pac_pn').value = 'NP';
     $('pac_obac').value = '';
-    $('pac_tp').value = 'CATAL';
-    $('pac_fuente').value = 'RO';
+    $('pac_fuente').value = '-';
+    $('pac_estado').value = 'PUBLICADO';
     $('pac_desc').value = '';
     $('pac_estimado').value = '';
-    $('pac_pub').value = '';
-    $('pac_eje').value = '';
     openModal('modalForm');
   });
 
-  function openEdit(id, nopac, estado, obac, tp, fuente, desc, estimado, pub, eje) {
+  // Editar (mantiene tu firma actual del onclick con 11 params, pero solo usa los necesarios)
+  function openEdit(id, nopac, pn, estado, obac, tp, fuente, desc, estimado, pub, eje) {
     $('modalTitle').textContent = 'Editar PAC #' + id;
-    $('pac_id').value = id;
-    $('pac_nopac').value = nopac;
-    $('pac_estado').value = estado;
-    $('pac_obac').value = obac;
-    $('pac_tp').value = tp;
-    $('pac_fuente').value = fuente;
-    $('pac_desc').value = desc;
-    $('pac_estimado').value = estimado;
-    $('pac_pub').value = pub;
-    $('pac_eje').value = eje;
+    $('pac_id').value = id ?? '';
+    $('pac_nopac').value = nopac ?? '';
+    $('pac_pn').value = pn ?? 'NP';
+    $('pac_estado').value = estado ?? 'PUBLICADO';
+    $('pac_obac').value = obac ?? '';
+    $('pac_fuente').value = fuente ?? '-';
+    $('pac_desc').value = desc ?? '';
+    $('pac_estimado').value = estimado ?? '';
     openModal('modalForm');
   }
+  window.openEdit = openEdit;
 
+  // Delete
   function openDelete(id, nopac) {
-    $('delPac').textContent = nopac + ' (ID ' + id + ')';
+    $('delPac').textContent = (nopac ?? '-') + ' (ID ' + (id ?? '-') + ')';
     openModal('modalDelete');
   }
+  window.openDelete = openDelete;
 
-  function fakeSave() {
-    alert('Guardado (maqueta). Con BD, aquí harías POST al controlador.');
-    closeModal('modalForm');
+  async function fakeSave() {
+    const fd = new FormData();
+    fd.append('nopac', $('pac_nopac').value);
+    fd.append('pn', $('pac_pn').value);
+    fd.append('estado', $('pac_estado').value);
+    fd.append('descripcion', $('pac_desc').value);
+    fd.append('obac', $('pac_obac').value);
+    fd.append('fuente', $('pac_fuente').value);
+    fd.append('estimado', $('pac_estimado').value);
+    fd.append('periodo', new Date().getFullYear());
+
+    try {
+      const resp = await fetch('<?= BASE_URL ?>/admin/pac_guardar', {
+        method: 'POST',
+        body: fd
+      });
+
+      const data = await resp.json();
+
+      if (!data.ok) {
+        alert(data.msg || 'No se pudo guardar.');
+        return;
+      }
+
+      alert(data.msg || 'Guardado correctamente.');
+      window.location.reload();
+
+    } catch (err) {
+      alert('Error al guardar el PAC.');
+      console.error(err);
+    }
   }
+  window.fakeSave = fakeSave;
 
   function fakeDelete() {
     alert('Eliminado (maqueta). Con BD, aquí harías POST al controlador.');
     closeModal('modalDelete');
   }
+  window.fakeDelete = fakeDelete;
 </script>
 
 <?php require __DIR__ . '/../../layout/admin_footer.php'; ?>

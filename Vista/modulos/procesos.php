@@ -154,40 +154,13 @@ function statusClass($estado)
               <span class="status <?= statusClass($p['estado']) ?>">
                 <?= htmlspecialchars($p['estado']) ?>
               </span>
-
-              <div class="actions">
-                <button class="kebab" type="button" aria-label="Acciones" data-menu-btn></button>
-
-                <div class="menu hidden" data-menu>
-                  <a class="menu-item" href="<?= BASE_URL ?>/actividades?id=<?= (int)$p['id'] ?>">
-                    <span class="mi">👁️</span> Ver
-                  </a>
-
-                  <a class="menu-item" href="<?= BASE_URL ?>/procesos/editar?id=<?= (int)$p['id'] ?>">
-                    <span class="mi">✏️</span> Editar
-                  </a>
-
-                  <button class="menu-item danger" type="button"
-                    data-delete
-                    data-id="<?= (int)$p['id'] ?>"
-                    data-name="<?= htmlspecialchars($p['proceso']) ?>">
-                    <span class="mi">🗑️</span> Eliminar
-                  </button>
-                </div>
-              </div>
             </div>
-
             <p class="money"><?= fmt_money($p['estimado']) ?></p>
           </div>
         </div>
       <?php endforeach; ?>
     </section>
   </section>
-
-  <div class="mt-4 text-xs text-white/70">
-    Mostrando un total de <?= count($procesos) ?> procesos
-  </div>
-
 </main>
 
 <?php require __DIR__ . '/../layout/bottom-nav.php'; ?>
@@ -308,23 +281,32 @@ function statusClass($estado)
     backdrop-filter: blur(12px);
   }
 
-  /* SOLO la lista scrollea y NO se parte el último card */
+  :root {
+    --tabbar-h: 76px;
+    /* height real del .ios-tabbar */
+    --tabbar-gap: 12px;
+    /* tu bottom: 12px + safe-area */
+    --tabbar-side-gap: 14px;
+    /* no influye en altura, solo referencia */
+  }
+
+  /* SOLO la lista scrollea */
   .lista-scroll {
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
 
-    /* ocupa el alto disponible del main */
-    height: calc(100vh - 290px);
+    /* usa dvh (mejor en móvil) y RESTA el tabbar + safe-area */
+    height: calc(100dvh - 290px - (var(--tabbar-h) + var(--tabbar-gap) + env(safe-area-inset-bottom)));
 
-    /* espacio real para el bottom-nav + safe area */
-    padding-bottom: calc(140px + env(safe-area-inset-bottom));
+    /* padding interno para que el último item nunca quede pegado */
+    padding-bottom: 18px;
   }
 
-  /* Desktop: normalmente el bottom-nav no estorba tanto */
+  /* Desktop */
   @media (min-width: 1024px) {
     .lista-scroll {
-      height: calc(100vh - 260px);
-      padding-bottom: 40px;
+      height: calc(100dvh - 260px - 40px);
+      padding-bottom: 12px;
     }
   }
 
