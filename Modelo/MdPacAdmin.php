@@ -143,4 +143,28 @@ class MdPacAdmin
             ':periodo'     => (int)($data['periodo'] ?? date('Y')),
         ]);
     }
+
+    public static function listarObac(): array
+    {
+        $db = db();
+
+        $sql = "SELECT id, nombre FROM entidad ORDER BY nombre";
+
+        $st = $db->prepare($sql);
+        $st->execute();
+
+        return $st->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public static function listarFuente(): array
+    {
+        $db = db();
+
+        $sql = "SELECT id, nombre FROM fuente ORDER BY nombre";
+
+        $st = $db->prepare($sql);
+        $st->execute();
+
+        return $st->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

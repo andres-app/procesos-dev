@@ -6,7 +6,6 @@ class CtrPacAdmin
 {
     public static function index(): void
     {
-        // filtros opcionales desde GET
         $filtros = [
             'q'       => $_GET['q'] ?? '',
             'pn'      => $_GET['pn'] ?? '',
@@ -15,10 +14,11 @@ class CtrPacAdmin
             'obac'    => $_GET['obac'] ?? '',
         ];
 
-        // obtener PAC desde el modelo
         $pacs = MdPacAdmin::listar($filtros);
 
-        // cargar vista
+        $obacs   = MdPacAdmin::listarObac();
+        $fuentes = MdPacAdmin::listarFuente();
+
         require_once __DIR__ . '/../Vista/modulos/admin/pac.php';
     }
 

@@ -286,22 +286,34 @@ foreach ($pacs as $r) {
         <label class="block text-xs text-slate-500 mb-1">OBAC</label>
         <select id="pac_obac" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
           <option value="">Seleccionar…</option>
-          <option value="EP">EP</option>
-          <option value="FAP">FAP</option>
-          <option value="MGP">MGP</option>
-          <option value="CCFFAA">CCFFAA</option>
-          <option value="CONIDA">CONIDA</option>
+
+          <?php foreach ($obacs as $o): ?>
+
+            <option value="<?= (int)$o['id'] ?>">
+              <?= h($o['nombre']) ?>
+            </option>
+
+          <?php endforeach; ?>
+
         </select>
       </div>
 
       <!-- Fuente -->
       <div class="md:col-span-1">
         <label class="block text-xs text-slate-500 mb-1">Fuente</label>
-        <input
-          id="pac_fuente"
-          class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5"
-          placeholder="Ej: RO"
-          autocomplete="off">
+        <select id="pac_fuente" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
+
+          <option value="">Seleccionar…</option>
+
+          <?php foreach ($fuentes as $f): ?>
+
+            <option value="<?= (int)$f['id'] ?>">
+              <?= h($f['nombre']) ?>
+            </option>
+
+          <?php endforeach; ?>
+
+        </select>
       </div>
 
       <!-- Estado -->
@@ -340,6 +352,18 @@ foreach ($pacs as $r) {
         <div class="mt-1 text-[11px] text-slate-400">
           Vista: <span id="sum_estimado">S/ 0.00</span>
         </div>
+      </div>
+
+      <div class="md:col-span-1">
+        <label class="block text-xs text-slate-500 mb-1">Periodo</label>
+        <select id="pac_periodo" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
+          <option value="">Seleccionar…</option>
+          <?php foreach ($periodos as $p): ?>
+            <option value="<?= (int)$p['id'] ?>">
+              <?= h($p['nombre']) ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
       </div>
 
       <!-- Footer -->
@@ -599,6 +623,8 @@ foreach ($pacs as $r) {
     fd.append('fuente', $('pac_fuente').value);
     fd.append('estimado', $('pac_estimado').value);
     fd.append('periodo', new Date().getFullYear());
+    fd.append('periodo', $('pac_periodo').value);
+    
 
     try {
       const resp = await fetch('<?= BASE_URL ?>/admin/pac_guardar', {
