@@ -16,17 +16,16 @@ class MdPacAdmin
                 p.estado,
                 p.descripcion,
                 p.obac,
+                p.seleccion,
                 p.fuente,
                 p.estimado,
                 p.periodo,
                 p.created_at,
-
-                COALESCE(e.nombre,'') AS obac_nombre,
-                COALESCE(f.nombre,'') AS fuente_nombre
-
+                COALESCE(e.nombre, '') AS obac_nombre,
+                COALESCE(f.nombre, '') AS fuente_nombre
             FROM pac p
             LEFT JOIN entidad e ON e.id = p.obac
-            LEFT JOIN fuente  f ON f.id = p.fuente
+            LEFT JOIN fuente f ON f.id = p.fuente
             WHERE 1=1
         ";
 
@@ -59,11 +58,9 @@ class MdPacAdmin
                 p.descripcion LIKE :q OR
                 e.nombre LIKE :q
             )";
-
             $params[':q'] = "%{$q}%";
         }
 
-        /* ORDEN SOLO POR FECHA DE CREACIÓN */
         $sql .= " ORDER BY p.created_at DESC";
 
         $st = $db->prepare($sql);
@@ -84,16 +81,15 @@ class MdPacAdmin
                 p.estado,
                 p.descripcion,
                 p.obac,
+                p.seleccion,
                 p.fuente,
                 p.estimado,
                 p.periodo,
-
-                COALESCE(e.nombre,'') AS obac_nombre,
-                COALESCE(f.nombre,'') AS fuente_nombre
-
+                COALESCE(e.nombre, '') AS obac_nombre,
+                COALESCE(f.nombre, '') AS fuente_nombre
             FROM pac p
             LEFT JOIN entidad e ON e.id = p.obac
-            LEFT JOIN fuente  f ON f.id = p.fuente
+            LEFT JOIN fuente f ON f.id = p.fuente
             WHERE p.id = :id
             LIMIT 1
         ";
@@ -111,24 +107,26 @@ class MdPacAdmin
         $db = db();
 
         $sql = "INSERT INTO pac (
-                nopac,
-                pn,
-                estado,
-                descripcion,
-                obac,
-                fuente,
-                estimado,
-                periodo
-            ) VALUES (
-                :nopac,
-                :pn,
-                :estado,
-                :descripcion,
-                :obac,
-                :fuente,
-                :estimado,
-                :periodo
-            )";
+            nopac,
+            pn,
+            estado,
+            descripcion,
+            obac,
+            seleccion,
+            fuente,
+            estimado,
+            periodo
+        ) VALUES (
+            :nopac,
+            :pn,
+            :estado,
+            :descripcion,
+            :obac,
+            :seleccion,
+            :fuente,
+            :estimado,
+            :periodo
+        )";
 
         $st = $db->prepare($sql);
 
@@ -137,11 +135,32 @@ class MdPacAdmin
             ':pn'          => strtoupper(trim((string)($data['pn'] ?? 'NP'))),
             ':estado'      => strtoupper(trim((string)($data['estado'] ?? 'PUBLICADO'))),
             ':descripcion' => trim((string)($data['descripcion'] ?? '')),
-            ':obac'        => (int)($data['obac'] ?? 0),
-            ':fuente'      => (int)($data['fuente'] ?? 0),
+            ':obac'        => !empty($data['obac']) ? (int)$data['obac'] : null,
+            ':seleccion'   => !empty($data['seleccion']) ? (int)$data['seleccion'] : null,
+            ':fuente'      => !empty($data['fuente']) ? (int)$data['fuente'] : null,
             ':estimado'    => (float)($data['estimado'] ?? 0),
-            ':periodo'     => (int)($data['periodo'] ?? date('Y')),
+            ':periodo'     => !empty($data['periodo']) ? (int)$data['periodo'] : null,
         ]);
+    }
+
+    public static function existePac(string $nopac, ?int $obac, string $pn): bool
+    {
+        $db = db();
+
+        $sql = "SELECT COUNT(*)
+                FROM pac
+                WHERE nopac = :nopac
+                  AND obac = :obac
+                  AND pn = :pn";
+
+        $st = $db->prepare($sql);
+        $st->execute([
+            ':nopac' => trim($nopac),
+            ':obac'  => $obac,
+            ':pn'    => strtoupper(trim($pn)),
+        ]);
+
+        return (int)$st->fetchColumn() > 0;
     }
 
     public static function listarObac(): array
@@ -161,6 +180,30 @@ class MdPacAdmin
         $db = db();
 
         $sql = "SELECT id, nombre FROM fuente ORDER BY nombre";
+
+        $st = $db->prepare($sql);
+        $st->execute();
+
+        return $st->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public static function listarSeleccion(): array
+    {
+        $db = db();
+
+        $sql = "SELECT id, nombre FROM seleccion ORDER BY nombre";
+
+        $st = $db->prepare($sql);
+        $st->execute();
+
+        return $st->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public static function listarPeriodo(): array
+    {
+        $db = db();
+
+        $sql = "SELECT id, nombre FROM periodo ORDER BY nombre";
 
         $st = $db->prepare($sql);
         $st->execute();

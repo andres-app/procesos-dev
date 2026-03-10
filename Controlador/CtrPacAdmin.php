@@ -16,8 +16,10 @@ class CtrPacAdmin
 
         $pacs = MdPacAdmin::listar($filtros);
 
-        $obacs   = MdPacAdmin::listarObac();
-        $fuentes = MdPacAdmin::listarFuente();
+        $obacs       = MdPacAdmin::listarObac();
+        $fuentes     = MdPacAdmin::listarFuente();
+        $selecciones = MdPacAdmin::listarSeleccion();
+        $periodos    = MdPacAdmin::listarPeriodo();
 
         require_once __DIR__ . '/../Vista/modulos/admin/pac.php';
     }
@@ -32,15 +34,16 @@ class CtrPacAdmin
                 'pn'          => $_POST['pn'] ?? 'NP',
                 'estado'      => $_POST['estado'] ?? 'PUBLICADO',
                 'descripcion' => $_POST['descripcion'] ?? '',
-                'obac'        => $_POST['obac'] ?? 0,
-                'fuente'      => $_POST['fuente'] ?? 0,
+                'obac'        => $_POST['obac'] ?? null,
+                'seleccion'   => $_POST['seleccion'] ?? null,
+                'fuente'      => $_POST['fuente'] ?? null,
                 'estimado'    => $_POST['estimado'] ?? 0,
-                'periodo'     => $_POST['periodo'] ?? date('Y'),
+                'periodo'     => $_POST['periodo'] ?? null,
             ];
 
             if (trim((string)$data['nopac']) === '') {
                 echo json_encode([
-                    'ok' => false,
+                    'ok'  => false,
                     'msg' => 'El N° PAC es obligatorio.'
                 ]);
                 exit;
@@ -48,8 +51,28 @@ class CtrPacAdmin
 
             if (trim((string)$data['descripcion']) === '') {
                 echo json_encode([
-                    'ok' => false,
+                    'ok'  => false,
                     'msg' => 'La descripción es obligatoria.'
+                ]);
+                exit;
+            }
+
+            if (empty($data['obac'])) {
+                echo json_encode([
+                    'ok'  => false,
+                    'msg' => 'Debe seleccionar un OBAC.'
+                ]);
+                exit;
+            }
+
+            if (MdPacAdmin::existePac(
+                trim((string)$data['nopac']),
+                !empty($data['obac']) ? (int)$data['obac'] : null,
+                trim((string)$data['pn'])
+            )) {
+                echo json_encode([
+                    'ok'  => false,
+                    'msg' => 'Ya existe un PAC con ese N° PAC, OBAC y tipo P/NP.'
                 ]);
                 exit;
             }
@@ -57,13 +80,13 @@ class CtrPacAdmin
             $ok = MdPacAdmin::guardar($data);
 
             echo json_encode([
-                'ok' => $ok,
+                'ok'  => $ok,
                 'msg' => $ok ? 'PAC guardado correctamente.' : 'No se pudo guardar.'
             ]);
             exit;
         } catch (Throwable $e) {
             echo json_encode([
-                'ok' => false,
+                'ok'  => false,
                 'msg' => $e->getMessage()
             ]);
             exit;
