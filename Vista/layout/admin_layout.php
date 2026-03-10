@@ -203,6 +203,173 @@ $hrefLogout    = "/public/admin/logout";
                 text-align: left !important;
             }
         }
+
+        /* ===== TOASTER GLOBAL ===== */
+        .toast-wrap {
+            width: min(380px, calc(100vw - 2rem));
+            pointer-events: none;
+        }
+
+        .toast {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            border-radius: 18px;
+            border: 1px solid rgba(226, 232, 240, .95);
+            background: rgba(255, 255, 255, .96);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 16px 40px rgba(15, 23, 42, .12);
+            padding: 14px 14px 12px;
+            color: #0f172a;
+            overflow: hidden;
+            position: relative;
+            transform: translateY(-8px);
+            opacity: 0;
+            animation: toastIn .22s ease forwards;
+        }
+
+        .toast--success {
+            border-left: 4px solid #10b981;
+        }
+
+        .toast--error {
+            border-left: 4px solid #ef4444;
+        }
+
+        .toast--warning {
+            border-left: 4px solid #f59e0b;
+        }
+
+        .toast--info {
+            border-left: 4px solid #3b82f6;
+        }
+
+        .toast__icon {
+            flex: 0 0 auto;
+            width: 22px;
+            height: 22px;
+            margin-top: 1px;
+        }
+
+        .toast--success .toast__icon {
+            color: #10b981;
+        }
+
+        .toast--error .toast__icon {
+            color: #ef4444;
+        }
+
+        .toast--warning .toast__icon {
+            color: #f59e0b;
+        }
+
+        .toast--info .toast__icon {
+            color: #3b82f6;
+        }
+
+        .toast__body {
+            min-width: 0;
+            flex: 1 1 auto;
+        }
+
+        .toast__title {
+            font-size: 13px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 2px;
+        }
+
+        .toast__text {
+            font-size: 13px;
+            line-height: 1.4;
+            color: #475569;
+            word-break: break-word;
+        }
+
+        .toast__close {
+            pointer-events: auto;
+            flex: 0 0 auto;
+            width: 28px;
+            height: 28px;
+            border-radius: 10px;
+            border: 1px solid rgba(226, 232, 240, .95);
+            background: #fff;
+            color: #64748b;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: .15s ease;
+        }
+
+        .toast__close:hover {
+            background: #f8fafc;
+            color: #0f172a;
+        }
+
+        .toast__progress {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            height: 3px;
+            width: 100%;
+            transform-origin: left center;
+            animation: toastProgress linear forwards;
+        }
+
+        .toast--success .toast__progress {
+            background: #10b981;
+        }
+
+        .toast--error .toast__progress {
+            background: #ef4444;
+        }
+
+        .toast--warning .toast__progress {
+            background: #f59e0b;
+        }
+
+        .toast--info .toast__progress {
+            background: #3b82f6;
+        }
+
+        .toast--closing {
+            animation: toastOut .18s ease forwards;
+        }
+
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateY(-8px) scale(.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes toastOut {
+            from {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateY(-6px) scale(.98);
+            }
+        }
+
+        @keyframes toastProgress {
+            from {
+                transform: scaleX(1);
+            }
+
+            to {
+                transform: scaleX(0);
+            }
+        }
     </style>
 
 </head>

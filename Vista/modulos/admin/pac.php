@@ -387,6 +387,7 @@ foreach ($pacs as $r) {
           onclick="closeModal('modalForm')">Cancelar</button>
 
         <button
+          id="btnSavePac"
           type="button"
           class="rounded-2xl bg-slate-900 text-white px-4 py-2.5 text-sm font-medium hover:bg-slate-800"
           onclick="fakeSave()">
@@ -582,7 +583,17 @@ foreach ($pacs as $r) {
     }
   }
 
-  ['pac_nopac', 'pac_pn', 'pac_obac', 'pac_seleccion', 'pac_fuente', 'pac_estado', 'pac_desc', 'pac_estimado', 'pac_periodo'].forEach((id) => {
+  [
+    'pac_nopac',
+    'pac_pn',
+    'pac_obac',
+    'pac_seleccion',
+    'pac_fuente',
+    'pac_estado',
+    'pac_desc',
+    'pac_estimado',
+    'pac_periodo'
+  ].forEach((id) => {
     $(id)?.addEventListener('input', refreshSummary);
     $(id)?.addEventListener('change', refreshSummary);
   });
@@ -625,6 +636,14 @@ foreach ($pacs as $r) {
   window.openDelete = openDelete;
 
   async function fakeSave() {
+    const btn = document.getElementById('btnSavePac');
+    const textoOriginal = btn ? btn.textContent : 'Guardar';
+
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Guardando...';
+    }
+
     const fd = new FormData();
     fd.append('id', document.getElementById('pac_id').value);
     fd.append('nopac', document.getElementById('pac_nopac').value.trim());
@@ -646,23 +665,40 @@ foreach ($pacs as $r) {
       const data = await resp.json();
 
       if (!data.ok) {
-        alert(data.msg || 'No se pudo guardar.');
+        showToast(data.msg || 'No se pudo guardar.', 'error', 'Error');
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = textoOriginal;
+        }
         return;
       }
 
-      alert(data.msg || 'Operación correcta.');
-      window.location.reload();
+      closeModal('modalForm');
+
+      showToast(
+        data.msg || 'PAC guardado correctamente.',
+        'success',
+        'Correcto'
+      );
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 700);
 
     } catch (err) {
-      alert('Error al guardar el PAC.');
+      showToast('Error al guardar el PAC.', 'error', 'Error');
       console.error(err);
+
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = textoOriginal;
+      }
     }
   }
-
   window.fakeSave = fakeSave;
 
   function fakeDelete() {
-    alert('Eliminado (maqueta). Con BD, aquí harías POST al controlador.');
+    showToast('Eliminado correctamente.', 'success', 'Correcto');
     closeModal('modalDelete');
   }
   window.fakeDelete = fakeDelete;
