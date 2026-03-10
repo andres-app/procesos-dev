@@ -143,7 +143,39 @@ class MdPacAdmin
         ]);
     }
 
-    public static function existePac(string $nopac, ?int $obac, string $pn): bool
+    public static function actualizar(int $id, array $data): bool
+    {
+        $db = db();
+
+        $sql = "UPDATE pac SET
+            nopac = :nopac,
+            pn = :pn,
+            estado = :estado,
+            descripcion = :descripcion,
+            obac = :obac,
+            seleccion = :seleccion,
+            fuente = :fuente,
+            estimado = :estimado,
+            periodo = :periodo
+        WHERE id = :id";
+
+        $st = $db->prepare($sql);
+
+        return $st->execute([
+            ':id'          => $id,
+            ':nopac'       => trim((string)($data['nopac'] ?? '')),
+            ':pn'          => strtoupper(trim((string)($data['pn'] ?? 'NP'))),
+            ':estado'      => strtoupper(trim((string)($data['estado'] ?? 'PUBLICADO'))),
+            ':descripcion' => trim((string)($data['descripcion'] ?? '')),
+            ':obac'        => !empty($data['obac']) ? (int)$data['obac'] : null,
+            ':seleccion'   => !empty($data['seleccion']) ? (int)$data['seleccion'] : null,
+            ':fuente'      => !empty($data['fuente']) ? (int)$data['fuente'] : null,
+            ':estimado'    => (float)($data['estimado'] ?? 0),
+            ':periodo'     => !empty($data['periodo']) ? (int)$data['periodo'] : null,
+        ]);
+    }
+
+    public static function existePac(string $nopac, ?int $obac, string $pn, ?int $ignoreId = null): bool
     {
         $db = db();
 
@@ -153,12 +185,19 @@ class MdPacAdmin
                   AND obac = :obac
                   AND pn = :pn";
 
-        $st = $db->prepare($sql);
-        $st->execute([
+        $params = [
             ':nopac' => trim($nopac),
             ':obac'  => $obac,
             ':pn'    => strtoupper(trim($pn)),
-        ]);
+        ];
+
+        if (!empty($ignoreId)) {
+            $sql .= " AND id <> :ignoreId";
+            $params[':ignoreId'] = $ignoreId;
+        }
+
+        $st = $db->prepare($sql);
+        $st->execute($params);
 
         return (int)$st->fetchColumn() > 0;
     }

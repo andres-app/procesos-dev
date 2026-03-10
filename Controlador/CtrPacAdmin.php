@@ -30,6 +30,7 @@ class CtrPacAdmin
 
         try {
             $data = [
+                'id'          => $_POST['id'] ?? null,
                 'nopac'       => $_POST['nopac'] ?? '',
                 'pn'          => $_POST['pn'] ?? 'NP',
                 'estado'      => $_POST['estado'] ?? 'PUBLICADO',
@@ -40,6 +41,8 @@ class CtrPacAdmin
                 'estimado'    => $_POST['estimado'] ?? 0,
                 'periodo'     => $_POST['periodo'] ?? null,
             ];
+
+            $id = !empty($data['id']) ? (int)$data['id'] : null;
 
             if (trim((string)$data['nopac']) === '') {
                 echo json_encode([
@@ -68,7 +71,8 @@ class CtrPacAdmin
             if (MdPacAdmin::existePac(
                 trim((string)$data['nopac']),
                 !empty($data['obac']) ? (int)$data['obac'] : null,
-                trim((string)$data['pn'])
+                trim((string)$data['pn']),
+                $id
             )) {
                 echo json_encode([
                     'ok'  => false,
@@ -77,11 +81,17 @@ class CtrPacAdmin
                 exit;
             }
 
-            $ok = MdPacAdmin::guardar($data);
+            if ($id) {
+                $ok = MdPacAdmin::actualizar($id, $data);
+            } else {
+                $ok = MdPacAdmin::guardar($data);
+            }
 
             echo json_encode([
                 'ok'  => $ok,
-                'msg' => $ok ? 'PAC guardado correctamente.' : 'No se pudo guardar.'
+                'msg' => $ok
+                    ? ($id ? 'PAC actualizado correctamente.' : 'PAC guardado correctamente.')
+                    : ($id ? 'No se pudo actualizar.' : 'No se pudo guardar.')
             ]);
             exit;
         } catch (Throwable $e) {

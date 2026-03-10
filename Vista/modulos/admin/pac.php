@@ -626,15 +626,16 @@ foreach ($pacs as $r) {
 
   async function fakeSave() {
     const fd = new FormData();
-    fd.append('nopac', $('pac_nopac').value.trim());
-    fd.append('pn', $('pac_pn').value);
-    fd.append('estado', $('pac_estado').value);
-    fd.append('descripcion', $('pac_desc').value.trim());
-    fd.append('obac', $('pac_obac').value);
-    fd.append('seleccion', $('pac_seleccion').value);
-    fd.append('fuente', $('pac_fuente').value);
-    fd.append('estimado', $('pac_estimado').value);
-    fd.append('periodo', $('pac_periodo').value);
+    fd.append('id', document.getElementById('pac_id').value);
+    fd.append('nopac', document.getElementById('pac_nopac').value.trim());
+    fd.append('pn', document.getElementById('pac_pn').value);
+    fd.append('estado', document.getElementById('pac_estado').value);
+    fd.append('descripcion', document.getElementById('pac_desc').value.trim());
+    fd.append('obac', document.getElementById('pac_obac').value);
+    fd.append('seleccion', document.getElementById('pac_seleccion').value);
+    fd.append('fuente', document.getElementById('pac_fuente').value);
+    fd.append('estimado', document.getElementById('pac_estimado').value);
+    fd.append('periodo', document.getElementById('pac_periodo').value);
 
     try {
       const resp = await fetch('<?= BASE_URL ?>/admin/pac_guardar', {
@@ -649,7 +650,7 @@ foreach ($pacs as $r) {
         return;
       }
 
-      alert(data.msg || 'PAC guardado correctamente.');
+      alert(data.msg || 'Operación correcta.');
       window.location.reload();
 
     } catch (err) {
@@ -657,6 +658,7 @@ foreach ($pacs as $r) {
       console.error(err);
     }
   }
+
   window.fakeSave = fakeSave;
 
   function fakeDelete() {
