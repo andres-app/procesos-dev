@@ -36,13 +36,32 @@ function statusClass($estado)
   };
 }
 
-function selClass($sel)
+function selCode($sel)
 {
   $s = strtoupper(trim((string)$sel));
+
+  return match ($s) {
+    'LICITACIÓN PÚBLICA', 'LICITACION PUBLICA', 'LP' => 'LP',
+    'SUBASTA INVERSA ELECTRÓNICA', 'SUBASTA INVERSA ELECTRONICA', 'SIE' => 'SIE',
+    'RÉGIMEN ESPECIAL', 'REGIMEN ESPECIAL', 'RES' => 'RES',
+    'COMPARACIÓN DE PRECIOS', 'COMPARACION DE PRECIOS', 'CP' => 'CP',
+    'CONTRATACIÓN DIRECTA', 'CONTRATACION DIRECTA', 'CD' => 'CD',
+    'CONCURSO PÚBLICO', 'CONCURSO PUBLICO', 'CPS' => 'CPS',
+    'CONSULTORÍA DE OBRAS', 'CONSULTORIA DE OBRAS', 'CPA' => 'CPA',
+    'CC' => 'CC',
+    default => $s,
+  };
+}
+
+function selClass($sel)
+{
+  $s = selCode($sel);
+
   return match ($s) {
     'LP'  => 'pill-amber',
     'SIE' => 'pill-emerald',
     'RES' => 'pill-vino',
+    'CD'  => 'pill-vino',
     'CPS' => 'pill-slate',
     'CPA' => 'pill-slate',
     'CP'  => 'pill-slate',
@@ -53,10 +72,8 @@ function selClass($sel)
 ?>
 
 <main class="page page-shell flex-1 px-5 pt-4 main-procesos">
-
   <section class="mb-5 filtros-sticky">
     <div class="bg-white/90 text-slate-900 rounded-2xl p-4 shadow-lg filtros-wrap">
-
       <div class="flex items-start justify-between gap-3">
         <div>
           <p class="text-sm text-slate-500">Programación y control</p>
@@ -83,7 +100,6 @@ function selClass($sel)
       </div>
 
       <div id="chipsActivos" class="mt-3 flex gap-2 overflow-x-auto pb-1 hidden"></div>
-
     </div>
   </section>
 
@@ -101,33 +117,33 @@ function selClass($sel)
     </div>
 
     <div class="sheet-body">
-      <div class="sheet-section" id="fObac">
+      <div class="sheet-section">
         <p class="sheet-label">OBAC</p>
-        <div class="chips-grid">
-          <button class="chip chip-active" type="button" data-filter="obac" data-value="">Todos</button>
+        <div class="chips-grid" id="fObac">
+          <button class="chip chip-active" type="button" data-filter="obac" data-value="ALL">Todos</button>
           <button class="chip" type="button" data-filter="obac" data-value="EP">EP</button>
           <button class="chip" type="button" data-filter="obac" data-value="FAP">FAP</button>
           <button class="chip" type="button" data-filter="obac" data-value="MGP">MGP</button>
+          <button class="chip" type="button" data-filter="obac" data-value="CCFFAA">CCFFAA</button>
           <button class="chip" type="button" data-filter="obac" data-value="CONIDA">CONIDA</button>
         </div>
       </div>
 
-      <div class="sheet-section" id="fEstado">
+      <div class="sheet-section">
         <p class="sheet-label">Estado</p>
-        <div class="chips-grid">
-          <button class="chip chip-soft chip-active" type="button" data-filter="estado" data-value="">Todos</button>
+        <div class="chips-grid" id="fEstado">
           <button class="chip chip-soft" type="button" data-filter="estado" data-value="PUBLICADO">Publicado</button>
           <button class="chip chip-soft" type="button" data-filter="estado" data-value="SOLICITADO">Solicitado</button>
         </div>
       </div>
 
-      <div class="sheet-section" id="fSel">
+      <div class="sheet-section">
         <p class="sheet-label">Selección</p>
-        <div class="chips-grid">
-          <button class="chip chip-soft chip-active" type="button" data-filter="sel" data-value="">Todos</button>
-          <button class="chip chip-soft" type="button" data-filter="sel" data-value="RES">RES</button>
+        <div class="chips-grid" id="fSel">
           <button class="chip chip-soft" type="button" data-filter="sel" data-value="LP">LP</button>
           <button class="chip chip-soft" type="button" data-filter="sel" data-value="SIE">SIE</button>
+          <button class="chip chip-soft" type="button" data-filter="sel" data-value="RES">RES</button>
+          <button class="chip chip-soft" type="button" data-filter="sel" data-value="CD">CD</button>
           <button class="chip chip-soft" type="button" data-filter="sel" data-value="CPS">CPS</button>
           <button class="chip chip-soft" type="button" data-filter="sel" data-value="CPA">CPA</button>
           <button class="chip chip-soft" type="button" data-filter="sel" data-value="CP">CP</button>
@@ -147,38 +163,40 @@ function selClass($sel)
       <?php foreach ($pacs as $p): ?>
         <?php
         $obacLabel = badgeFromObac($p['obac'] ?? '');
-        $obac = strtoupper(trim((string)$obacLabel));
         $estado = strtoupper(trim((string)($p['estado'] ?? '')));
-        $sel = strtoupper(trim((string)($p['seleccion'] ?? '')));
+        $sel = selCode($p['seleccion'] ?? '');
+
         $haystack = strtoupper(trim(
           ((string)($p['nopac'] ?? '')) . ' ' .
-          ((string)($p['obac'] ?? '')) . ' ' .
-          ((string)($p['seleccion'] ?? '')) . ' ' .
-          ((string)($p['estado'] ?? '')) . ' ' .
-          ((string)($p['descripcion'] ?? ''))
+            ((string)($p['obac'] ?? '')) . ' ' .
+            ((string)($obacLabel ?? '')) . ' ' .
+            ((string)($p['seleccion'] ?? '')) . ' ' .
+            ((string)($sel ?? '')) . ' ' .
+            ((string)($p['estado'] ?? '')) . ' ' .
+            ((string)($p['descripcion'] ?? ''))
         ));
         ?>
-        <div class="proc-item pac-item"
-          data-obac="<?= htmlspecialchars($obac) ?>"
+        <div
+          class="proc-item pac-item"
+          data-obac="<?= htmlspecialchars($obacLabel) ?>"
           data-estado="<?= htmlspecialchars($estado) ?>"
           data-sel="<?= htmlspecialchars($sel) ?>"
           data-hay="<?= htmlspecialchars($haystack) ?>"
           data-open="javascript:void(0)">
-          
+
           <a class="proc-open" href="javascript:void(0)" aria-label="Abrir PAC"></a>
 
           <div class="left">
             <div class="badge badge-vino"><?= htmlspecialchars($obacLabel) ?></div>
 
             <div class="info">
-              <p class="title">
-                PAC N° <?= htmlspecialchars($p['nopac'] ?? '') ?>
-              </p>
+              <p class="title">PAC N° <?= htmlspecialchars($p['nopac'] ?? '') ?></p>
 
               <p class="sub">
                 <span class="sel-pill <?= selClass($p['seleccion'] ?? '') ?>">
-                  <?= htmlspecialchars($p['seleccion'] ?? '') ?>
+                  <?= htmlspecialchars($sel) ?>
                 </span>
+                <span class="sub-strong"><?= htmlspecialchars($obacLabel) ?></span>
               </p>
 
               <p class="desc">
@@ -227,576 +245,609 @@ function selClass($sel)
       <?php endif; ?>
     </section>
 
-    <div class="mt-4 text-xs text-white/70" id="countText">
-      Mostrando un total de <?= count($pacs) ?> PAC
+    <div class="count-text" id="countText">
+      Mostrando <?= count($pacs) ?> de <?= count($pacs) ?> PAC
     </div>
   </section>
-
 </main>
 
 <?php require __DIR__ . '/../layout/bottom-nav.php'; ?>
 
 <style>
+  html,
+body {
+  overflow-x: hidden;
+}
+
+/* ===== CONTENEDOR DESKTOP ===== */
+.page-shell {
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (min-width: 1024px) {
   .page-shell {
-    width: 100%;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding-left: 24px;
+    padding-right: 24px;
   }
+}
 
-  @media (min-width: 1024px) {
-    .page-shell {
-      max-width: 1120px;
-      margin: 0 auto;
-      padding-left: 24px;
-      padding-right: 24px;
-    }
-  }
+/* ===== YEAR PILL ===== */
+.year-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 9999px;
+  background: rgba(107, 28, 38, .10);
+  color: #6B1C26;
+  border: 1px solid rgba(107, 28, 38, .15);
+  font-weight: 700;
+  font-size: .85rem;
+  white-space: nowrap;
+}
 
-  .year-pill {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 12px;
-    border-radius: 9999px;
-    background: rgba(107, 28, 38, .10);
-    color: #6B1C26;
-    border: 1px solid rgba(107, 28, 38, .15);
-    font-weight: 700;
-    font-size: .85rem;
-    white-space: nowrap;
-  }
+.year-pill .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: #C9A227;
+  box-shadow: 0 0 0 3px rgba(201, 162, 39, .20);
+}
 
-  .year-pill .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 9999px;
-    background: #C9A227;
-    box-shadow: 0 0 0 3px rgba(201, 162, 39, .20);
-  }
+/* ===== CHIPS ===== */
+.chip {
+  padding: 10px 14px;
+  border-radius: 9999px;
+  border: 1px solid rgba(148, 163, 184, .35);
+  background: rgba(248, 250, 252, .85);
+  color: #334155;
+  font-weight: 700;
+  font-size: .82rem;
+  flex: 0 0 auto;
+  transition: transform .12s ease;
+}
 
-  .chip {
-    padding: 10px 14px;
-    border-radius: 9999px;
-    border: 1px solid rgba(148, 163, 184, .35);
-    background: rgba(248, 250, 252, .85);
-    color: #334155;
-    font-weight: 700;
-    font-size: .82rem;
-    flex: 0 0 auto;
-    transition: transform .12s ease;
-  }
+.chip:active {
+  transform: scale(.96);
+}
 
-  .chip:active {
-    transform: scale(.96);
-  }
+.chip-active {
+  background: rgba(107, 28, 38, .12);
+  color: #6B1C26;
+  border-color: rgba(107, 28, 38, .22);
+}
 
-  .chip-active {
-    background: rgba(107, 28, 38, .12);
-    color: #6B1C26;
-    border-color: rgba(107, 28, 38, .22);
-  }
+.chip-soft {
+  background: rgba(255, 255, 255, .92);
+}
 
-  .chip-soft {
-    background: rgba(255, 255, 255, .92);
-  }
+/* ===== SEARCH ===== */
+.search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 1rem;
+  background: rgba(248, 250, 252, .95);
+  border: 1px solid rgba(148, 163, 184, .35);
+  min-width: 0;
+}
 
-  .search {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 14px;
-    border-radius: 1rem;
-    background: rgba(248, 250, 252, .95);
-    border: 1px solid rgba(148, 163, 184, .35);
-  }
+.search-ico {
+  font-size: 1rem;
+  opacity: .75;
+  flex: 0 0 auto;
+}
 
-  .search-ico {
-    font-size: 1rem;
-    opacity: .75;
-  }
+.search input {
+  width: 100%;
+  min-width: 0;
+  background: transparent;
+  outline: none;
+  border: none;
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 16px !important;
+  -webkit-text-size-adjust: 100%;
+}
 
-  .search input {
-    width: 100%;
-    background: transparent;
-    outline: none;
-    border: none;
-    color: #0f172a;
-    font-weight: 700;
-    font-size: .95rem;
-  }
+.search input::placeholder {
+  color: #94a3b8;
+  font-weight: 700;
+}
 
-  .search input::placeholder {
-    color: #94a3b8;
-    font-weight: 700;
-  }
+/* ===== LAYOUT: filtros fijo + lista scrollea ===== */
+.main-procesos {
+  overflow-x: hidden;
+  overflow-y: hidden;
+  min-width: 0;
+}
 
-  .main-procesos {
-    overflow: hidden;
-  }
+.filtros-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 80;
+  padding-top: 6px;
+}
 
-  .filtros-sticky {
-    position: sticky;
-    top: 0;
-    z-index: 80;
-    padding-top: 6px;
-  }
+.filtros-sticky > div {
+  background: rgba(255, 255, 255, .96) !important;
+  border: 1px solid rgba(148, 163, 184, .25);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .18);
+  backdrop-filter: blur(12px);
+}
 
-  .filtros-sticky>div {
-    background: rgba(255, 255, 255, .96) !important;
-    border: 1px solid rgba(148, 163, 184, .25);
-    box-shadow: 0 18px 40px rgba(0, 0, 0, .18);
-    backdrop-filter: blur(12px);
-  }
+:root {
+  --tabbar-h: 76px;
+  --tabbar-gap: 12px;
+  --tabbar-side-gap: 14px;
+}
 
+/* SOLO la lista scrollea */
+.lista-scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: none;
+  height: calc(100dvh - 290px - (var(--tabbar-h) + var(--tabbar-gap) + env(safe-area-inset-bottom)));
+  padding-bottom: 18px;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
   .lista-scroll {
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    height: calc(100vh - 335px);
-    padding-bottom: calc(140px + env(safe-area-inset-bottom));
-  }
-
-  @media (min-width:1024px) {
-    .lista-scroll {
-      height: calc(100vh - 300px);
-      padding-bottom: 40px;
-    }
-  }
-
-  .proc-item {
-    position: relative;
-    display: grid;
-    grid-template-columns: 52px 1fr auto;
-    gap: 14px;
-    align-items: center;
-    background: #fff;
-    padding: 18px 18px;
-    border-radius: 20px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, .12);
-  }
-
-  .proc-open {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    border-radius: 20px;
-  }
-
-  .proc-item>.left,
-  .proc-item>.right {
-    position: relative;
-    z-index: 2;
-  }
-
-  .left {
-    display: contents;
-  }
-
-  .badge {
-    width: 48px;
-    height: 48px;
-    border-radius: 999px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 900;
-    font-size: .85rem;
-    background: rgba(107, 28, 38, .10);
-    color: #6B1C26;
-  }
-
-  .info {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .title {
-    font-weight: 900;
-    font-size: 1rem;
-    color: #0f172a;
-    line-height: 1.15;
-  }
-
-  .dot-sep {
-    opacity: .4;
-    padding: 0 6px;
-  }
-
-  .sub {
-    font-size: .8rem;
-    font-weight: 800;
-    color: #64748b;
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-
-  .desc {
-    font-size: .85rem;
-    font-weight: 700;
-    color: #334155;
-    line-height: 1.3;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  @media (max-width:640px) {
-    .desc {
-      -webkit-line-clamp: 3;
-    }
-  }
-
-  .right {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 10px;
-    min-width: 140px;
-  }
-
-  .top-right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .status {
-    font-weight: 900;
-    font-size: .7rem;
-    padding: 6px 12px;
-    border-radius: 999px;
-    white-space: nowrap;
-  }
-
-  .status-vino {
-    background: rgba(107, 28, 38, .12);
-    color: #6B1C26;
-  }
-
-  .status-gris {
-    background: rgba(148, 163, 184, .15);
-    color: #475569;
-  }
-
-  .money {
-    font-weight: 900;
-    font-size: 1rem;
-    color: #0f172a;
-    white-space: nowrap;
-  }
-
-  .sel-pill {
-    padding: 5px 10px;
-    border-radius: 999px;
-    font-size: .72rem;
-    font-weight: 900;
-    border: 1px solid rgba(148, 163, 184, .25);
-    white-space: nowrap;
-  }
-
-  .pill-vino {
-    background: rgba(107, 28, 38, .10);
-    color: #6B1C26;
-  }
-
-  .pill-amber {
-    background: rgba(245, 158, 11, .14);
-    color: #7A4A00;
-  }
-
-  .pill-emerald {
-    background: rgba(16, 185, 129, .14);
-    color: #065f46;
-  }
-
-  .pill-slate {
-    background: rgba(148, 163, 184, .14);
-    color: #334155;
-  }
-
-  .actions {
-    position: relative;
-    z-index: 3;
-  }
-
-  .kebab {
-    width: 36px;
-    height: 36px;
-    border-radius: 999px;
-    border: 1px solid rgba(148, 163, 184, .35);
-    background: #f8fafc;
-    cursor: pointer;
-    display: grid;
-    place-items: center;
-    line-height: 1;
-    padding: 0;
-    color: #0f172a;
-  }
-
-  .kebab::before {
-    content: "⋯";
-    font-weight: 900;
-    font-size: 1.3rem;
-    transform: translateY(-1px);
-  }
-
-  .menu {
-    position: absolute;
-    top: 42px;
-    right: 0;
-    width: 190px;
-    background: #fff;
-    border-radius: 14px;
-    box-shadow: 0 18px 40px rgba(0, 0, 0, .25);
-    overflow: hidden;
-    z-index: 999;
-  }
-
-  .menu.hidden {
-    display: none;
-  }
-
-  .menu-item {
-    padding: 12px 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 800;
-    font-size: .85rem;
-    color: #0f172a;
-    text-decoration: none;
-    border: 0;
-    background: transparent;
-    width: 100%;
-    text-align: left;
-    cursor: pointer;
-  }
-
-  .menu-item:hover {
-    background: #f1f5f9;
-  }
-
-  .menu-item .mi {
-    width: 22px;
-    display: inline-flex;
-    justify-content: center;
-  }
-
-  .menu-item.danger {
-    color: #b91c1c;
-  }
-
-  #listaProcesos {
+    height: calc(100dvh - 260px - 40px);
     padding-bottom: 12px;
+    overflow-x: hidden;
   }
+}
 
-  .btn-filtros {
-    height: 48px;
-    padding: 0 12px;
-    border-radius: 14px;
-    border: 1px solid rgba(148, 163, 184, .35);
-    background: #f8fafc;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 900;
-    color: #0f172a;
-    white-space: nowrap;
+/* ============================= */
+/*          CARD PROCESO         */
+/* ============================= */
+
+#listaProcesos {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  padding-bottom: 12px;
+}
+
+.proc-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  background: #fff;
+  padding: 18px 18px;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, .12);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.proc-open {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: 20px;
+}
+
+.proc-item > .left,
+.proc-item > .right {
+  position: relative;
+  z-index: 2;
+}
+
+/* Columna izquierda */
+.left {
+  display: contents;
+  min-width: 0;
+}
+
+/* Badge */
+.badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: .85rem;
+  background: rgba(107, 28, 38, .10);
+  color: #6B1C26;
+  flex: 0 0 auto;
+}
+
+/* Info */
+.info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.title {
+  font-weight: 900;
+  font-size: 1rem;
+  color: #0f172a;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.dot-sep {
+  opacity: .4;
+  padding: 0 6px;
+}
+
+.sub {
+  font-size: .8rem;
+  font-weight: 800;
+  color: #64748b;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.desc {
+  font-size: .85rem;
+  font-weight: 700;
+  color: #334155;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+@media (max-width: 640px) {
+  .desc {
+    -webkit-line-clamp: 3;
   }
+}
 
+/* Columna derecha ordenada */
+.right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  min-width: 0;
+}
+
+.top-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+/* Status */
+.status {
+  font-weight: 900;
+  font-size: .7rem;
+  padding: 6px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.status-dorado {
+  background: rgba(201, 162, 39, .15);
+  color: #7A5B00;
+}
+
+.status-vino {
+  background: rgba(107, 28, 38, .12);
+  color: #6B1C26;
+}
+
+.status-gris {
+  background: rgba(148, 163, 184, .15);
+  color: #475569;
+}
+
+/* Monto */
+.money {
+  font-weight: 900;
+  font-size: 1rem;
+  color: #0f172a;
+  white-space: nowrap;
+}
+
+/* Acciones */
+.actions {
+  position: relative;
+  z-index: 3;
+}
+
+/* Kebab “seguro” (siempre visible) */
+.kebab {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, .35);
+  background: #f8fafc;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  line-height: 1;
+  padding: 0;
+  color: #0f172a;
+  flex: 0 0 auto;
+}
+
+.kebab::before {
+  content: "⋯";
+  font-weight: 900;
+  font-size: 1.3rem;
+  transform: translateY(-1px);
+}
+
+/* Menu */
+.menu {
+  position: absolute;
+  top: 42px;
+  right: 0;
+  width: 190px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .25);
+  overflow: hidden;
+  z-index: 999;
+}
+
+.menu.hidden {
+  display: none;
+}
+
+.menu-item {
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: .85rem;
+  color: #0f172a;
+  text-decoration: none;
+  border: 0;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu-item:hover {
+  background: #f1f5f9;
+}
+
+.menu-item .mi {
+  width: 22px;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.menu-item.danger {
+  color: #b91c1c;
+}
+
+/* ===== Botón filtros compacto ===== */
+.btn-filtros {
+  height: 48px;
+  padding: 0 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, .35);
+  background: #f8fafc;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 900;
+  color: #0f172a;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.btn-filtros .txt {
+  display: none;
+}
+
+.btn-filtros .ico {
+  font-size: 1rem;
+}
+
+.badge-count {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: rgba(107, 28, 38, .12);
+  color: #6B1C26;
+  border: 1px solid rgba(107, 28, 38, .22);
+  font-size: .75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* En pantallas algo más grandes, muestra texto */
+@media (min-width: 480px) {
   .btn-filtros .txt {
-    display: none;
+    display: inline;
   }
+}
 
-  .btn-filtros .ico {
-    font-size: 1rem;
-  }
+/* ===== Chips activos (resumen) ===== */
+.chip-x {
+  padding: 8px 10px;
+  border-radius: 9999px;
+  border: 1px solid rgba(148, 163, 184, .35);
+  background: rgba(255, 255, 255, .95);
+  font-weight: 900;
+  font-size: .78rem;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
 
-  @media (min-width: 480px) {
-    .btn-filtros .txt {
-      display: inline;
-    }
-  }
+.chip-x button {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, .35);
+  background: #f8fafc;
+  font-weight: 900;
+  line-height: 1;
+  flex: 0 0 auto;
+}
 
-  .badge-count {
-    min-width: 22px;
-    height: 22px;
-    padding: 0 7px;
-    border-radius: 999px;
-    background: rgba(107, 28, 38, .12);
-    color: #6B1C26;
-    border: 1px solid rgba(107, 28, 38, .22);
-    font-size: .75rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
+/* ===== Overlay + Bottom Sheet ===== */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, .45);
+  z-index: 200;
+}
 
-  .chip-x {
-    padding: 8px 10px;
-    border-radius: 9999px;
-    border: 1px solid rgba(148, 163, 184, .35);
-    background: rgba(255, 255, 255, .95);
-    font-weight: 900;
-    font-size: .78rem;
-    color: #0f172a;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex: 0 0 auto;
-  }
+.sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 220;
+  background: #fff;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  box-shadow: 0 -20px 50px rgba(0, 0, 0, .25);
+  transform: translateY(0);
+  max-height: calc(100vh - 80px);
+  display: flex;
+  flex-direction: column;
+}
 
-  .chip-x button {
-    width: 20px;
-    height: 20px;
-    border-radius: 999px;
-    border: 1px solid rgba(148, 163, 184, .35);
-    background: #f8fafc;
-    font-weight: 900;
-    line-height: 1;
-  }
+.sheet-handle {
+  width: 54px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, .55);
+  margin: 10px auto 6px;
+}
 
-  .overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, .45);
-    z-index: 200;
-  }
+.sheet-head {
+  padding: 10px 14px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid rgba(148, 163, 184, .25);
+}
 
+.sheet-close {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, .35);
+  background: #f8fafc;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.sheet-close::before,
+.sheet-close::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 18px;
+  height: 2px;
+  background: #0f172a;
+  border-radius: 2px;
+}
+
+.sheet-close::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.sheet-close::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.sheet-body {
+  padding: 12px 14px 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.sheet-section {
+  margin-bottom: 14px;
+}
+
+.sheet-label {
+  font-weight: 900;
+  color: #334155;
+  font-size: .8rem;
+  margin-bottom: 8px;
+}
+
+.chips-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sheet-actions {
+  padding: 12px 14px;
+  display: flex;
+  gap: 10px;
+  border-top: 1px solid rgba(148, 163, 184, .25);
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
+}
+
+.btn-primary,
+.btn-secondary {
+  height: 46px;
+  border-radius: 14px;
+  font-weight: 900;
+  flex: 1;
+}
+
+.btn-primary {
+  background: rgba(107, 28, 38, .95);
+  color: #fff;
+}
+
+.btn-secondary {
+  background: #f1f5f9;
+  border: 1px solid rgba(148, 163, 184, .35);
+  color: #0f172a;
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .overlay,
   .sheet {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 220;
-    background: #fff;
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
-    box-shadow: 0 -20px 50px rgba(0, 0, 0, .25);
-    max-height: calc(100vh - 80px);
-    display: flex;
-    flex-direction: column;
-  }
-
-  .sheet-handle {
-    width: 54px;
-    height: 5px;
-    border-radius: 999px;
-    background: rgba(148, 163, 184, .55);
-    margin: 10px auto 6px;
-  }
-
-  .sheet-head {
-    padding: 10px 14px;
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 10px;
-    border-bottom: 1px solid rgba(148, 163, 184, .25);
-  }
-
-  .sheet-close {
-    position: relative;
-    width: 40px;
-    height: 40px;
-    border-radius: 999px;
-    border: 1px solid rgba(148, 163, 184, .35);
-    background: #f8fafc;
-    cursor: pointer;
-  }
-
-  .sheet-close::before,
-  .sheet-close::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 18px;
-    height: 2px;
-    background: #0f172a;
-    border-radius: 2px;
-  }
-
-  .sheet-close::before {
-    transform: translate(-50%, -50%) rotate(45deg);
-  }
-
-  .sheet-close::after {
-    transform: translate(-50%, -50%) rotate(-45deg);
-  }
-
-  .sheet-body {
-    padding: 12px 14px 0;
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .sheet-section {
-    margin-bottom: 14px;
-  }
-
-  .sheet-label {
-    font-weight: 900;
-    color: #334155;
-    font-size: .8rem;
-    margin-bottom: 8px;
-  }
-
-  .chips-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .sheet-actions {
-    padding: 12px 14px;
-    display: flex;
-    gap: 10px;
-    border-top: 1px solid rgba(148, 163, 184, .25);
-    padding-bottom: calc(12px + env(safe-area-inset-bottom));
-  }
-
-  .btn-primary,
-  .btn-secondary {
-    height: 46px;
-    border-radius: 14px;
-    font-weight: 900;
-    flex: 1;
-  }
-
-  .btn-primary {
-    background: rgba(107, 28, 38, .95);
-    color: #fff;
-  }
-
-  .btn-secondary {
-    background: #f1f5f9;
-    border: 1px solid rgba(148, 163, 184, .35);
-    color: #0f172a;
-  }
-
-  .hidden {
     display: none !important;
   }
+}
 
-  @media (min-width: 1024px) {
-    .overlay,
-    .sheet {
-      display: none !important;
-    }
-  }
-
-  @media (max-width: 1024px) {
-    .search input {
-      font-size: 16px !important;
-    }
-  }
-
-  .search input {
-    -webkit-text-size-adjust: 100%;
-  }
+.hidden {
+  display: none !important;
+}
 </style>
 
 <script>
@@ -811,13 +862,16 @@ function selClass($sel)
     if (btn) {
       e.preventDefault();
       e.stopPropagation();
+
       const wrap = btn.closest('.actions');
       const m = wrap?.querySelector('[data-menu]');
       const wasOpen = m && !m.classList.contains('hidden');
+
       closeAllMenus();
       if (m && !wasOpen) m.classList.remove('hidden');
       return;
     }
+
     if (menu) return;
     closeAllMenus();
   });
@@ -825,39 +879,6 @@ function selClass($sel)
   const q = document.getElementById('q');
   const list = document.getElementById('listaProcesos');
   const countText = document.getElementById('countText');
-
-  const state = {
-    obac: '',
-    estado: '',
-    sel: '',
-    q: ''
-  };
-
-  const applyFilters = () => {
-    const cards = list ? Array.from(list.querySelectorAll('.pac-item')) : [];
-    let visible = 0;
-
-    const term = (state.q || '').trim().toUpperCase();
-
-    cards.forEach(c => {
-      const obac = (c.getAttribute('data-obac') || '').toUpperCase();
-      const estado = (c.getAttribute('data-estado') || '').toUpperCase();
-      const sel = (c.getAttribute('data-sel') || '').toUpperCase();
-      const hay = (c.getAttribute('data-hay') || '').toUpperCase();
-
-      const okObac = !state.obac || obac === state.obac;
-      const okEstado = !state.estado || estado === state.estado;
-      const okSel = !state.sel || sel === state.sel;
-      const okQ = !term || hay.includes(term);
-
-      const ok = okObac && okEstado && okSel && okQ;
-
-      c.style.display = ok ? '' : 'none';
-      if (ok) visible++;
-    });
-
-    if (countText) countText.textContent = `Mostrando ${visible} de ${cards.length} PAC`;
-  };
 
   const btnFiltros = document.getElementById('btnFiltros');
   const overlay = document.getElementById('overlayFiltros');
@@ -870,14 +891,15 @@ function selClass($sel)
   const badgeCount = document.getElementById('badgeCount');
 
   let draft = {
-    obac: '',
-    estado: '',
-    sel: ''
+    obac: 'ALL',
+    estado: null,
+    sel: null
   };
+
   let applied = {
-    obac: '',
-    estado: '',
-    sel: ''
+    obac: 'ALL',
+    estado: null,
+    sel: null
   };
 
   const openSheet = () => {
@@ -895,29 +917,108 @@ function selClass($sel)
     document.body.style.overflow = '';
   };
 
-  const esc = (v) => (window.CSS && CSS.escape) ? CSS.escape(v) : (v || '').replace(/"/g, '\\"');
+  btnFiltros?.addEventListener('click', openSheet);
+  overlay?.addEventListener('click', closeSheet);
+  btnCerrar?.addEventListener('click', closeSheet);
 
-  const setActiveInGroup = (groupId, value) => {
-    const group = document.getElementById(groupId);
-    if (!group) return;
+  sheet?.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-filter]');
+    if (!b) return;
 
-    group.querySelectorAll('button[data-filter]').forEach(b => b.classList.remove('chip-active'));
+    const filter = b.getAttribute('data-filter');
+    const value = b.getAttribute('data-value');
 
-    const btn = group.querySelector(`button[data-value="${esc(value)}"]`);
-    if (btn) btn.classList.add('chip-active');
-  };
+    if (filter === 'obac') {
+      draft.obac = value;
+      document.querySelectorAll('#fObac .chip').forEach(x => x.classList.remove('chip-active'));
+      b.classList.add('chip-active');
+    }
+
+    if (filter === 'estado') {
+      const isSame = draft.estado === value;
+      draft.estado = isSame ? null : value;
+
+      document.querySelectorAll('#fEstado .chip').forEach(x => x.classList.remove('chip-active'));
+      if (!isSame) b.classList.add('chip-active');
+    }
+
+    if (filter === 'sel') {
+      const isSame = draft.sel === value;
+      draft.sel = isSame ? null : value;
+
+      document.querySelectorAll('#fSel .chip').forEach(x => x.classList.remove('chip-active'));
+      if (!isSame) b.classList.add('chip-active');
+    }
+  });
+
+  btnLimpiar?.addEventListener('click', () => {
+    draft = {
+      obac: 'ALL',
+      estado: null,
+      sel: null
+    };
+
+    applied = {
+      obac: 'ALL',
+      estado: null,
+      sel: null
+    };
+
+    syncUIToDraft();
+    renderActiveChips();
+
+    if (q) q.value = '';
+    applyFilters();
+    closeSheet();
+  });
+
+  btnAplicar?.addEventListener('click', () => {
+    applied = {
+      ...draft
+    };
+    renderActiveChips();
+    applyFilters();
+    closeSheet();
+  });
 
   const syncUIToDraft = () => {
-    setActiveInGroup('fObac', draft.obac);
-    setActiveInGroup('fEstado', draft.estado);
-    setActiveInGroup('fSel', draft.sel);
+    document.querySelectorAll('#fObac .chip').forEach(x => x.classList.remove('chip-active'));
+    document.querySelectorAll(`#fObac .chip[data-value="${draft.obac}"]`).forEach(x => x.classList.add('chip-active'));
+
+    document.querySelectorAll('#fEstado .chip').forEach(x => x.classList.remove('chip-active'));
+    if (draft.estado) {
+      document.querySelectorAll(`#fEstado .chip[data-value="${draft.estado}"]`).forEach(x => x.classList.add('chip-active'));
+    }
+
+    document.querySelectorAll('#fSel .chip').forEach(x => x.classList.remove('chip-active'));
+    if (draft.sel) {
+      document.querySelectorAll(`#fSel .chip[data-value="${draft.sel}"]`).forEach(x => x.classList.add('chip-active'));
+    }
   };
 
   const renderActiveChips = () => {
     const items = [];
-    if (applied.obac) items.push({ k: 'obac', label: `OBAC: ${applied.obac}` });
-    if (applied.estado) items.push({ k: 'estado', label: `Estado: ${applied.estado}` });
-    if (applied.sel) items.push({ k: 'sel', label: `Selección: ${applied.sel}` });
+
+    if (applied.obac && applied.obac !== 'ALL') {
+      items.push({
+        k: 'obac',
+        label: applied.obac
+      });
+    }
+
+    if (applied.estado) {
+      items.push({
+        k: 'estado',
+        label: applied.estado
+      });
+    }
+
+    if (applied.sel) {
+      items.push({
+        k: 'sel',
+        label: applied.sel
+      });
+    }
 
     const count = items.length;
 
@@ -939,73 +1040,54 @@ function selClass($sel)
     `).join('');
   };
 
-  btnFiltros?.addEventListener('click', openSheet);
-  overlay?.addEventListener('click', closeSheet);
-  btnCerrar?.addEventListener('click', closeSheet);
-
-  sheet?.addEventListener('click', (e) => {
-    const b = e.target.closest('button[data-filter]');
-    if (!b) return;
-
-    const filter = b.getAttribute('data-filter');
-    const value = (b.getAttribute('data-value') || '').toUpperCase();
-
-    if (filter === 'obac') draft.obac = value;
-    if (filter === 'estado') draft.estado = value;
-    if (filter === 'sel') draft.sel = value;
-
-    syncUIToDraft();
-  });
-
-  btnLimpiar?.addEventListener('click', () => {
-    draft = { obac: '', estado: '', sel: '' };
-    applied = { obac: '', estado: '', sel: '' };
-
-    state.obac = '';
-    state.estado = '';
-    state.sel = '';
-
-    if (q) q.value = '';
-    state.q = '';
-
-    syncUIToDraft();
-    renderActiveChips();
-    applyFilters();
-    closeSheet();
-  });
-
-  btnAplicar?.addEventListener('click', () => {
-    applied = { ...draft };
-
-    state.obac = applied.obac;
-    state.estado = applied.estado;
-    state.sel = applied.sel;
-
-    renderActiveChips();
-    applyFilters();
-    closeSheet();
-  });
-
   chipsActivos?.addEventListener('click', (e) => {
-    const wrap = e.target.closest('.chip-x');
+    const x = e.target.closest('.chip-x');
     const btn = e.target.closest('button');
-    if (!wrap || !btn) return;
+    if (!x || !btn) return;
 
-    const k = wrap.getAttribute('data-k');
+    const k = x.getAttribute('data-k');
 
-    applied[k] = '';
-    draft = { ...applied };
-    state[k] = '';
+    if (k === 'obac') applied.obac = 'ALL';
+    if (k === 'estado') applied.estado = null;
+    if (k === 'sel') applied.sel = null;
 
-    syncUIToDraft();
+    draft = {
+      ...applied
+    };
     renderActiveChips();
+    syncUIToDraft();
     applyFilters();
   });
 
-  q?.addEventListener('input', (e) => {
-    state.q = (e.target.value || '').trim();
-    applyFilters();
-  });
+  const applyFilters = () => {
+    const term = (q?.value || '').trim().toUpperCase();
+
+    const cards = list ? Array.from(list.querySelectorAll('.pac-item')) : [];
+    let visible = 0;
+
+    cards.forEach(card => {
+      const obac = (card.getAttribute('data-obac') || '').toUpperCase();
+      const estado = (card.getAttribute('data-estado') || '').toUpperCase();
+      const sel = (card.getAttribute('data-sel') || '').toUpperCase();
+      const hay = (card.getAttribute('data-hay') || '').toUpperCase();
+
+      const okSearch = !term || hay.includes(term);
+      const okObac = !applied.obac || applied.obac === 'ALL' || obac === applied.obac;
+      const okEstado = !applied.estado || estado === applied.estado;
+      const okSel = !applied.sel || sel === applied.sel;
+
+      const show = okSearch && okObac && okEstado && okSel;
+      card.style.display = show ? '' : 'none';
+
+      if (show) visible++;
+    });
+
+    if (countText) {
+      countText.textContent = `Mostrando ${visible} de ${cards.length} PAC`;
+    }
+  };
+
+  q?.addEventListener('input', applyFilters);
 
   renderActiveChips();
   applyFilters();
