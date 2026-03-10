@@ -5,18 +5,30 @@ $usuario = 'Andres';
 
 require __DIR__ . '/../layout/header.php';
 
+$pacs = $pacs ?? [];
+
 function fmt_money($n)
 {
   return 'S/ ' . number_format((float)$n, 2, '.', ',');
 }
+
 function badgeFromObac($obac)
 {
-  return strtoupper(trim($obac));
+  $o = strtoupper(trim((string)$obac));
+
+  return match ($o) {
+    'EJERCITO DEL PERU', 'EJÉRCITO DEL PERÚ', 'EP' => 'EP',
+    'FUERZA AEREA DEL PERU', 'FUERZA AÉREA DEL PERÚ', 'FAP' => 'FAP',
+    'MARINA DE GUERRA DEL PERU', 'MARINA DE GUERRA DEL PERÚ', 'MGP' => 'MGP',
+    'COMANDO CONJUNTO DE LAS FUERZAS ARMADAS', 'CCFFAA' => 'CCFFAA',
+    'CONIDA' => 'CONIDA',
+    default => $o,
+  };
 }
 
 function statusClass($estado)
 {
-  $e = strtoupper(trim($estado));
+  $e = strtoupper(trim((string)$estado));
   return match ($e) {
     'PUBLICADO'  => 'status-gris',
     'SOLICITADO' => 'status-vino',
@@ -26,7 +38,7 @@ function statusClass($estado)
 
 function selClass($sel)
 {
-  $s = strtoupper(trim($sel));
+  $s = strtoupper(trim((string)$sel));
   return match ($s) {
     'LP'  => 'pill-amber',
     'SIE' => 'pill-emerald',
@@ -42,7 +54,6 @@ function selClass($sel)
 
 <main class="page page-shell flex-1 px-5 pt-4 main-procesos">
 
-  <!-- HEADER / FILTROS (COMPACTO + SHEET) -->
   <section class="mb-5 filtros-sticky">
     <div class="bg-white/90 text-slate-900 rounded-2xl p-4 shadow-lg filtros-wrap">
 
@@ -58,7 +69,6 @@ function selClass($sel)
         </div>
       </div>
 
-      <!-- BAR COMPACTA -->
       <div class="mt-4 flex items-center gap-2">
         <div class="search flex-1">
           <span class="search-ico">🔎</span>
@@ -72,13 +82,11 @@ function selClass($sel)
         </button>
       </div>
 
-      <!-- CHIPS ACTIVOS (RESUMEN) -->
       <div id="chipsActivos" class="mt-3 flex gap-2 overflow-x-auto pb-1 hidden"></div>
 
     </div>
   </section>
 
-  <!-- SHEET FILTROS (MÓVIL) -->
   <div id="overlayFiltros" class="overlay hidden" aria-hidden="true"></div>
 
   <div id="sheetFiltros" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
@@ -93,7 +101,6 @@ function selClass($sel)
     </div>
 
     <div class="sheet-body">
-      <!-- OBAC -->
       <div class="sheet-section" id="fObac">
         <p class="sheet-label">OBAC</p>
         <div class="chips-grid">
@@ -105,7 +112,6 @@ function selClass($sel)
         </div>
       </div>
 
-      <!-- ESTADO -->
       <div class="sheet-section" id="fEstado">
         <p class="sheet-label">Estado</p>
         <div class="chips-grid">
@@ -115,7 +121,6 @@ function selClass($sel)
         </div>
       </div>
 
-      <!-- SELECCIÓN -->
       <div class="sheet-section" id="fSel">
         <p class="sheet-label">Selección</p>
         <div class="chips-grid">
@@ -137,16 +142,20 @@ function selClass($sel)
     </div>
   </div>
 
-  <!-- LISTA -->
   <section class="lista-scroll">
     <section class="space-y-3" id="listaProcesos">
       <?php foreach ($pacs as $p): ?>
         <?php
-        $obac = strtoupper(trim($p['obac']));
-        $estado = strtoupper(trim($p['estado']));
-        $sel = strtoupper(trim($p['seleccion']));
+        $obacLabel = badgeFromObac($p['obac'] ?? '');
+        $obac = strtoupper(trim((string)$obacLabel));
+        $estado = strtoupper(trim((string)($p['estado'] ?? '')));
+        $sel = strtoupper(trim((string)($p['seleccion'] ?? '')));
         $haystack = strtoupper(trim(
-          $p['nopac'] . ' ' . $p['obac'] . ' ' . $p['seleccion'] . ' ' . $p['estado'] . ' ' . $p['descripcion']
+          ((string)($p['nopac'] ?? '')) . ' ' .
+          ((string)($p['obac'] ?? '')) . ' ' .
+          ((string)($p['seleccion'] ?? '')) . ' ' .
+          ((string)($p['estado'] ?? '')) . ' ' .
+          ((string)($p['descripcion'] ?? ''))
         ));
         ?>
         <div class="proc-item pac-item"
@@ -154,59 +163,68 @@ function selClass($sel)
           data-estado="<?= htmlspecialchars($estado) ?>"
           data-sel="<?= htmlspecialchars($sel) ?>"
           data-hay="<?= htmlspecialchars($haystack) ?>"
-          data-open="<?= BASE_URL ?>/pac/ver?id=<?= (int)$p['id'] ?>">
-          <a class="proc-open" href="<?= BASE_URL ?>/pac/ver?id=<?= (int)$p['id'] ?>" aria-label="Abrir PAC"></a>
+          data-open="javascript:void(0)">
+          
+          <a class="proc-open" href="javascript:void(0)" aria-label="Abrir PAC"></a>
 
           <div class="left">
-            <div class="badge badge-vino"><?= htmlspecialchars(badgeFromObac($p['obac'])) ?></div>
+            <div class="badge badge-vino"><?= htmlspecialchars($obacLabel) ?></div>
 
             <div class="info">
               <p class="title">
-                PAC N° <?= htmlspecialchars($p['nopac']) ?>
+                PAC N° <?= htmlspecialchars($p['nopac'] ?? '') ?>
               </p>
 
               <p class="sub">
-                <span class="sel-pill <?= selClass($p['seleccion']) ?>"><?= htmlspecialchars($p['seleccion']) ?></span>
+                <span class="sel-pill <?= selClass($p['seleccion'] ?? '') ?>">
+                  <?= htmlspecialchars($p['seleccion'] ?? '') ?>
+                </span>
               </p>
 
               <p class="desc">
-                <?= htmlspecialchars($p['descripcion']) ?>
+                <?= htmlspecialchars($p['descripcion'] ?? '') ?>
               </p>
             </div>
           </div>
 
           <div class="right">
             <div class="top-right">
-              <span class="status <?= statusClass($p['estado']) ?>">
-                <?= htmlspecialchars($p['estado']) ?>
+              <span class="status <?= statusClass($p['estado'] ?? '') ?>">
+                <?= htmlspecialchars($p['estado'] ?? '') ?>
               </span>
 
               <div class="actions">
                 <button class="kebab" type="button" aria-label="Acciones" data-menu-btn></button>
 
                 <div class="menu hidden" data-menu>
-                  <a class="menu-item" href="<?= BASE_URL ?>/pac/ver?id=<?= (int)$p['id'] ?>">
+                  <button class="menu-item" type="button">
                     <span class="mi">👁️</span> Ver
-                  </a>
+                  </button>
 
-                  <a class="menu-item" href="<?= BASE_URL ?>/pac/editar?id=<?= (int)$p['id'] ?>">
+                  <button class="menu-item" type="button">
                     <span class="mi">✏️</span> Editar
-                  </a>
+                  </button>
 
-                  <button class="menu-item danger" type="button"
-                    data-delete
-                    data-id="<?= (int)$p['id'] ?>"
-                    data-name="PAC <?= htmlspecialchars($p['nopac']) ?>">
+                  <button class="menu-item danger" type="button">
                     <span class="mi">🗑️</span> Eliminar
                   </button>
                 </div>
               </div>
             </div>
 
-            <p class="money"><?= fmt_money($p['estimado']) ?></p>
+            <p class="money"><?= fmt_money($p['estimado'] ?? 0) ?></p>
           </div>
         </div>
       <?php endforeach; ?>
+
+      <?php if (empty($pacs)): ?>
+        <div class="proc-item">
+          <div class="info">
+            <p class="title">No hay PAC registrados</p>
+            <p class="desc">No se encontraron registros para mostrar.</p>
+          </div>
+        </div>
+      <?php endif; ?>
     </section>
 
     <div class="mt-4 text-xs text-white/70" id="countText">
@@ -219,7 +237,6 @@ function selClass($sel)
 <?php require __DIR__ . '/../layout/bottom-nav.php'; ?>
 
 <style>
-  /* ===== CONTENEDOR DESKTOP (IGUAL QUE PROCESOS) ===== */
   .page-shell {
     width: 100%;
   }
@@ -233,7 +250,6 @@ function selClass($sel)
     }
   }
 
-  /* ===== YEAR PILL (IGUAL) ===== */
   .year-pill {
     display: flex;
     align-items: center;
@@ -256,7 +272,6 @@ function selClass($sel)
     box-shadow: 0 0 0 3px rgba(201, 162, 39, .20);
   }
 
-  /* ===== CHIPS (IGUAL) ===== */
   .chip {
     padding: 10px 14px;
     border-radius: 9999px;
@@ -283,7 +298,6 @@ function selClass($sel)
     background: rgba(255, 255, 255, .92);
   }
 
-  /* ===== SEARCH (IGUAL) ===== */
   .search {
     display: flex;
     align-items: center;
@@ -314,7 +328,6 @@ function selClass($sel)
     font-weight: 700;
   }
 
-  /* ===== LAYOUT (IGUAL) ===== */
   .main-procesos {
     overflow: hidden;
   }
@@ -347,7 +360,6 @@ function selClass($sel)
     }
   }
 
-  /* ===== CARD (REUSAMOS PROC-ITEM TAL CUAL) ===== */
   .proc-item {
     position: relative;
     display: grid;
@@ -475,7 +487,6 @@ function selClass($sel)
     white-space: nowrap;
   }
 
-  /* Selección pill */
   .sel-pill {
     padding: 5px 10px;
     border-radius: 999px;
@@ -505,7 +516,6 @@ function selClass($sel)
     color: #334155;
   }
 
-  /* Acciones (IGUAL) */
   .actions {
     position: relative;
     z-index: 3;
@@ -582,7 +592,6 @@ function selClass($sel)
     padding-bottom: 12px;
   }
 
-  /* ===== Botón filtros compacto ===== */
   .btn-filtros {
     height: 48px;
     padding: 0 12px;
@@ -625,7 +634,6 @@ function selClass($sel)
     justify-content: center;
   }
 
-  /* ===== Chips activos (resumen) ===== */
   .chip-x {
     padding: 8px 10px;
     border-radius: 9999px;
@@ -650,7 +658,6 @@ function selClass($sel)
     line-height: 1;
   }
 
-  /* ===== Overlay + Bottom Sheet ===== */
   .overlay {
     position: fixed;
     inset: 0;
@@ -690,7 +697,6 @@ function selClass($sel)
     border-bottom: 1px solid rgba(148, 163, 184, .25);
   }
 
-  /* Botón cerrar con X dibujada (consistente) */
   .sheet-close {
     position: relative;
     width: 40px;
@@ -775,16 +781,13 @@ function selClass($sel)
     display: none !important;
   }
 
-  /* Desktop: no mostrar sheet */
   @media (min-width: 1024px) {
-
     .overlay,
     .sheet {
       display: none !important;
     }
   }
 
-  /* iOS: evitar zoom al enfocar input (font-size >= 16px) */
   @media (max-width: 1024px) {
     .search input {
       font-size: 16px !important;
@@ -797,7 +800,6 @@ function selClass($sel)
 </style>
 
 <script>
-  // ===== MENÚ KEBAB =====
   const closeAllMenus = () => {
     document.querySelectorAll('[data-menu]').forEach(m => m.classList.add('hidden'));
   };
@@ -820,27 +822,10 @@ function selClass($sel)
     closeAllMenus();
   });
 
-  // Eliminar
-  document.addEventListener('click', (e) => {
-    const del = e.target.closest('[data-delete]');
-    if (!del) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-
-    const id = del.getAttribute('data-id');
-    const name = del.getAttribute('data-name') || 'este registro';
-
-    if (!confirm(`¿Eliminar ${name}? Esta acción no se puede deshacer.`)) return;
-    window.location.href = `<?= BASE_URL ?>/pac/eliminar?id=${id}`;
-  });
-
-  // ===== FILTROS + BUSCADOR =====
   const q = document.getElementById('q');
   const list = document.getElementById('listaProcesos');
   const countText = document.getElementById('countText');
 
-  // estado aplicado
   const state = {
     obac: '',
     estado: '',
@@ -874,7 +859,6 @@ function selClass($sel)
     if (countText) countText.textContent = `Mostrando ${visible} de ${cards.length} PAC`;
   };
 
-  // ===== SHEET =====
   const btnFiltros = document.getElementById('btnFiltros');
   const overlay = document.getElementById('overlayFiltros');
   const sheet = document.getElementById('sheetFiltros');
@@ -885,7 +869,6 @@ function selClass($sel)
   const chipsActivos = document.getElementById('chipsActivos');
   const badgeCount = document.getElementById('badgeCount');
 
-  // estado temporal (draft) y aplicado (applied)
   let draft = {
     obac: '',
     estado: '',
@@ -932,18 +915,9 @@ function selClass($sel)
 
   const renderActiveChips = () => {
     const items = [];
-    if (applied.obac) items.push({
-      k: 'obac',
-      label: `OBAC: ${applied.obac}`
-    });
-    if (applied.estado) items.push({
-      k: 'estado',
-      label: `Estado: ${applied.estado}`
-    });
-    if (applied.sel) items.push({
-      k: 'sel',
-      label: `Selección: ${applied.sel}`
-    });
+    if (applied.obac) items.push({ k: 'obac', label: `OBAC: ${applied.obac}` });
+    if (applied.estado) items.push({ k: 'estado', label: `Estado: ${applied.estado}` });
+    if (applied.sel) items.push({ k: 'sel', label: `Selección: ${applied.sel}` });
 
     const count = items.length;
 
@@ -965,12 +939,10 @@ function selClass($sel)
     `).join('');
   };
 
-  // Abrir/cerrar
   btnFiltros?.addEventListener('click', openSheet);
   overlay?.addEventListener('click', closeSheet);
   btnCerrar?.addEventListener('click', closeSheet);
 
-  // Click en chips del sheet
   sheet?.addEventListener('click', (e) => {
     const b = e.target.closest('button[data-filter]');
     if (!b) return;
@@ -985,18 +957,9 @@ function selClass($sel)
     syncUIToDraft();
   });
 
-  // Limpiar
   btnLimpiar?.addEventListener('click', () => {
-    draft = {
-      obac: '',
-      estado: '',
-      sel: ''
-    };
-    applied = {
-      obac: '',
-      estado: '',
-      sel: ''
-    };
+    draft = { obac: '', estado: '', sel: '' };
+    applied = { obac: '', estado: '', sel: '' };
 
     state.obac = '';
     state.estado = '';
@@ -1011,11 +974,8 @@ function selClass($sel)
     closeSheet();
   });
 
-  // Aplicar
   btnAplicar?.addEventListener('click', () => {
-    applied = {
-      ...draft
-    };
+    applied = { ...draft };
 
     state.obac = applied.obac;
     state.estado = applied.estado;
@@ -1026,7 +986,6 @@ function selClass($sel)
     closeSheet();
   });
 
-  // Quitar chip desde resumen
   chipsActivos?.addEventListener('click', (e) => {
     const wrap = e.target.closest('.chip-x');
     const btn = e.target.closest('button');
@@ -1035,9 +994,7 @@ function selClass($sel)
     const k = wrap.getAttribute('data-k');
 
     applied[k] = '';
-    draft = {
-      ...applied
-    };
+    draft = { ...applied };
     state[k] = '';
 
     syncUIToDraft();
@@ -1045,13 +1002,11 @@ function selClass($sel)
     applyFilters();
   });
 
-  // Buscador
   q?.addEventListener('input', (e) => {
     state.q = (e.target.value || '').trim();
     applyFilters();
   });
 
-  // Inicial
   renderActiveChips();
   applyFilters();
 </script>
