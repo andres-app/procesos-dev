@@ -16,7 +16,8 @@ class MdPac
                 p.estado,
                 p.descripcion,
                 COALESCE(e.nombre, '') AS obac,
-                COALESCE(s.nombre, '') AS seleccion,
+                COALESCE(s.nombre, '') AS seleccion_nombre,
+                COALESCE(s.abreviacion, '') AS seleccion_abrev,
                 COALESCE(p.estimado, 0) AS estimado,
                 p.created_at
             FROM pac p
