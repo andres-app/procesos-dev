@@ -6,7 +6,9 @@ class CtrPac
 {
     public static function index(): void
     {
-        $pacs = MdPac::listar();
+        $filtro = $_GET['f'] ?? 'acffaa';
+
+        $pacs = MdPac::listar($filtro);
 
         require_once __DIR__ . '/../Vista/modulos/pac.php';
     }

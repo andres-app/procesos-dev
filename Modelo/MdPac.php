@@ -4,9 +4,19 @@ require_once __DIR__ . '/../Config/config.php';
 
 class MdPac
 {
-    public static function listar(): array
+    public static function listar(string $filtro = 'acffaa'): array
     {
         $db = db();
+
+        $where = '';
+
+        if ($filtro === 'acffaa') {
+            $where = "WHERE p.ejecucion = 4";
+        }
+
+        if ($filtro === 'inversiones') {
+            $where = "WHERE p.inversiones IS NOT NULL AND p.inversiones <> ''";
+        }
 
         $sql = "
             SELECT
@@ -23,6 +33,7 @@ class MdPac
             FROM pac p
             LEFT JOIN entidad e ON e.id = p.obac
             LEFT JOIN seleccion s ON s.id = p.seleccion
+            $where
             ORDER BY p.created_at DESC, p.id DESC
         ";
 

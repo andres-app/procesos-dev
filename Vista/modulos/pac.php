@@ -107,6 +107,16 @@ function selClass($sel)
         </div>
       </div>
 
+      <div class="flex gap-2 mt-3">
+
+        <a href="?f=acffaa" class="chip chip-active">ACFFAA</a>
+
+        <a href="?f=inversiones" class="chip">Inversiones</a>
+
+        <a href="?f=todos" class="chip">Todos</a>
+
+      </div>
+
       <div class="mt-4 flex items-center gap-2">
         <div class="search flex-1">
           <span class="search-ico">🔎</span>
@@ -230,24 +240,6 @@ function selClass($sel)
               <span class="status <?= statusClass($p['estado'] ?? '') ?>">
                 <?= htmlspecialchars($p['estado'] ?? '') ?>
               </span>
-
-              <div class="actions">
-                <button class="kebab" type="button" aria-label="Acciones" data-menu-btn></button>
-
-                <div class="menu hidden" data-menu>
-                  <button class="menu-item" type="button">
-                    <span class="mi">👁️</span> Ver
-                  </button>
-
-                  <button class="menu-item" type="button">
-                    <span class="mi">✏️</span> Editar
-                  </button>
-
-                  <button class="menu-item danger" type="button">
-                    <span class="mi">🗑️</span> Eliminar
-                  </button>
-                </div>
-              </div>
             </div>
 
             <p class="money"><?= fmt_money($p['estimado'] ?? 0) ?></p>
@@ -309,25 +301,25 @@ function selClass($sel)
     white-space: nowrap;
   }
 
-  .pill-amber{
-  background:rgba(201,162,39,.18);
-  color:#7A5B00;
-}
+  .pill-amber {
+    background: rgba(201, 162, 39, .18);
+    color: #7A5B00;
+  }
 
-.pill-emerald{
-  background:rgba(16,185,129,.18);
-  color:#065f46;
-}
+  .pill-emerald {
+    background: rgba(16, 185, 129, .18);
+    color: #065f46;
+  }
 
-.pill-vino{
-  background:rgba(107,28,38,.18);
-  color:#6B1C26;
-}
+  .pill-vino {
+    background: rgba(107, 28, 38, .18);
+    color: #6B1C26;
+  }
 
-.pill-slate{
-  background:rgba(148,163,184,.20);
-  color:#475569;
-}
+  .pill-slate {
+    background: rgba(148, 163, 184, .20);
+    color: #475569;
+  }
 
   .year-pill .dot {
     width: 8px;
@@ -376,19 +368,19 @@ function selClass($sel)
     min-width: 0;
   }
 
-  .sel-badge{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding:4px 10px;
-  border-radius:999px;
-  font-size:.72rem;
-  font-weight:900;
-  letter-spacing:.3px;
-  background:#eef2f7;
-  color:#475569;
-  white-space:nowrap;
-}
+  .sel-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: .72rem;
+    font-weight: 900;
+    letter-spacing: .3px;
+    background: #eef2f7;
+    color: #475569;
+    white-space: nowrap;
+  }
 
   .search-ico {
     font-size: 1rem;
