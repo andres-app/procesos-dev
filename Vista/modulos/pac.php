@@ -106,28 +106,44 @@ function selClass($sel)
           <span>AF-2026</span>
         </div>
       </div>
-
-      <div class="flex gap-2 mt-3">
-
-        <a href="?f=acffaa" class="chip chip-active">ACFFAA</a>
-
-        <a href="?f=inversiones" class="chip">Inversiones</a>
-
-        <a href="?f=todos" class="chip">Todos</a>
-
-      </div>
-
       <div class="mt-4 flex items-center gap-2">
+
         <div class="search flex-1">
           <span class="search-ico">🔎</span>
           <input id="q" type="text" placeholder="Buscar N° PAC, OBAC o descripción..." />
         </div>
 
-        <button id="btnFiltros" type="button" class="btn-filtros" aria-haspopup="dialog" aria-controls="sheetFiltros">
+        <button id="btnFiltros"
+          type="button"
+          class="btn-filtros"
+          aria-haspopup="dialog"
+          aria-controls="sheetFiltros">
           <span class="ico">⚙️</span>
           <span class="txt">Filtros</span>
           <span id="badgeCount" class="badge-count hidden">0</span>
         </button>
+
+      </div>
+
+      <?php $f = $_GET['f'] ?? 'acffaa'; ?>
+
+      <div class="mt-3 flex gap-2 overflow-x-auto pb-1">
+
+        <a href="?f=acffaa"
+          class="chip <?= $f === 'acffaa' ? 'chip-active' : '' ?>">
+          ACFFAA
+        </a>
+
+        <a href="?f=inversiones"
+          class="chip <?= $f === 'inversiones' ? 'chip-active' : '' ?>">
+          Inversiones
+        </a>
+
+        <a href="?f=todos"
+          class="chip <?= $f === 'todos' ? 'chip-active' : '' ?>">
+          Todos
+        </a>
+
       </div>
 
       <div id="chipsActivos" class="mt-3 flex gap-2 overflow-x-auto pb-1 hidden"></div>

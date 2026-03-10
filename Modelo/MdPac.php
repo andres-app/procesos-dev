@@ -15,7 +15,7 @@ class MdPac
         }
 
         if ($filtro === 'inversiones') {
-            $where = "WHERE p.inversiones IS NOT NULL AND p.inversiones <> ''";
+            $where = "WHERE p.inversiones LIKE 'CUI%'";
         }
 
         $sql = "
@@ -41,5 +41,23 @@ class MdPac
         $st->execute();
 
         return $st->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public static function contadores(): array
+    {
+        $db = db();
+
+        $sql = "
+            SELECT
+                COUNT(*) AS total,
+                SUM(CASE WHEN ejecucion = 4 THEN 1 ELSE 0 END) AS acffaa,
+                SUM(CASE WHEN inversiones LIKE 'CUI%' THEN 1 ELSE 0 END) AS inversiones
+            FROM pac
+        ";
+
+        $st = $db->prepare($sql);
+        $st->execute();
+
+        return $st->fetch(PDO::FETCH_ASSOC);
     }
 }

@@ -9,6 +9,7 @@ class CtrPac
         $filtro = $_GET['f'] ?? 'acffaa';
 
         $pacs = MdPac::listar($filtro);
+        $contadores = MdPac::contadores();
 
         require_once __DIR__ . '/../Vista/modulos/pac.php';
     }
