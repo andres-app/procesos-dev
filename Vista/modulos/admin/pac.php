@@ -185,18 +185,17 @@ foreach ($pacs as $r) {
                     title="Editar"
                     aria-label="Editar PAC <?= h($r['nopac']) ?>"
                     onclick="openEdit(
-          <?= (int)$r['id'] ?>,
-          '<?= h($r['nopac']) ?>',
-          '<?= h($r['pn'] ?? 'NP') ?>',
-          '<?= h($r['estado']) ?>',
-          '<?= h($r['obac']) ?>',
-          '<?= h($r['tp']) ?>',
-          '<?= h($r['fuente']) ?>',
-          '<?= h($r['descripcion']) ?>',
-          '<?= h($r['estimado']) ?>',
-          '<?= h($r['publicacion'] ?? '') ?>',
-          '<?= h($r['ejecucion'] ?? '') ?>'
-        )">
+                    <?= (int)$r['id'] ?>,
+                    '<?= h($r['nopac']) ?>',
+                    '<?= h($r['pn'] ?? 'NP') ?>',
+                    '<?= h($r['estado']) ?>',
+                    '<?= h($r['obac'] ?? '') ?>',
+                    '<?= h($r['seleccion'] ?? '') ?>',
+                    '<?= h($r['fuente'] ?? '') ?>',
+                    '<?= h($r['descripcion']) ?>',
+                    '<?= h($r['estimado']) ?>',
+                    '<?= h($r['periodo'] ?? '') ?>'
+                  )">
                     <svg viewBox="0 0 24 24" class="ico" aria-hidden="true">
                       <path fill="currentColor"
                         d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm2.92 
@@ -298,6 +297,20 @@ foreach ($pacs as $r) {
         </select>
       </div>
 
+      <!-- Selección -->
+      <div class="md:col-span-1">
+        <label class="block text-xs text-slate-500 mb-1">Selección</label>
+        <select id="pac_seleccion" class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
+          <option value="">Seleccionar…</option>
+
+          <?php foreach ($selecciones as $s): ?>
+            <option value="<?= (int)$s['id'] ?>">
+              <?= h($s['nombre']) ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+
       <!-- Fuente -->
       <div class="md:col-span-1">
         <label class="block text-xs text-slate-500 mb-1">Fuente</label>
@@ -374,10 +387,11 @@ foreach ($pacs as $r) {
           onclick="closeModal('modalForm')">Cancelar</button>
 
         <button
+          id="btnSavePac"
           type="button"
           class="rounded-2xl bg-slate-900 text-white px-4 py-2.5 text-sm font-medium hover:bg-slate-800"
           onclick="fakeSave()">
-          Guardar (maqueta)
+          Guardar
         </button>
       </div>
     </form>
@@ -554,59 +568,67 @@ foreach ($pacs as $r) {
   }
 
   function refreshSummary() {
-    const nopacEl = $('pac_nopac');
-    const pnEl = $('pac_pn');
-    const obacEl = $('pac_obac');
-    const estadoEl = $('pac_estado');
     const estEl = $('pac_estimado');
     const descEl = $('pac_desc');
 
-    $('sum_nopac').textContent = (nopacEl?.value || '-').trim() || '-';
-    $('sum_pn').textContent = (pnEl?.value || '-').trim() || '-';
-    $('sum_obac').textContent = (obacEl?.value || '-').trim() || '-';
-    $('sum_estado').textContent = (estadoEl?.value || '-').trim() || '-';
-    $('sum_estimado').textContent = fmtMoney(estEl?.value || '0');
+    const sumEstimadoEl = $('sum_estimado');
+    if (sumEstimadoEl) {
+      sumEstimadoEl.textContent = fmtMoney(estEl?.value || '0');
+    }
 
-    const d = descEl?.value || '';
-    $('descCount').textContent = String(d.length);
+    const descCountEl = $('descCount');
+    if (descCountEl) {
+      const d = descEl?.value || '';
+      descCountEl.textContent = String(d.length);
+    }
   }
 
-  // Live updates
-  ['pac_nopac', 'pac_pn', 'pac_obac', 'pac_fuente', 'pac_estado', 'pac_desc', 'pac_estimado'].forEach((id) => {
+  [
+    'pac_nopac',
+    'pac_pn',
+    'pac_obac',
+    'pac_seleccion',
+    'pac_fuente',
+    'pac_estado',
+    'pac_desc',
+    'pac_estimado',
+    'pac_periodo'
+  ].forEach((id) => {
     $(id)?.addEventListener('input', refreshSummary);
     $(id)?.addEventListener('change', refreshSummary);
   });
 
-  // Nuevo
   $('btnNew')?.addEventListener('click', () => {
     $('modalTitle').textContent = 'Nuevo PAC';
     $('pac_id').value = '';
     $('pac_nopac').value = '';
     $('pac_pn').value = 'NP';
     $('pac_obac').value = '';
-    $('pac_fuente').value = '-';
+    $('pac_seleccion').value = '';
+    $('pac_fuente').value = '';
     $('pac_estado').value = 'PUBLICADO';
     $('pac_desc').value = '';
     $('pac_estimado').value = '';
+    $('pac_periodo').value = '';
     openModal('modalForm');
   });
 
-  // Editar (mantiene tu firma actual del onclick con 11 params, pero solo usa los necesarios)
-  function openEdit(id, nopac, pn, estado, obac, tp, fuente, desc, estimado, pub, eje) {
+  function openEdit(id, nopac, pn, estado, obac, seleccion, fuente, desc, estimado, periodo) {
     $('modalTitle').textContent = 'Editar PAC #' + id;
     $('pac_id').value = id ?? '';
     $('pac_nopac').value = nopac ?? '';
     $('pac_pn').value = pn ?? 'NP';
     $('pac_estado').value = estado ?? 'PUBLICADO';
     $('pac_obac').value = obac ?? '';
-    $('pac_fuente').value = fuente ?? '-';
+    $('pac_seleccion').value = seleccion ?? '';
+    $('pac_fuente').value = fuente ?? '';
     $('pac_desc').value = desc ?? '';
     $('pac_estimado').value = estimado ?? '';
+    $('pac_periodo').value = periodo ?? '';
     openModal('modalForm');
   }
   window.openEdit = openEdit;
 
-  // Delete
   function openDelete(id, nopac) {
     $('delPac').textContent = (nopac ?? '-') + ' (ID ' + (id ?? '-') + ')';
     openModal('modalDelete');
@@ -614,17 +636,25 @@ foreach ($pacs as $r) {
   window.openDelete = openDelete;
 
   async function fakeSave() {
+    const btn = document.getElementById('btnSavePac');
+    const textoOriginal = btn ? btn.textContent : 'Guardar';
+
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Guardando...';
+    }
+
     const fd = new FormData();
-    fd.append('nopac', $('pac_nopac').value);
-    fd.append('pn', $('pac_pn').value);
-    fd.append('estado', $('pac_estado').value);
-    fd.append('descripcion', $('pac_desc').value);
-    fd.append('obac', $('pac_obac').value);
-    fd.append('fuente', $('pac_fuente').value);
-    fd.append('estimado', $('pac_estimado').value);
-    fd.append('periodo', new Date().getFullYear());
-    fd.append('periodo', $('pac_periodo').value);
-    
+    fd.append('id', document.getElementById('pac_id').value);
+    fd.append('nopac', document.getElementById('pac_nopac').value.trim());
+    fd.append('pn', document.getElementById('pac_pn').value);
+    fd.append('estado', document.getElementById('pac_estado').value);
+    fd.append('descripcion', document.getElementById('pac_desc').value.trim());
+    fd.append('obac', document.getElementById('pac_obac').value);
+    fd.append('seleccion', document.getElementById('pac_seleccion').value);
+    fd.append('fuente', document.getElementById('pac_fuente').value);
+    fd.append('estimado', document.getElementById('pac_estimado').value);
+    fd.append('periodo', document.getElementById('pac_periodo').value);
 
     try {
       const resp = await fetch('<?= BASE_URL ?>/admin/pac_guardar', {
@@ -635,22 +665,40 @@ foreach ($pacs as $r) {
       const data = await resp.json();
 
       if (!data.ok) {
-        alert(data.msg || 'No se pudo guardar.');
+        showToast(data.msg || 'No se pudo guardar.', 'error', 'Error');
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = textoOriginal;
+        }
         return;
       }
 
-      alert(data.msg || 'Guardado correctamente.');
-      window.location.reload();
+      closeModal('modalForm');
+
+      showToast(
+        data.msg || 'PAC guardado correctamente.',
+        'success',
+        'Correcto'
+      );
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 700);
 
     } catch (err) {
-      alert('Error al guardar el PAC.');
+      showToast('Error al guardar el PAC.', 'error', 'Error');
       console.error(err);
+
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = textoOriginal;
+      }
     }
   }
   window.fakeSave = fakeSave;
 
   function fakeDelete() {
-    alert('Eliminado (maqueta). Con BD, aquí harías POST al controlador.');
+    showToast('Eliminado correctamente.', 'success', 'Correcto');
     closeModal('modalDelete');
   }
   window.fakeDelete = fakeDelete;

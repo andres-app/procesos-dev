@@ -187,7 +187,8 @@ $routes = [
     },
 
     'pac' => static function (): void {
-        require_file(__DIR__ . '/../Vista/modulos/pac.php');
+        require_once __DIR__ . '/../Controlador/CtrPac.php';
+        CtrPac::index();
     },
 
     'logout' => static function (): void {

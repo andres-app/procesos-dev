@@ -5,223 +5,58 @@ $usuario = 'Andres';
 
 require __DIR__ . '/../layout/header.php';
 
-/* =========================
-   DATA (PAC)
-   Campos: nopac, estado, descripcion, obac, seleccion, estimado
-   ========================= */
-$pacs = [
-  [
-    'id' => 1,
-    'nopac' => '0043',
-    'estado' => 'PUBLICADO',
-    'descripcion' => 'CONTRATACIÓN CORPORATIVA DEL SEGURO DE EMBARCACIONES MARÍTIMAS Y FLUVIALES /SERVICIO PP 0135/REQ.0009-2026-DIRECOMAR',
-    'obac' => 'MGP',
-    'seleccion' => 'CPA',
-    'estimado' => 90000.0
-  ],
-  [
-    'id' => 2,
-    'nopac' => '0041',
-    'estado' => 'PUBLICADO',
-    'descripcion' => 'CONTRATACIÓN CORPORATIVA DEL SEGURO DE VEHÍCULOS /SERVICIO PP 0135/REQ.0007-2026-DIRECOMAR',
-    'obac' => 'MGP',
-    'seleccion' => 'CP',
-    'estimado' => 570000.0
-  ],
-  [
-    'id' => 3,
-    'nopac' => '0040',
-    'estado' => 'PUBLICADO',
-    'descripcion' => 'CONTRATACIÓN CORPORATIVA DEL SEGURO OBLIGATORIO DE ACCIDENTES DE TRÁNSITO (SOAT) /SERVICIO PP 0135/REQ.0006-2026-DIRECOMAR',
-    'obac' => 'MGP',
-    'seleccion' => 'SIE',
-    'estimado' => 44860.0
-  ],
-  [
-    'id' => 4,
-    'nopac' => '0028',
-    'estado' => 'PUBLICADO',
-    'descripcion' => 'SERVICIO DE MANTENIMIENTO Y REPARACIÓN DE VEHÍCULOS TÁCTICOS DE LA COMANDANCIA DE LA FUERZA DE INFANTERÍA DE MARINA /SERVICIO PP 0135/REQ.0008-2026-COMFUINMAR',
-    'obac' => 'MGP',
-    'seleccion' => 'CPS',
-    'estimado' => 610000.0
-  ],
-  [
-    'id' => 5,
-    'nopac' => '0008',
-    'estado' => 'PUBLICADO',
-    'descripcion' => 'ADQUISICIÓN DE KITS DE 1500 HORAS PARA LOS DIÉSEL PROPULSORES Y DIÉSEL ALTERNADORES DE LAS UNIDADES DE LA FUERZA DE SUPERFICIE /BIEN PP0135/REQ.0007-2026-COMFAS',
-    'obac' => 'MGP',
-    'seleccion' => 'LP',
-    'estimado' => 490000.0
-  ],
-  [
-    'id' => 6,
-    'nopac' => '0086',
-    'estado' => 'PUBLICADO',
-    'descripcion' => 'ADQUISICIÓN DE EXPLOSIVOS PARA EL SISTEMA DE EYECCIÓN MKPE-16LF KT-1P PP-0135',
-    'obac' => 'FAP',
-    'seleccion' => 'RES',
-    'estimado' => 5943990.63
-  ],
-  [
-    'id' => 7,
-    'nopac' => '0085',
-    'estado' => 'PUBLICADO',
-    'descripcion' => 'ADQUISICIÓN DE COMPONENTES PARA EL MANTENIMIENTO DEL SISTEMA DE EYECCIÓN MKPE-16LF KT-1P PP-0135',
-    'obac' => 'FAP',
-    'seleccion' => 'RES',
-    'estimado' => 5141785.0
-  ],
-  [
-    'id' => 8,
-    'nopac' => '0067',
-    'estado' => 'PUBLICADO',
-    'descripcion' => 'ADQUISICION DE KIT DE EQUIPAMIENTO PARA EXTINCION DE INCENDIOS APLICABLE A LOS HELICOPTEROS MI-17/171SH Y HELICOPTEROS BELL-212/412 PP-0135 CUI 2662544',
-    'obac' => 'FAP',
-    'seleccion' => 'RES',
-    'estimado' => 5703825.12
-  ],
-  [
-    'id' => 9,
-    'nopac' => '0066',
-    'estado' => 'SOLICITADO',
-    'descripcion' => 'SERVICIO DE OVERHAUL DE MOTOR PT6A-34 APLICABLE A LA FLOTA DHC-6-400 PP-0135',
-    'obac' => 'FAP',
-    'seleccion' => 'RES',
-    'estimado' => 11333280.0
-  ],
-  [
-    'id' => 10,
-    'nopac' => '0062',
-    'estado' => 'SOLICITADO',
-    'descripcion' => 'ADQUISICION DE LUCES DE BALIZAMIENTO PORTATIL - EN EL GRUPO AEREO NUMERO 11 ... PP-0135',
-    'obac' => 'FAP',
-    'seleccion' => 'LP',
-    'estimado' => 3181162.0
-  ],
-  [
-    'id' => 11,
-    'nopac' => '0022',
-    'estado' => 'PUBLICADO',
-    'descripcion' => '0135 - SEGURO OBLIGATORIO DE ACCIDENTES DE TRANSITO - SOAT PP-0135',
-    'obac' => 'FAP',
-    'seleccion' => 'CC',
-    'estimado' => 29113.0
-  ],
-  [
-    'id' => 12,
-    'nopac' => '0005',
-    'estado' => 'PUBLICADO',
-    'descripcion' => 'ADQUISICIÓN DE EQUIPOS DE SEGURIDAD DE LAS COMUNICACIONES Y LICENCIA DE OPERACIÓN PARA EL SISTEMA CRIPTOLOGICO DE LA FAP PP-0135',
-    'obac' => 'FAP',
-    'seleccion' => 'RES',
-    'estimado' => 5240386.0
-  ],
-  [
-    'id' => 13,
-    'nopac' => '0004',
-    'estado' => 'PUBLICADO',
-    'descripcion' => 'ADQUISICION DE EQUIPAMIENTO DE COMUNICACIÓN SATELITAL TACTICO TIPO MANPACK PP-0135',
-    'obac' => 'FAP',
-    'seleccion' => 'RES',
-    'estimado' => 1390640.0
-  ],
-  [
-    'id' => 14,
-    'nopac' => '0001',
-    'estado' => 'SOLICITADO',
-    'descripcion' => 'SERVICIO DE RASTREO SATELITAL UUDD FAP Y VRAEM PP-0135 PP-032',
-    'obac' => 'FAP',
-    'seleccion' => 'RES',
-    'estimado' => 1230441.0
-  ],
-  [
-    'id' => 15,
-    'nopac' => '0136',
-    'estado' => 'SOLICITADO',
-    'descripcion' => 'ADQUISICIÓN DE EQUIPOS DE PARACAIDAS AF-2026',
-    'obac' => 'EP',
-    'seleccion' => 'RES',
-    'estimado' => 5999999.99
-  ],
-  [
-    'id' => 16,
-    'nopac' => '0083',
-    'estado' => 'SOLICITADO',
-    'descripcion' => 'SERVICIO DE RENOVACIÓN DEL PROGRAMA PRO ADVANTAGE (POWER ADVANTAGE + PRO PARTS) PARA EL AVIÓN CESSNA CITATION XLS EP-861 DE LA AVIACIÓN DEL EJÉRCITO',
-    'obac' => 'EP',
-    'seleccion' => 'RES',
-    'estimado' => 1275000.0
-  ],
-  [
-    'id' => 17,
-    'nopac' => '0076',
-    'estado' => 'SOLICITADO',
-    'descripcion' => 'ADQUISICIÓN DE CAMIONETAS PARA EL PROYECTO DE INVERSIÓN MI PERU',
-    'obac' => 'EP',
-    'seleccion' => 'RES',
-    'estimado' => 5356144.0
-  ],
-  [
-    'id' => 18,
-    'nopac' => '0075',
-    'estado' => 'SOLICITADO',
-    'descripcion' => 'ADQUISICIÓN DE VEHÍCULOS DE APOYO DE COMBATE PARA EL PROYECTO DE INVERSIÓN PURISUNCHU',
-    'obac' => 'EP',
-    'seleccion' => 'RES',
-    'estimado' => 14000000.0
-  ],
-  [
-    'id' => 19,
-    'nopac' => '0060',
-    'estado' => 'PUBLICADO',
-    'descripcion' => 'CONTRATACIÓN CORPORATIVA DEL SEGURO DE VEHÍCULOS E HIDROCARBUROS-135',
-    'obac' => 'EP',
-    'seleccion' => 'CPS',
-    'estimado' => 1300000.0
-  ],
-  [
-    'id' => 20,
-    'nopac' => '0059',
-    'estado' => 'PUBLICADO',
-    'descripcion' => 'CONTRATACIÓN CORPORATIVA DEL SEGURO DE EMBARCACIONES FLUVIALES -PP 135',
-    'obac' => 'EP',
-    'seleccion' => 'CPS',
-    'estimado' => 849963.0
-  ],
-  [
-    'id' => 21,
-    'nopac' => '0057',
-    'estado' => 'PUBLICADO',
-    'descripcion' => 'CONTRATACIÓN CORPORATIVA DEL SEGURO OBLIGATORIO DE ACCIDENTES DE TRÁNSITO (SOAT)-PP 135-',
-    'obac' => 'EP',
-    'seleccion' => 'SIE',
-    'estimado' => 120867.0
-  ],
-  [
-    'id' => 22,
-    'nopac' => '0001',
-    'estado' => 'PUBLICADO',
-    'descripcion' => 'SERVICIO DE SOPORTE TECNICO PARA SISTEMA SATELITAL',
-    'obac' => 'CONIDA',
-    'seleccion' => 'RES',
-    'estimado' => 8200000.0
-  ],
-];
+$pacs = $pacs ?? [];
 
 function fmt_money($n)
 {
   return 'S/ ' . number_format((float)$n, 2, '.', ',');
 }
+
+function selCode($sel)
+{
+  $s = strtoupper(trim((string)$sel));
+
+  return match ($s) {
+    '1', 'AS', 'ADJUDICACIÓN SIMPLIFICADA', 'ADJUDICACION SIMPLIFICADA' => 'AS',
+    '2', 'CPRE', 'COMPARACIÓN DE PRECIOS', 'COMPARACION DE PRECIOS' => 'CPRE',
+    '3', 'CP', 'CONCURSO PÚBLICO', 'CONCURSO PUBLICO' => 'CP',
+    '4', 'CD', 'CONTRATACIÓN DIRECTA', 'CONTRATACION DIRECTA' => 'CD',
+    '5', 'LP', 'LICITACIÓN PÚBLICA', 'LICITACION PUBLICA' => 'LP',
+    '6', 'SIE', 'SUBASTA INVERSA ELECTRÓNICA', 'SUBASTA INVERSA ELECTRONICA' => 'SIE',
+    '7', 'CATAL', 'COMPRAS POR CATÁLOGO (CONVENIO MARCO)' => 'CATAL',
+    '8', 'CONV', 'CONVENIO' => 'CONV',
+    '9', 'RES', 'RÉGIMEN ESPECIAL', 'REGIMEN ESPECIAL' => 'RES',
+    '10', 'CE', 'CONTRATACIÓN INTERNACIONAL', 'CONTRATACION INTERNACIONAL' => 'CE',
+    '11', 'CC', 'SUPUESTO DE INAPLICACIÓN MENOR O IGUAL A 8 UIT' => 'CC',
+    '13', 'PEC', 'PROCEDIMIENTO ESPECIAL DE CONTRATACIÓN', 'PROCEDIMIENTO ESPECIAL DE CONTRATACION' => 'PEC',
+    '15', 'EE', 'ENTRE ESTADOS' => 'EE',
+    '16', 'SCI', 'SELECCIÓN DE CONSULTORES INDIVIDUALES', 'SELECCION DE CONSULTORES INDIVIDUALES' => 'SCI',
+    '17', 'CPA', 'CONCURSO PÚBLICO ABREVIADO', 'CONCURSO PUBLICO ABREVIADO' => 'CPA',
+    '18', 'LPA', 'LICITACIÓN PÚBLICA ABREVIADA HOMOLOGACIÓN', 'LICITACION PUBLICA ABREVIADA HOMOLOGACION' => 'LPA',
+    '19', 'LPA', 'LICITACIÓN PÚBLICA ABREVIADA', 'LICITACION PUBLICA ABREVIADA' => 'LPA',
+    '20', 'CPS', 'CONCURSO PÚBLICO DE SERVICIOS', 'CONCURSO PUBLICO DE SERVICIOS' => 'CPS',
+    '21', 'CPC', 'CONCURSO PÚBLICO PARA CONSULTORÍA', 'CONCURSO PUBLICO PARA CONSULTORIA' => 'CPC',
+    default => $s,
+  };
+}
+
 function badgeFromObac($obac)
 {
-  return strtoupper(trim($obac));
+  $o = strtoupper(trim((string)$obac));
+
+  return match ($o) {
+    'EJERCITO DEL PERU', 'EJÉRCITO DEL PERÚ', 'EP' => 'EP',
+    'FUERZA AEREA DEL PERU', 'FUERZA AÉREA DEL PERÚ', 'FAP' => 'FAP',
+    'MARINA DE GUERRA DEL PERU', 'MARINA DE GUERRA DEL PERÚ', 'MGP' => 'MGP',
+    'COMANDO CONJUNTO DE LAS FUERZAS ARMADAS', 'CCFFAA' => 'CCFFAA',
+    'CONIDA' => 'CONIDA',
+    default => $o,
+  };
 }
 
 function statusClass($estado)
 {
-  $e = strtoupper(trim($estado));
+  $e = strtoupper(trim((string)$estado));
   return match ($e) {
     'PUBLICADO'  => 'status-gris',
     'SOLICITADO' => 'status-vino',
@@ -231,26 +66,35 @@ function statusClass($estado)
 
 function selClass($sel)
 {
-  $s = strtoupper(trim($sel));
+  $s = selCode($sel);
+
   return match ($s) {
-    'LP'  => 'pill-amber',
-    'SIE' => 'pill-emerald',
-    'RES' => 'pill-vino',
-    'CPS' => 'pill-slate',
-    'CPA' => 'pill-slate',
-    'CP'  => 'pill-slate',
-    'CC'  => 'pill-slate',
+    'LP'    => 'pill-amber',
+    'SIE'   => 'pill-emerald',
+    'RES'   => 'pill-vino',
+    'CD'    => 'pill-vino',
+    'CP'    => 'pill-slate',
+    'CPRE'  => 'pill-slate',
+    'CPA'   => 'pill-slate',
+    'CPS'   => 'pill-slate',
+    'CPC'   => 'pill-slate',
+    'AS'    => 'pill-slate',
+    'LPA'   => 'pill-slate',
+    'SCI'   => 'pill-slate',
+    'EE'    => 'pill-slate',
+    'PEC'   => 'pill-slate',
+    'CE'    => 'pill-slate',
+    'CC'    => 'pill-slate',
+    'CATAL' => 'pill-slate',
+    'CONV'  => 'pill-slate',
     default => 'pill-slate',
   };
 }
 ?>
 
 <main class="page page-shell flex-1 px-5 pt-4 main-procesos">
-
-  <!-- HEADER / FILTROS (COMPACTO + SHEET) -->
   <section class="mb-5 filtros-sticky">
     <div class="bg-white/90 text-slate-900 rounded-2xl p-4 shadow-lg filtros-wrap">
-
       <div class="flex items-start justify-between gap-3">
         <div>
           <p class="text-sm text-slate-500">Programación y control</p>
@@ -262,28 +106,50 @@ function selClass($sel)
           <span>AF-2026</span>
         </div>
       </div>
-
-      <!-- BAR COMPACTA -->
       <div class="mt-4 flex items-center gap-2">
+
         <div class="search flex-1">
           <span class="search-ico">🔎</span>
           <input id="q" type="text" placeholder="Buscar N° PAC, OBAC o descripción..." />
         </div>
 
-        <button id="btnFiltros" type="button" class="btn-filtros" aria-haspopup="dialog" aria-controls="sheetFiltros">
+        <button id="btnFiltros"
+          type="button"
+          class="btn-filtros"
+          aria-haspopup="dialog"
+          aria-controls="sheetFiltros">
           <span class="ico">⚙️</span>
           <span class="txt">Filtros</span>
           <span id="badgeCount" class="badge-count hidden">0</span>
         </button>
+
       </div>
 
-      <!-- CHIPS ACTIVOS (RESUMEN) -->
-      <div id="chipsActivos" class="mt-3 flex gap-2 overflow-x-auto pb-1 hidden"></div>
+      <?php $f = $_GET['f'] ?? 'acffaa'; ?>
 
+      <div class="mt-3 flex gap-2 overflow-x-auto pb-1">
+
+        <a href="?f=acffaa"
+          class="chip <?= $f === 'acffaa' ? 'chip-active' : '' ?>">
+          ACFFAA
+        </a>
+
+        <a href="?f=inversiones"
+          class="chip <?= $f === 'inversiones' ? 'chip-active' : '' ?>">
+          Inversiones
+        </a>
+
+        <a href="?f=todos"
+          class="chip <?= $f === 'todos' ? 'chip-active' : '' ?>">
+          Todos
+        </a>
+
+      </div>
+
+      <div id="chipsActivos" class="mt-3 flex gap-2 overflow-x-auto pb-1 hidden"></div>
     </div>
   </section>
 
-  <!-- SHEET FILTROS (MÓVIL) -->
   <div id="overlayFiltros" class="overlay hidden" aria-hidden="true"></div>
 
   <div id="sheetFiltros" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
@@ -298,36 +164,33 @@ function selClass($sel)
     </div>
 
     <div class="sheet-body">
-      <!-- OBAC -->
-      <div class="sheet-section" id="fObac">
+      <div class="sheet-section">
         <p class="sheet-label">OBAC</p>
-        <div class="chips-grid">
-          <button class="chip chip-active" type="button" data-filter="obac" data-value="">Todos</button>
+        <div class="chips-grid" id="fObac">
+          <button class="chip chip-active" type="button" data-filter="obac" data-value="ALL">Todos</button>
           <button class="chip" type="button" data-filter="obac" data-value="EP">EP</button>
           <button class="chip" type="button" data-filter="obac" data-value="FAP">FAP</button>
           <button class="chip" type="button" data-filter="obac" data-value="MGP">MGP</button>
+          <button class="chip" type="button" data-filter="obac" data-value="CCFFAA">CCFFAA</button>
           <button class="chip" type="button" data-filter="obac" data-value="CONIDA">CONIDA</button>
         </div>
       </div>
 
-      <!-- ESTADO -->
-      <div class="sheet-section" id="fEstado">
+      <div class="sheet-section">
         <p class="sheet-label">Estado</p>
-        <div class="chips-grid">
-          <button class="chip chip-soft chip-active" type="button" data-filter="estado" data-value="">Todos</button>
+        <div class="chips-grid" id="fEstado">
           <button class="chip chip-soft" type="button" data-filter="estado" data-value="PUBLICADO">Publicado</button>
           <button class="chip chip-soft" type="button" data-filter="estado" data-value="SOLICITADO">Solicitado</button>
         </div>
       </div>
 
-      <!-- SELECCIÓN -->
-      <div class="sheet-section" id="fSel">
+      <div class="sheet-section">
         <p class="sheet-label">Selección</p>
-        <div class="chips-grid">
-          <button class="chip chip-soft chip-active" type="button" data-filter="sel" data-value="">Todos</button>
-          <button class="chip chip-soft" type="button" data-filter="sel" data-value="RES">RES</button>
+        <div class="chips-grid" id="fSel">
           <button class="chip chip-soft" type="button" data-filter="sel" data-value="LP">LP</button>
           <button class="chip chip-soft" type="button" data-filter="sel" data-value="SIE">SIE</button>
+          <button class="chip chip-soft" type="button" data-filter="sel" data-value="RES">RES</button>
+          <button class="chip chip-soft" type="button" data-filter="sel" data-value="CD">CD</button>
           <button class="chip chip-soft" type="button" data-filter="sel" data-value="CPS">CPS</button>
           <button class="chip chip-soft" type="button" data-filter="sel" data-value="CPA">CPA</button>
           <button class="chip chip-soft" type="button" data-filter="sel" data-value="CP">CP</button>
@@ -342,91 +205,92 @@ function selClass($sel)
     </div>
   </div>
 
-  <!-- LISTA -->
   <section class="lista-scroll">
     <section class="space-y-3" id="listaProcesos">
       <?php foreach ($pacs as $p): ?>
         <?php
-        $obac = strtoupper(trim($p['obac']));
-        $estado = strtoupper(trim($p['estado']));
-        $sel = strtoupper(trim($p['seleccion']));
+        $obacLabel = badgeFromObac($p['obac'] ?? '');
+        $estado = strtoupper(trim((string)($p['estado'] ?? '')));
+        $sel = strtoupper(trim((string)($p['seleccion_abrev'] ?? '')));
+
         $haystack = strtoupper(trim(
-          $p['nopac'] . ' ' . $p['obac'] . ' ' . $p['seleccion'] . ' ' . $p['estado'] . ' ' . $p['descripcion']
+          ((string)($p['nopac'] ?? '')) . ' ' .
+            ((string)($p['obac'] ?? '')) . ' ' .
+            ((string)($obacLabel ?? '')) . ' ' .
+            ((string)($p['seleccion_nombre'] ?? '')) . ' ' .
+            ((string)($p['seleccion_abrev'] ?? '')) . ' ' .
+            ((string)($p['estado'] ?? '')) . ' ' .
+            ((string)($p['descripcion'] ?? ''))
         ));
         ?>
-        <div class="proc-item pac-item"
-          data-obac="<?= htmlspecialchars($obac) ?>"
+        <div
+          class="proc-item pac-item"
+          data-obac="<?= htmlspecialchars($obacLabel) ?>"
           data-estado="<?= htmlspecialchars($estado) ?>"
           data-sel="<?= htmlspecialchars($sel) ?>"
           data-hay="<?= htmlspecialchars($haystack) ?>"
-          data-open="<?= BASE_URL ?>/pac/ver?id=<?= (int)$p['id'] ?>">
-          <a class="proc-open" href="<?= BASE_URL ?>/pac/ver?id=<?= (int)$p['id'] ?>" aria-label="Abrir PAC"></a>
+          data-open="javascript:void(0)">
+
+          <a class="proc-open" href="javascript:void(0)" aria-label="Abrir PAC"></a>
 
           <div class="left">
-            <div class="badge badge-vino"><?= htmlspecialchars(badgeFromObac($p['obac'])) ?></div>
+            <div class="badge badge-vino"><?= htmlspecialchars($obacLabel) ?></div>
 
             <div class="info">
-              <p class="title">
-                PAC N° <?= htmlspecialchars($p['nopac']) ?>
-              </p>
+              <p class="title">PAC N° <?= htmlspecialchars($p['nopac'] ?? '') ?></p>
 
               <p class="sub">
-                <span class="sel-pill <?= selClass($p['seleccion']) ?>"><?= htmlspecialchars($p['seleccion']) ?></span>
+                <span class="sel-badge <?= selClass($sel) ?>">
+                  <?= htmlspecialchars($sel) ?>
+                </span>
               </p>
 
               <p class="desc">
-                <?= htmlspecialchars($p['descripcion']) ?>
+                <?= htmlspecialchars($p['descripcion'] ?? '') ?>
               </p>
             </div>
           </div>
 
           <div class="right">
             <div class="top-right">
-              <span class="status <?= statusClass($p['estado']) ?>">
-                <?= htmlspecialchars($p['estado']) ?>
+              <span class="status <?= statusClass($p['estado'] ?? '') ?>">
+                <?= htmlspecialchars($p['estado'] ?? '') ?>
               </span>
-
-              <div class="actions">
-                <button class="kebab" type="button" aria-label="Acciones" data-menu-btn></button>
-
-                <div class="menu hidden" data-menu>
-                  <a class="menu-item" href="<?= BASE_URL ?>/pac/ver?id=<?= (int)$p['id'] ?>">
-                    <span class="mi">👁️</span> Ver
-                  </a>
-
-                  <a class="menu-item" href="<?= BASE_URL ?>/pac/editar?id=<?= (int)$p['id'] ?>">
-                    <span class="mi">✏️</span> Editar
-                  </a>
-
-                  <button class="menu-item danger" type="button"
-                    data-delete
-                    data-id="<?= (int)$p['id'] ?>"
-                    data-name="PAC <?= htmlspecialchars($p['nopac']) ?>">
-                    <span class="mi">🗑️</span> Eliminar
-                  </button>
-                </div>
-              </div>
             </div>
 
-            <p class="money"><?= fmt_money($p['estimado']) ?></p>
+            <p class="money"><?= fmt_money($p['estimado'] ?? 0) ?></p>
           </div>
         </div>
       <?php endforeach; ?>
+
+      <?php if (empty($pacs)): ?>
+        <div class="proc-item">
+          <div class="info">
+            <p class="title">No hay PAC registrados</p>
+            <p class="desc">No se encontraron registros para mostrar.</p>
+          </div>
+        </div>
+      <?php endif; ?>
     </section>
 
-    <div class="mt-4 text-xs text-white/70" id="countText">
-      Mostrando un total de <?= count($pacs) ?> PAC
+    <div class="count-text" id="countText">
+      Mostrando <?= count($pacs) ?> de <?= count($pacs) ?> PAC
     </div>
   </section>
-
 </main>
 
 <?php require __DIR__ . '/../layout/bottom-nav.php'; ?>
 
 <style>
-  /* ===== CONTENEDOR DESKTOP (IGUAL QUE PROCESOS) ===== */
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
+  /* ===== CONTENEDOR DESKTOP ===== */
   .page-shell {
     width: 100%;
+    max-width: 100%;
   }
 
   @media (min-width: 1024px) {
@@ -438,7 +302,7 @@ function selClass($sel)
     }
   }
 
-  /* ===== YEAR PILL (IGUAL) ===== */
+  /* ===== YEAR PILL ===== */
   .year-pill {
     display: flex;
     align-items: center;
@@ -453,6 +317,26 @@ function selClass($sel)
     white-space: nowrap;
   }
 
+  .pill-amber {
+    background: rgba(201, 162, 39, .18);
+    color: #7A5B00;
+  }
+
+  .pill-emerald {
+    background: rgba(16, 185, 129, .18);
+    color: #065f46;
+  }
+
+  .pill-vino {
+    background: rgba(107, 28, 38, .18);
+    color: #6B1C26;
+  }
+
+  .pill-slate {
+    background: rgba(148, 163, 184, .20);
+    color: #475569;
+  }
+
   .year-pill .dot {
     width: 8px;
     height: 8px;
@@ -461,7 +345,7 @@ function selClass($sel)
     box-shadow: 0 0 0 3px rgba(201, 162, 39, .20);
   }
 
-  /* ===== CHIPS (IGUAL) ===== */
+  /* ===== CHIPS ===== */
   .chip {
     padding: 10px 14px;
     border-radius: 9999px;
@@ -488,7 +372,7 @@ function selClass($sel)
     background: rgba(255, 255, 255, .92);
   }
 
-  /* ===== SEARCH (IGUAL) ===== */
+  /* ===== SEARCH ===== */
   .search {
     display: flex;
     align-items: center;
@@ -497,21 +381,39 @@ function selClass($sel)
     border-radius: 1rem;
     background: rgba(248, 250, 252, .95);
     border: 1px solid rgba(148, 163, 184, .35);
+    min-width: 0;
+  }
+
+  .sel-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: .72rem;
+    font-weight: 900;
+    letter-spacing: .3px;
+    background: #eef2f7;
+    color: #475569;
+    white-space: nowrap;
   }
 
   .search-ico {
     font-size: 1rem;
     opacity: .75;
+    flex: 0 0 auto;
   }
 
   .search input {
     width: 100%;
+    min-width: 0;
     background: transparent;
     outline: none;
     border: none;
     color: #0f172a;
     font-weight: 700;
-    font-size: .95rem;
+    font-size: 16px !important;
+    -webkit-text-size-adjust: 100%;
   }
 
   .search input::placeholder {
@@ -519,9 +421,11 @@ function selClass($sel)
     font-weight: 700;
   }
 
-  /* ===== LAYOUT (IGUAL) ===== */
+  /* ===== LAYOUT: filtros fijo + lista scrollea ===== */
   .main-procesos {
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    min-width: 0;
   }
 
   .filtros-sticky {
@@ -538,31 +442,58 @@ function selClass($sel)
     backdrop-filter: blur(12px);
   }
 
-  .lista-scroll {
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    height: calc(100vh - 335px);
-    padding-bottom: calc(140px + env(safe-area-inset-bottom));
+  :root {
+    --tabbar-h: 76px;
+    --tabbar-gap: 12px;
+    --tabbar-side-gap: 14px;
   }
 
-  @media (min-width:1024px) {
+  /* SOLO la lista scrollea */
+  .lista-scroll {
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: none;
+    height: calc(100dvh - 290px - (var(--tabbar-h) + var(--tabbar-gap) + env(safe-area-inset-bottom)));
+    padding-bottom: 18px;
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Desktop */
+  @media (min-width: 1024px) {
     .lista-scroll {
-      height: calc(100vh - 300px);
-      padding-bottom: 40px;
+      height: calc(100dvh - 260px - 40px);
+      padding-bottom: 12px;
+      overflow-x: hidden;
     }
   }
 
-  /* ===== CARD (REUSAMOS PROC-ITEM TAL CUAL) ===== */
+  /* ============================= */
+  /*          CARD PROCESO         */
+  /* ============================= */
+
+  #listaProcesos {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    padding-bottom: 12px;
+  }
+
   .proc-item {
     position: relative;
     display: grid;
-    grid-template-columns: 52px 1fr auto;
+    grid-template-columns: 52px minmax(0, 1fr) auto;
     gap: 14px;
     align-items: center;
     background: #fff;
     padding: 18px 18px;
     border-radius: 20px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, .12);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .proc-open {
@@ -578,10 +509,13 @@ function selClass($sel)
     z-index: 2;
   }
 
+  /* Columna izquierda */
   .left {
     display: contents;
+    min-width: 0;
   }
 
+  /* Badge */
   .badge {
     width: 48px;
     height: 48px;
@@ -593,8 +527,10 @@ function selClass($sel)
     font-size: .85rem;
     background: rgba(107, 28, 38, .10);
     color: #6B1C26;
+    flex: 0 0 auto;
   }
 
+  /* Info */
   .info {
     min-width: 0;
     display: flex;
@@ -607,6 +543,8 @@ function selClass($sel)
     font-size: 1rem;
     color: #0f172a;
     line-height: 1.15;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .dot-sep {
@@ -618,10 +556,9 @@ function selClass($sel)
     font-size: .8rem;
     font-weight: 800;
     color: #64748b;
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 6px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .desc {
@@ -633,34 +570,46 @@ function selClass($sel)
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
-  @media (max-width:640px) {
+  @media (max-width: 640px) {
     .desc {
       -webkit-line-clamp: 3;
     }
   }
 
+  /* Columna derecha ordenada */
   .right {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
     gap: 10px;
-    min-width: 140px;
+    min-width: 0;
   }
 
   .top-right {
     display: flex;
     align-items: center;
     gap: 10px;
+    min-width: 0;
   }
 
+  /* Status */
   .status {
     font-weight: 900;
     font-size: .7rem;
     padding: 6px 12px;
     border-radius: 999px;
     white-space: nowrap;
+    flex: 0 0 auto;
+  }
+
+  .status-dorado {
+    background: rgba(201, 162, 39, .15);
+    color: #7A5B00;
   }
 
   .status-vino {
@@ -673,6 +622,7 @@ function selClass($sel)
     color: #475569;
   }
 
+  /* Monto */
   .money {
     font-weight: 900;
     font-size: 1rem;
@@ -680,42 +630,13 @@ function selClass($sel)
     white-space: nowrap;
   }
 
-  /* Selección pill */
-  .sel-pill {
-    padding: 5px 10px;
-    border-radius: 999px;
-    font-size: .72rem;
-    font-weight: 900;
-    border: 1px solid rgba(148, 163, 184, .25);
-    white-space: nowrap;
-  }
-
-  .pill-vino {
-    background: rgba(107, 28, 38, .10);
-    color: #6B1C26;
-  }
-
-  .pill-amber {
-    background: rgba(245, 158, 11, .14);
-    color: #7A4A00;
-  }
-
-  .pill-emerald {
-    background: rgba(16, 185, 129, .14);
-    color: #065f46;
-  }
-
-  .pill-slate {
-    background: rgba(148, 163, 184, .14);
-    color: #334155;
-  }
-
-  /* Acciones (IGUAL) */
+  /* Acciones */
   .actions {
     position: relative;
     z-index: 3;
   }
 
+  /* Kebab “seguro” (siempre visible) */
   .kebab {
     width: 36px;
     height: 36px;
@@ -728,6 +649,7 @@ function selClass($sel)
     line-height: 1;
     padding: 0;
     color: #0f172a;
+    flex: 0 0 auto;
   }
 
   .kebab::before {
@@ -737,6 +659,7 @@ function selClass($sel)
     transform: translateY(-1px);
   }
 
+  /* Menu */
   .menu {
     position: absolute;
     top: 42px;
@@ -783,10 +706,6 @@ function selClass($sel)
     color: #b91c1c;
   }
 
-  #listaProcesos {
-    padding-bottom: 12px;
-  }
-
   /* ===== Botón filtros compacto ===== */
   .btn-filtros {
     height: 48px;
@@ -800,6 +719,7 @@ function selClass($sel)
     font-weight: 900;
     color: #0f172a;
     white-space: nowrap;
+    flex: 0 0 auto;
   }
 
   .btn-filtros .txt {
@@ -808,12 +728,6 @@ function selClass($sel)
 
   .btn-filtros .ico {
     font-size: 1rem;
-  }
-
-  @media (min-width: 480px) {
-    .btn-filtros .txt {
-      display: inline;
-    }
   }
 
   .badge-count {
@@ -828,6 +742,13 @@ function selClass($sel)
     display: inline-flex;
     align-items: center;
     justify-content: center;
+  }
+
+  /* En pantallas algo más grandes, muestra texto */
+  @media (min-width: 480px) {
+    .btn-filtros .txt {
+      display: inline;
+    }
   }
 
   /* ===== Chips activos (resumen) ===== */
@@ -853,6 +774,7 @@ function selClass($sel)
     background: #f8fafc;
     font-weight: 900;
     line-height: 1;
+    flex: 0 0 auto;
   }
 
   /* ===== Overlay + Bottom Sheet ===== */
@@ -873,6 +795,7 @@ function selClass($sel)
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
     box-shadow: 0 -20px 50px rgba(0, 0, 0, .25);
+    transform: translateY(0);
     max-height: calc(100vh - 80px);
     display: flex;
     flex-direction: column;
@@ -895,7 +818,6 @@ function selClass($sel)
     border-bottom: 1px solid rgba(148, 163, 184, .25);
   }
 
-  /* Botón cerrar con X dibujada (consistente) */
   .sheet-close {
     position: relative;
     width: 40px;
@@ -904,6 +826,7 @@ function selClass($sel)
     border: 1px solid rgba(148, 163, 184, .35);
     background: #f8fafc;
     cursor: pointer;
+    flex: 0 0 auto;
   }
 
   .sheet-close::before,
@@ -976,11 +899,7 @@ function selClass($sel)
     color: #0f172a;
   }
 
-  .hidden {
-    display: none !important;
-  }
-
-  /* Desktop: no mostrar sheet */
+  /* Desktop */
   @media (min-width: 1024px) {
 
     .overlay,
@@ -989,20 +908,12 @@ function selClass($sel)
     }
   }
 
-  /* iOS: evitar zoom al enfocar input (font-size >= 16px) */
-  @media (max-width: 1024px) {
-    .search input {
-      font-size: 16px !important;
-    }
-  }
-
-  .search input {
-    -webkit-text-size-adjust: 100%;
+  .hidden {
+    display: none !important;
   }
 </style>
 
 <script>
-  // ===== MENÚ KEBAB =====
   const closeAllMenus = () => {
     document.querySelectorAll('[data-menu]').forEach(m => m.classList.add('hidden'));
   };
@@ -1014,72 +925,24 @@ function selClass($sel)
     if (btn) {
       e.preventDefault();
       e.stopPropagation();
+
       const wrap = btn.closest('.actions');
       const m = wrap?.querySelector('[data-menu]');
       const wasOpen = m && !m.classList.contains('hidden');
+
       closeAllMenus();
       if (m && !wasOpen) m.classList.remove('hidden');
       return;
     }
+
     if (menu) return;
     closeAllMenus();
   });
 
-  // Eliminar
-  document.addEventListener('click', (e) => {
-    const del = e.target.closest('[data-delete]');
-    if (!del) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-
-    const id = del.getAttribute('data-id');
-    const name = del.getAttribute('data-name') || 'este registro';
-
-    if (!confirm(`¿Eliminar ${name}? Esta acción no se puede deshacer.`)) return;
-    window.location.href = `<?= BASE_URL ?>/pac/eliminar?id=${id}`;
-  });
-
-  // ===== FILTROS + BUSCADOR =====
   const q = document.getElementById('q');
   const list = document.getElementById('listaProcesos');
   const countText = document.getElementById('countText');
 
-  // estado aplicado
-  const state = {
-    obac: '',
-    estado: '',
-    sel: '',
-    q: ''
-  };
-
-  const applyFilters = () => {
-    const cards = list ? Array.from(list.querySelectorAll('.pac-item')) : [];
-    let visible = 0;
-
-    const term = (state.q || '').trim().toUpperCase();
-
-    cards.forEach(c => {
-      const obac = (c.getAttribute('data-obac') || '').toUpperCase();
-      const estado = (c.getAttribute('data-estado') || '').toUpperCase();
-      const sel = (c.getAttribute('data-sel') || '').toUpperCase();
-      const hay = (c.getAttribute('data-hay') || '').toUpperCase();
-
-      const okObac = !state.obac || obac === state.obac;
-      const okEstado = !state.estado || estado === state.estado;
-      const okSel = !state.sel || sel === state.sel;
-      const okQ = !term || hay.includes(term);
-
-      const ok = okObac && okEstado && okSel && okQ;
-
-      c.style.display = ok ? '' : 'none';
-      if (ok) visible++;
-    });
-
-    if (countText) countText.textContent = `Mostrando ${visible} de ${cards.length} PAC`;
-  };
-
-  // ===== SHEET =====
   const btnFiltros = document.getElementById('btnFiltros');
   const overlay = document.getElementById('overlayFiltros');
   const sheet = document.getElementById('sheetFiltros');
@@ -1090,16 +953,16 @@ function selClass($sel)
   const chipsActivos = document.getElementById('chipsActivos');
   const badgeCount = document.getElementById('badgeCount');
 
-  // estado temporal (draft) y aplicado (applied)
   let draft = {
-    obac: '',
-    estado: '',
-    sel: ''
+    obac: 'ALL',
+    estado: null,
+    sel: null
   };
+
   let applied = {
-    obac: '',
-    estado: '',
-    sel: ''
+    obac: 'ALL',
+    estado: null,
+    sel: null
   };
 
   const openSheet = () => {
@@ -1117,38 +980,108 @@ function selClass($sel)
     document.body.style.overflow = '';
   };
 
-  const esc = (v) => (window.CSS && CSS.escape) ? CSS.escape(v) : (v || '').replace(/"/g, '\\"');
+  btnFiltros?.addEventListener('click', openSheet);
+  overlay?.addEventListener('click', closeSheet);
+  btnCerrar?.addEventListener('click', closeSheet);
 
-  const setActiveInGroup = (groupId, value) => {
-    const group = document.getElementById(groupId);
-    if (!group) return;
+  sheet?.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-filter]');
+    if (!b) return;
 
-    group.querySelectorAll('button[data-filter]').forEach(b => b.classList.remove('chip-active'));
+    const filter = b.getAttribute('data-filter');
+    const value = b.getAttribute('data-value');
 
-    const btn = group.querySelector(`button[data-value="${esc(value)}"]`);
-    if (btn) btn.classList.add('chip-active');
-  };
+    if (filter === 'obac') {
+      draft.obac = value;
+      document.querySelectorAll('#fObac .chip').forEach(x => x.classList.remove('chip-active'));
+      b.classList.add('chip-active');
+    }
+
+    if (filter === 'estado') {
+      const isSame = draft.estado === value;
+      draft.estado = isSame ? null : value;
+
+      document.querySelectorAll('#fEstado .chip').forEach(x => x.classList.remove('chip-active'));
+      if (!isSame) b.classList.add('chip-active');
+    }
+
+    if (filter === 'sel') {
+      const isSame = draft.sel === value;
+      draft.sel = isSame ? null : value;
+
+      document.querySelectorAll('#fSel .chip').forEach(x => x.classList.remove('chip-active'));
+      if (!isSame) b.classList.add('chip-active');
+    }
+  });
+
+  btnLimpiar?.addEventListener('click', () => {
+    draft = {
+      obac: 'ALL',
+      estado: null,
+      sel: null
+    };
+
+    applied = {
+      obac: 'ALL',
+      estado: null,
+      sel: null
+    };
+
+    syncUIToDraft();
+    renderActiveChips();
+
+    if (q) q.value = '';
+    applyFilters();
+    closeSheet();
+  });
+
+  btnAplicar?.addEventListener('click', () => {
+    applied = {
+      ...draft
+    };
+    renderActiveChips();
+    applyFilters();
+    closeSheet();
+  });
 
   const syncUIToDraft = () => {
-    setActiveInGroup('fObac', draft.obac);
-    setActiveInGroup('fEstado', draft.estado);
-    setActiveInGroup('fSel', draft.sel);
+    document.querySelectorAll('#fObac .chip').forEach(x => x.classList.remove('chip-active'));
+    document.querySelectorAll(`#fObac .chip[data-value="${draft.obac}"]`).forEach(x => x.classList.add('chip-active'));
+
+    document.querySelectorAll('#fEstado .chip').forEach(x => x.classList.remove('chip-active'));
+    if (draft.estado) {
+      document.querySelectorAll(`#fEstado .chip[data-value="${draft.estado}"]`).forEach(x => x.classList.add('chip-active'));
+    }
+
+    document.querySelectorAll('#fSel .chip').forEach(x => x.classList.remove('chip-active'));
+    if (draft.sel) {
+      document.querySelectorAll(`#fSel .chip[data-value="${draft.sel}"]`).forEach(x => x.classList.add('chip-active'));
+    }
   };
 
   const renderActiveChips = () => {
     const items = [];
-    if (applied.obac) items.push({
-      k: 'obac',
-      label: `OBAC: ${applied.obac}`
-    });
-    if (applied.estado) items.push({
-      k: 'estado',
-      label: `Estado: ${applied.estado}`
-    });
-    if (applied.sel) items.push({
-      k: 'sel',
-      label: `Selección: ${applied.sel}`
-    });
+
+    if (applied.obac && applied.obac !== 'ALL') {
+      items.push({
+        k: 'obac',
+        label: applied.obac
+      });
+    }
+
+    if (applied.estado) {
+      items.push({
+        k: 'estado',
+        label: applied.estado
+      });
+    }
+
+    if (applied.sel) {
+      items.push({
+        k: 'sel',
+        label: applied.sel
+      });
+    }
 
     const count = items.length;
 
@@ -1170,93 +1103,55 @@ function selClass($sel)
     `).join('');
   };
 
-  // Abrir/cerrar
-  btnFiltros?.addEventListener('click', openSheet);
-  overlay?.addEventListener('click', closeSheet);
-  btnCerrar?.addEventListener('click', closeSheet);
-
-  // Click en chips del sheet
-  sheet?.addEventListener('click', (e) => {
-    const b = e.target.closest('button[data-filter]');
-    if (!b) return;
-
-    const filter = b.getAttribute('data-filter');
-    const value = (b.getAttribute('data-value') || '').toUpperCase();
-
-    if (filter === 'obac') draft.obac = value;
-    if (filter === 'estado') draft.estado = value;
-    if (filter === 'sel') draft.sel = value;
-
-    syncUIToDraft();
-  });
-
-  // Limpiar
-  btnLimpiar?.addEventListener('click', () => {
-    draft = {
-      obac: '',
-      estado: '',
-      sel: ''
-    };
-    applied = {
-      obac: '',
-      estado: '',
-      sel: ''
-    };
-
-    state.obac = '';
-    state.estado = '';
-    state.sel = '';
-
-    if (q) q.value = '';
-    state.q = '';
-
-    syncUIToDraft();
-    renderActiveChips();
-    applyFilters();
-    closeSheet();
-  });
-
-  // Aplicar
-  btnAplicar?.addEventListener('click', () => {
-    applied = {
-      ...draft
-    };
-
-    state.obac = applied.obac;
-    state.estado = applied.estado;
-    state.sel = applied.sel;
-
-    renderActiveChips();
-    applyFilters();
-    closeSheet();
-  });
-
-  // Quitar chip desde resumen
   chipsActivos?.addEventListener('click', (e) => {
-    const wrap = e.target.closest('.chip-x');
+    const x = e.target.closest('.chip-x');
     const btn = e.target.closest('button');
-    if (!wrap || !btn) return;
+    if (!x || !btn) return;
 
-    const k = wrap.getAttribute('data-k');
+    const k = x.getAttribute('data-k');
 
-    applied[k] = '';
+    if (k === 'obac') applied.obac = 'ALL';
+    if (k === 'estado') applied.estado = null;
+    if (k === 'sel') applied.sel = null;
+
     draft = {
       ...applied
     };
-    state[k] = '';
-
-    syncUIToDraft();
     renderActiveChips();
+    syncUIToDraft();
     applyFilters();
   });
 
-  // Buscador
-  q?.addEventListener('input', (e) => {
-    state.q = (e.target.value || '').trim();
-    applyFilters();
-  });
+  const applyFilters = () => {
+    const term = (q?.value || '').trim().toUpperCase();
 
-  // Inicial
+    const cards = list ? Array.from(list.querySelectorAll('.pac-item')) : [];
+    let visible = 0;
+
+    cards.forEach(card => {
+      const obac = (card.getAttribute('data-obac') || '').toUpperCase();
+      const estado = (card.getAttribute('data-estado') || '').toUpperCase();
+      const sel = (card.getAttribute('data-sel') || '').toUpperCase();
+      const hay = (card.getAttribute('data-hay') || '').toUpperCase();
+
+      const okSearch = !term || hay.includes(term);
+      const okObac = !applied.obac || applied.obac === 'ALL' || obac === applied.obac;
+      const okEstado = !applied.estado || estado === applied.estado;
+      const okSel = !applied.sel || sel === applied.sel;
+
+      const show = okSearch && okObac && okEstado && okSel;
+      card.style.display = show ? '' : 'none';
+
+      if (show) visible++;
+    });
+
+    if (countText) {
+      countText.textContent = `Mostrando ${visible} de ${cards.length} PAC`;
+    }
+  };
+
+  q?.addEventListener('input', applyFilters);
+
   renderActiveChips();
   applyFilters();
 </script>
