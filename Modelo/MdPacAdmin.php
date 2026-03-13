@@ -234,7 +234,7 @@ class MdPacAdmin
             ':ejecucion'    => !empty($data['ejecucion']) ? (int)$data['ejecucion'] : null,
             ':modalidad'    => !empty($data['modalidad']) ? (int)$data['modalidad'] : null,
             ':dependencia'  => !empty($data['dependencia']) ? (int)$data['dependencia'] : null,
-            ':mesconvoca'   => !empty($data['mesconvoca']) ? (int)$data['mesconvoca'] : null,
+            ':mesconvoca' => !empty($data['mesconvoca']) ? trim((string)$data['mesconvoca']) : null,
             ':certificado'  => ($data['certificado'] !== '' && $data['certificado'] !== null) ? (float)$data['certificado'] : 0,
             ':tipo_mercado' => !empty($data['tipo_mercado']) ? (int)$data['tipo_mercado'] : null,
             ':cantidad'     => ($data['cantidad'] !== '' && $data['cantidad'] !== null) ? (int)$data['cantidad'] : 0,

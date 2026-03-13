@@ -440,18 +440,18 @@ foreach ($pacs as $r) {
           <label class="block text-xs text-slate-500 mb-1.5">Mes convocatoria</label>
           <select id="pac_mes_convocatoria" class="field">
             <option value="">Seleccionar...</option>
-            <option value="1">Enero</option>
-            <option value="2">Febrero</option>
-            <option value="3">Marzo</option>
-            <option value="4">Abril</option>
-            <option value="5">Mayo</option>
-            <option value="6">Junio</option>
-            <option value="7">Julio</option>
-            <option value="8">Agosto</option>
-            <option value="9">Septiembre</option>
-            <option value="10">Octubre</option>
-            <option value="11">Noviembre</option>
-            <option value="12">Diciembre</option>
+            <option value="ENERO">ENERO</option>
+            <option value="FEBRERO">FEBRERO</option>
+            <option value="MARZO">MARZO</option>
+            <option value="ABRIL">ABRIL</option>
+            <option value="MAYO">MAYO</option>
+            <option value="JUNIO">JUNIO</option>
+            <option value="JULIO">JULIO</option>
+            <option value="AGOSTO">AGOSTO</option>
+            <option value="SEPTIEMBRE">SEPTIEMBRE</option>
+            <option value="OCTUBRE">OCTUBRE</option>
+            <option value="NOVIEMBRE">NOVIEMBRE</option>
+            <option value="DICIEMBRE">DICIEMBRE</option>
           </select>
         </div>
 
@@ -825,7 +825,7 @@ foreach ($pacs as $r) {
     $('pac_ejecucion').value = ejecucion ?? '';
     $('pac_modalidad').value = modalidad ?? '';
     $('pac_dependencia').value = dependencia ?? '';
-    $('pac_mes_convocatoria').value = mesconvoca ?? '';
+    $('pac_mes_convocatoria').value = (mesconvoca ?? '').trim();
     $('pac_certificado').value = certificado ?? '';
     $('pac_tipo_mercado').value = tipo_mercado ?? '';
     $('pac_cantidad').value = cantidad ?? '';
