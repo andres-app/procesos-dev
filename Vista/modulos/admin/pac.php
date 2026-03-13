@@ -811,7 +811,6 @@ foreach ($pacs as $r) {
     cantidad,
     rubro
   ) {
-    $('modalTitle').textContent = 'Editar PAC #' + id;
     $('pac_id').value = id ?? '';
     $('pac_nopac').value = nopac ?? '';
     $('pac_pn').value = pn ?? 'NP';
