@@ -1,5 +1,5 @@
 <?php
-// Vista/modulos/admin/pac.php (MAQUETA / SIN BD)
+// Vista/modulos/admin/pac.php
 // Apple-like UI + responsive desktop
 $titulo = 'PAC';
 $active = 'pac';
@@ -194,7 +194,16 @@ foreach ($pacs as $r) {
                     '<?= h($r['fuente'] ?? '') ?>',
                     '<?= h($r['descripcion']) ?>',
                     '<?= h($r['estimado']) ?>',
-                    '<?= h($r['periodo'] ?? '') ?>'
+                    '<?= h($r['periodo'] ?? '') ?>',
+                    '<?= h($r['lista'] ?? '') ?>',
+                    '<?= h($r['ejecucion'] ?? '') ?>',
+                    '<?= h($r['modalidad'] ?? '') ?>',
+                    '<?= h($r['dependencia'] ?? '') ?>',
+                    '<?= h($r['mesconvoca'] ?? '') ?>',
+                    '<?= h($r['certificado'] ?? '') ?>',
+                    '<?= h($r['tipo_mercado'] ?? '') ?>',
+                    '<?= h($r['cantidad'] ?? '') ?>',
+                    '<?= h($r['rubro'] ?? '') ?>'
                   )">
                     <svg viewBox="0 0 24 24" class="ico" aria-hidden="true">
                       <path fill="currentColor"
@@ -379,6 +388,16 @@ foreach ($pacs as $r) {
             <option value="">Seleccionar...</option>
             <?php foreach ($tipos_mercado as $t): ?>
               <option value="<?= (int)$t['id'] ?>"><?= h($t['nombre']) ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+
+        <div class="md:col-span-3">
+          <label class="block text-xs text-slate-500 mb-1.5">Rubro</label>
+          <select id="pac_rubro" class="field">
+            <option value="">Seleccionar...</option>
+            <?php foreach ($rubros as $rubro): ?>
+              <option value="<?= (int)$rubro['id'] ?>"><?= h($rubro['nombre']) ?></option>
             <?php endforeach; ?>
           </select>
         </div>
@@ -732,7 +751,16 @@ foreach ($pacs as $r) {
     'pac_estado',
     'pac_desc',
     'pac_estimado',
-    'pac_periodo'
+    'pac_periodo',
+    'pac_lista',
+    'pac_ejecucion',
+    'pac_modalidad',
+    'pac_dependencia',
+    'pac_mes_convocatoria',
+    'pac_certificado',
+    'pac_tipo_mercado',
+    'pac_cantidad',
+    'pac_rubro'
   ].forEach((id) => {
     $(id)?.addEventListener('input', refreshSummary);
     $(id)?.addEventListener('change', refreshSummary);
@@ -743,17 +771,46 @@ foreach ($pacs as $r) {
     $('pac_id').value = '';
     $('pac_nopac').value = '';
     $('pac_pn').value = 'NP';
+    $('pac_estado').value = 'PUBLICADO';
+    $('pac_fuente').value = '';
+    $('pac_desc').value = '';
     $('pac_obac').value = '';
     $('pac_seleccion').value = '';
-    $('pac_fuente').value = '';
-    $('pac_estado').value = 'PUBLICADO';
-    $('pac_desc').value = '';
-    $('pac_estimado').value = '';
+    $('pac_lista').value = '';
+    $('pac_modalidad').value = '';
+    $('pac_tipo_mercado').value = '';
+    $('pac_rubro').value = '';
+    $('pac_ejecucion').value = '';
+    $('pac_dependencia').value = '';
+    $('pac_mes_convocatoria').value = '';
     $('pac_periodo').value = '';
+    $('pac_cantidad').value = '';
+    $('pac_estimado').value = '';
+    $('pac_certificado').value = '';
     openModal('modalForm');
   });
 
-  function openEdit(id, nopac, pn, estado, obac, seleccion, fuente, desc, estimado, periodo) {
+  function openEdit(
+    id,
+    nopac,
+    pn,
+    estado,
+    obac,
+    seleccion,
+    fuente,
+    desc,
+    estimado,
+    periodo,
+    lista,
+    ejecucion,
+    modalidad,
+    dependencia,
+    mesconvoca,
+    certificado,
+    tipo_mercado,
+    cantidad,
+    rubro
+  ) {
     $('modalTitle').textContent = 'Editar PAC #' + id;
     $('pac_id').value = id ?? '';
     $('pac_nopac').value = nopac ?? '';
@@ -765,6 +822,15 @@ foreach ($pacs as $r) {
     $('pac_desc').value = desc ?? '';
     $('pac_estimado').value = estimado ?? '';
     $('pac_periodo').value = periodo ?? '';
+    $('pac_lista').value = lista ?? '';
+    $('pac_ejecucion').value = ejecucion ?? '';
+    $('pac_modalidad').value = modalidad ?? '';
+    $('pac_dependencia').value = dependencia ?? '';
+    $('pac_mes_convocatoria').value = mesconvoca ?? '';
+    $('pac_certificado').value = certificado ?? '';
+    $('pac_tipo_mercado').value = tipo_mercado ?? '';
+    $('pac_cantidad').value = cantidad ?? '';
+    $('pac_rubro').value = rubro ?? '';
     openModal('modalForm');
   }
   window.openEdit = openEdit;
@@ -799,10 +865,11 @@ foreach ($pacs as $r) {
     fd.append('ejecucion', document.getElementById('pac_ejecucion').value);
     fd.append('modalidad', document.getElementById('pac_modalidad').value);
     fd.append('dependencia', document.getElementById('pac_dependencia').value);
-    fd.append('mes_convocatoria', document.getElementById('pac_mes_convocatoria').value);
+    fd.append('mesconvoca', document.getElementById('pac_mes_convocatoria').value);
     fd.append('certificado', document.getElementById('pac_certificado').value);
     fd.append('tipo_mercado', document.getElementById('pac_tipo_mercado').value);
     fd.append('cantidad', document.getElementById('pac_cantidad').value);
+    fd.append('rubro', document.getElementById('pac_rubro').value);
 
     try {
       const resp = await fetch('<?= BASE_URL ?>/admin/pac_guardar', {
