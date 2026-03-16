@@ -5,9 +5,9 @@ $usuario = 'Andres';
 require __DIR__ . '/../layout/header.php';
 ?>
 
-<main class="page flex-1 px-5 pt-[calc(env(safe-area-inset-top)+24px)] pb-24">
-
-  <div class="grid grid-cols-2 gap-4 w-full max-w-md mx-auto">
+<!-- ✅ INICIO (AGREGA EL MÓDULO PAC CON EL MISMO ESTILO "APPLE-CARD") -->
+<main class="page flex-1 px-5 pt-[calc(env(safe-area-inset-top)+12px)] flex items-center justify-center">
+  <div class="grid grid-cols-2 gap-5 w-full max-w-md mx-auto">
 
     <a href="<?= BASE_URL ?>/procesos"
        class="apple-card bg-blue-100/80 text-blue-800">
@@ -46,61 +46,75 @@ require __DIR__ . '/../layout/header.php';
     </a>
 
   </div>
-
 </main>
-
 <?php require __DIR__ . '/../layout/bottom-nav.php'; ?>
 
+
 <style>
-
-/* ===== APPLE CARDS ===== */
-
-.apple-card{
-  aspect-ratio:1/1;
-  border-radius:1.6rem;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-  font-weight:600;
-  padding:16px;
-
-  backdrop-filter:blur(10px);
-
-  box-shadow:
-  0 10px 25px rgba(0,0,0,.12),
-  inset 0 1px 0 rgba(255,255,255,.55);
-
-  transition:transform .18s ease, box-shadow .18s ease;
-}
-
-/* icon */
-.apple-card .icon{
-  font-size:2.8rem;
-  margin-bottom:.45rem;
-}
-
-/* texto */
-.apple-card span{
-  font-size:.95rem;
-  letter-spacing:.2px;
-}
-
-/* efecto tap */
-.apple-card:active{
-  transform:scale(.96);
-  box-shadow:
-  0 6px 16px rgba(0,0,0,.18);
-}
-
-/* mejor espacio en pantallas grandes */
-@media (min-width:640px){
-
-  .grid{
-    gap:18px;
+  /* ===== KPI CARDS ===== */
+  .kpi-card {
+    border-radius: 1.5rem;
+    padding: 14px 14px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .12),
+      inset 0 1px 0 rgba(255, 255, 255, .55);
+    backdrop-filter: blur(10px);
   }
 
-}
+  .kpi-label {
+    font-size: .78rem;
+    color: #64748b;
+    margin: 0;
+  }
 
+  .kpi-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: -.5px;
+    margin-top: 6px;
+    line-height: 1.1;
+  }
+
+  .kpi-foot {
+    font-size: .72rem;
+    color: #94a3b8;
+    margin-top: 8px;
+    margin-bottom: 0;
+  }
+
+  /* ===== APPLE CARDS (igual a tu estilo) ===== */
+  .apple-card {
+    aspect-ratio: 1 / 1;
+    border-radius: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    text-align: center;
+    backdrop-filter: blur(8px);
+    box-shadow:
+      0 10px 30px rgba(0, 0, 0, .12),
+      inset 0 1px 0 rgba(255, 255, 255, .6);
+    transition: transform .2s ease, box-shadow .2s ease;
+    gap: 2px;
+  }
+
+  .apple-card .icon {
+    font-size: 3.9rem;
+    margin-bottom: .35rem;
+  }
+
+  .apple-card span {
+    font-size: 1.05rem;
+  }
+
+  .apple-card small {
+    font-weight: 500;
+    font-size: .78rem;
+    opacity: .85;
+  }
+
+  .apple-card:active {
+    transform: scale(.96);
+  }
 </style>

@@ -1,5 +1,5 @@
 <?php
-
+// Controlador/CtrPacAdmin.php
 require_once __DIR__ . '/../Modelo/MdPacAdmin.php';
 
 class CtrPacAdmin
@@ -16,10 +16,16 @@ class CtrPacAdmin
 
         $pacs = MdPacAdmin::listar($filtros);
 
-        $obacs       = MdPacAdmin::listarObac();
-        $fuentes     = MdPacAdmin::listarFuente();
-        $selecciones = MdPacAdmin::listarSeleccion();
-        $periodos    = MdPacAdmin::listarPeriodo();
+        $obacs         = MdPacAdmin::listarObac();
+        $fuentes       = MdPacAdmin::listarFuente();
+        $selecciones   = MdPacAdmin::listarSeleccion();
+        $periodos      = MdPacAdmin::listarPeriodo();
+        $listas        = MdPacAdmin::listarListas();
+        $entidades     = MdPacAdmin::listarEntidades();
+        $modalidades   = MdPacAdmin::listarModalidades();
+        $dependencias  = MdPacAdmin::listarDependencias();
+        $tipos_mercado = MdPacAdmin::listarTiposMercado();
+        $rubros        = MdPacAdmin::listarRubros();
 
         require_once __DIR__ . '/../Vista/modulos/admin/pac.php';
     }
@@ -30,16 +36,25 @@ class CtrPacAdmin
 
         try {
             $data = [
-                'id'          => $_POST['id'] ?? null,
-                'nopac'       => $_POST['nopac'] ?? '',
-                'pn'          => $_POST['pn'] ?? 'NP',
-                'estado'      => $_POST['estado'] ?? 'PUBLICADO',
-                'descripcion' => $_POST['descripcion'] ?? '',
-                'obac'        => $_POST['obac'] ?? null,
-                'seleccion'   => $_POST['seleccion'] ?? null,
-                'fuente'      => $_POST['fuente'] ?? null,
-                'estimado'    => $_POST['estimado'] ?? 0,
-                'periodo'     => $_POST['periodo'] ?? null,
+                'id'           => $_POST['id'] ?? null,
+                'nopac'        => $_POST['nopac'] ?? '',
+                'pn'           => $_POST['pn'] ?? 'NP',
+                'estado'       => $_POST['estado'] ?? 'PUBLICADO',
+                'descripcion'  => $_POST['descripcion'] ?? '',
+                'obac'         => $_POST['obac'] ?? null,
+                'seleccion'    => $_POST['seleccion'] ?? null,
+                'fuente'       => $_POST['fuente'] ?? null,
+                'estimado'     => $_POST['estimado'] ?? 0,
+                'periodo'      => $_POST['periodo'] ?? null,
+                'lista'        => $_POST['lista'] ?? null,
+                'ejecucion'    => $_POST['ejecucion'] ?? null,
+                'modalidad'    => $_POST['modalidad'] ?? null,
+                'dependencia'  => $_POST['dependencia'] ?? null,
+                'mesconvoca'   => $_POST['mesconvoca'] ?? null,
+                'certificado'  => $_POST['certificado'] ?? 0,
+                'tipo_mercado' => $_POST['tipo_mercado'] ?? null,
+                'cantidad'     => $_POST['cantidad'] ?? 0,
+                'rubro'        => $_POST['rubro'] ?? null,
             ];
 
             $id = !empty($data['id']) ? (int)$data['id'] : null;
@@ -81,11 +96,9 @@ class CtrPacAdmin
                 exit;
             }
 
-            if ($id) {
-                $ok = MdPacAdmin::actualizar($id, $data);
-            } else {
-                $ok = MdPacAdmin::guardar($data);
-            }
+            $ok = $id
+                ? MdPacAdmin::actualizar($id, $data)
+                : MdPacAdmin::guardar($data);
 
             echo json_encode([
                 'ok'  => $ok,
