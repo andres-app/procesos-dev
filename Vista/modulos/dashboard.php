@@ -1,3 +1,4 @@
+<!-- Vista/modulos/dashboard.php-->
 <?php
 $titulo = 'Inicio | Procesos';
 $appName = 'Seguimiento de Procesos';
