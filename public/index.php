@@ -30,7 +30,10 @@ function redirect(string $to): void
 function not_found(string $msg = '404 - Página no encontrada'): void
 {
     http_response_code(404);
-    echo "<h1 style='color:white'>{$msg}</h1>";
+    echo "
+    <div style='font-family:Arial,sans-serif;padding:24px;color:#0f172a'>
+        <h1 style='margin:0 0 10px;font-size:28px'>{$msg}</h1>
+    </div>";
     exit;
 }
 
@@ -90,13 +93,13 @@ if ($module === 'admin') {
     |--------------------------------------------------------------------------
     */
     if ($subRoute === 'export_excel') {
-        $type = $parts[2] ?? 'estado'; // /admin/export_excel/{type}
+        $type = $parts[2] ?? 'estado';
         require_file(__DIR__ . '/../Vista/modulos/admin/exports/excel.php');
         exit;
     }
 
     if ($subRoute === 'export_pdf') {
-        $type = $parts[2] ?? 'estado'; // /admin/export_pdf/{type}
+        $type = $parts[2] ?? 'estado';
         require_file(__DIR__ . '/../Vista/modulos/admin/exports/pdf.php');
         exit;
     }
@@ -112,6 +115,7 @@ if ($module === 'admin') {
         exit;
     }
 
+    // PAC ADMIN
     if ($subRoute === 'pac') {
         require_once __DIR__ . '/../Controlador/CtrPacAdmin.php';
         CtrPacAdmin::index();
@@ -121,6 +125,24 @@ if ($module === 'admin') {
     if ($subRoute === 'pac_guardar') {
         require_once __DIR__ . '/../Controlador/CtrPacAdmin.php';
         CtrPacAdmin::guardar();
+        exit;
+    }
+
+    if ($subRoute === 'pac_detalle') {
+        require_once __DIR__ . '/../Controlador/CtrPacAdmin.php';
+        CtrPacAdmin::detalle();
+        exit;
+    }
+
+    if ($subRoute === 'pac_actividad_guardar') {
+        require_once __DIR__ . '/../Controlador/CtrActividadPac.php';
+        CtrPacActividad::guardar();
+        exit;
+    }
+
+    if ($subRoute === 'pac_eliminar') {
+        require_once __DIR__ . '/../Controlador/CtrPacAdmin.php';
+        CtrPacAdmin::eliminar();
         exit;
     }
 

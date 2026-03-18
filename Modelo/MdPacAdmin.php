@@ -340,4 +340,72 @@ class MdPacAdmin
         $st = $db->query("SELECT id, nombre FROM rubro ORDER BY nombre");
         return $st->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public static function obtenerDetalle(int $id): ?array
+    {
+        $db = db();
+
+        $sql = "
+        SELECT
+            p.id,
+            p.nopac,
+            p.pn,
+            p.estado,
+            p.descripcion,
+            p.obac,
+            p.seleccion,
+            p.fuente,
+            p.estimado,
+            p.periodo,
+            p.lista,
+            p.ejecucion,
+            p.modalidad,
+            p.dependencia,
+            p.mesconvoca,
+            p.certificado,
+            p.tipo_mercado,
+            p.cantidad,
+            p.rubro,
+            p.created_at,
+
+            COALESCE(e.nombre, '')  AS obac_nombre,
+            COALESCE(f.nombre, '')  AS fuente_nombre,
+            COALESCE(s.nombre, '')  AS seleccion_nombre,
+            COALESCE(pe.nombre, '') AS periodo_nombre,
+            COALESCE(li.nombre, '') AS lista_nombre,
+            COALESCE(ej.nombre, '') AS ejecucion_nombre,
+            COALESCE(m.nombre, '')  AS modalidad_nombre,
+            COALESCE(d.nombre, '')  AS dependencia_nombre,
+            COALESCE(tm.nombre, '') AS tipo_mercado_nombre,
+            COALESCE(r.nombre, '')  AS rubro_nombre
+        FROM pac p
+        LEFT JOIN entidad e         ON e.id = p.obac
+        LEFT JOIN fuente f          ON f.id = p.fuente
+        LEFT JOIN seleccion s       ON s.id = p.seleccion
+        LEFT JOIN periodo pe        ON pe.id = p.periodo
+        LEFT JOIN listas li         ON li.id = p.lista
+        LEFT JOIN entidad ej        ON ej.id = p.ejecucion
+        LEFT JOIN modalidad m       ON m.id = p.modalidad
+        LEFT JOIN dependencia d     ON d.id = p.dependencia
+        LEFT JOIN tipo_mercado tm   ON tm.id = p.tipo_mercado
+        LEFT JOIN rubro r           ON r.id = p.rubro
+        WHERE p.id = :id
+        LIMIT 1
+    ";
+
+        $st = $db->prepare($sql);
+        $st->execute([':id' => $id]);
+
+        $row = $st->fetch(PDO::FETCH_ASSOC);
+
+        return $row ?: null;
+    }
+
+    public static function eliminar(int $id): bool
+    {
+        $db = db();
+
+        $st = $db->prepare("DELETE FROM pac WHERE id = :id");
+        return $st->execute([':id' => $id]);
+    }
 }

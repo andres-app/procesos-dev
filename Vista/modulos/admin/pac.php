@@ -178,55 +178,70 @@ foreach ($pacs as $r) {
 
               <!-- Acciones -->
               <td class="px-4 py-3">
-                <div class="flex justify-end gap-1.5">
-                  <!-- Editar -->
-                  <button
-                    class="iconbtn"
-                    title="Editar"
-                    aria-label="Editar PAC <?= h($r['nopac']) ?>"
-                    onclick="openEdit(
-                    <?= (int)$r['id'] ?>,
-                    '<?= h($r['nopac']) ?>',
-                    '<?= h($r['pn'] ?? 'NP') ?>',
-                    '<?= h($r['estado']) ?>',
-                    '<?= h($r['obac'] ?? '') ?>',
-                    '<?= h($r['seleccion'] ?? '') ?>',
-                    '<?= h($r['fuente'] ?? '') ?>',
-                    '<?= h($r['descripcion']) ?>',
-                    '<?= h($r['estimado']) ?>',
-                    '<?= h($r['periodo'] ?? '') ?>',
-                    '<?= h($r['lista'] ?? '') ?>',
-                    '<?= h($r['ejecucion'] ?? '') ?>',
-                    '<?= h($r['modalidad'] ?? '') ?>',
-                    '<?= h($r['dependencia'] ?? '') ?>',
-                    '<?= h($r['mesconvoca'] ?? '') ?>',
-                    '<?= h($r['certificado'] ?? '') ?>',
-                    '<?= h($r['tipo_mercado'] ?? '') ?>',
-                    '<?= h($r['cantidad'] ?? '') ?>',
-                    '<?= h($r['rubro'] ?? '') ?>'
-                  )">
-                    <svg viewBox="0 0 24 24" class="ico" aria-hidden="true">
-                      <path fill="currentColor"
-                        d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm2.92 
-            2.83H5v-.92l9.06-9.06.92.92L5.92 
-            20.08zM20.71 7.04a1 1 0 0 0 
-            0-1.41l-2.34-2.34a1 1 0 0 
-            0-1.41 0l-1.83 1.83 
-            3.75 3.75 1.83-1.83z" />
-                    </svg>
-                  </button>
+                <div class="flex justify-end items-center gap-1.5">
 
-                  <!-- Eliminar -->
-                  <button
-                    class="iconbtn iconbtn--danger"
-                    title="Eliminar"
-                    aria-label="Eliminar PAC <?= h($r['nopac']) ?>"
-                    onclick="openDelete(<?= (int)$r['id'] ?>, '<?= h($r['nopac']) ?>')">
+                  <!-- Ver detalle -->
+                  <a
+                    href="<?= BASE_URL ?>/admin/pac_detalle?id=<?= (int)$r['id'] ?>"
+                    class="iconbtn"
+                    title="Ver detalle"
+                    aria-label="Ver detalle PAC <?= h($r['nopac']) ?>">
                     <svg viewBox="0 0 24 24" class="ico" aria-hidden="true">
                       <path fill="currentColor"
-                        d="M6 7h12l-1 14H7L6 7zm3-3h6l1 2H8l1-2z" />
+                        d="M12 5c-5.5 0-9.5 4.5-10.8 6.2a1.3 1.3 0 0 0 0 1.6C2.5 14.5 6.5 19 12 19s9.5-4.5 10.8-6.2a1.3 1.3 0 0 0 0-1.6C21.5 9.5 17.5 5 12 5zm0 12c-4.4 0-7.7-3.4-9-5 1.3-1.6 4.6-5 9-5s7.7 3.4 9 5c-1.3 1.6-4.6 5-9 5zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm0 4.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
                     </svg>
-                  </button>
+                  </a>
+
+                  <!-- Menú -->
+                  <div class="actions">
+                    <button
+                      type="button"
+                      class="iconbtn"
+                      data-menu-btn
+                      title="Más acciones"
+                      aria-label="Más acciones PAC <?= h($r['nopac']) ?>">
+                      <svg viewBox="0 0 24 24" class="ico" aria-hidden="true">
+                        <path fill="currentColor"
+                          d="M6 10.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm6 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm6 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z" />
+                      </svg>
+                    </button>
+
+                    <div class="menu hidden" data-menu>
+                      <button
+                        type="button"
+                        class="menu-item"
+                        onclick="openEdit(
+                          <?= (int)$r['id'] ?>,
+                          '<?= h($r['nopac']) ?>',
+                          '<?= h($r['pn'] ?? 'NP') ?>',
+                          '<?= h($r['estado']) ?>',
+                          '<?= h($r['obac'] ?? '') ?>',
+                          '<?= h($r['seleccion'] ?? '') ?>',
+                          '<?= h($r['fuente'] ?? '') ?>',
+                          '<?= h($r['descripcion']) ?>',
+                          '<?= h($r['estimado']) ?>',
+                          '<?= h($r['periodo'] ?? '') ?>',
+                          '<?= h($r['lista'] ?? '') ?>',
+                          '<?= h($r['ejecucion'] ?? '') ?>',
+                          '<?= h($r['modalidad'] ?? '') ?>',
+                          '<?= h($r['dependencia'] ?? '') ?>',
+                          '<?= h($r['mesconvoca'] ?? '') ?>',
+                          '<?= h($r['certificado'] ?? '') ?>',
+                          '<?= h($r['tipo_mercado'] ?? '') ?>',
+                          '<?= h($r['cantidad'] ?? '') ?>',
+                          '<?= h($r['rubro'] ?? '') ?>'
+                        )">
+                        ✏️ Editar
+                      </button>
+
+                      <button
+                        type="button"
+                        class="menu-item danger"
+                        onclick="openDelete(<?= (int)$r['id'] ?>, '<?= h($r['nopac']) ?>')">
+                        🗑️ Eliminar
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </td>
 
@@ -683,6 +698,52 @@ foreach ($pacs as $r) {
     transition: .15s ease;
   }
 
+  .actions {
+    position: relative;
+  }
+
+  .menu {
+    position: absolute;
+    right: 0;
+    top: 42px;
+    min-width: 170px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    box-shadow: 0 20px 45px rgba(15, 23, 42, .12);
+    padding: 6px;
+    z-index: 30;
+  }
+
+  .menu.hidden {
+    display: none;
+  }
+
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f172a;
+    text-decoration: none;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .menu-item:hover {
+    background: #f1f5f9;
+  }
+
+  .menu-item.danger {
+    color: #e11d48;
+  }
+
   .field:focus {
     border-color: rgb(148, 163, 184);
     box-shadow: 0 0 0 3px rgba(148, 163, 184, .18);
@@ -916,6 +977,35 @@ foreach ($pacs as $r) {
     closeModal('modalDelete');
   }
   window.fakeDelete = fakeDelete;
+
+  function closeAllMenus() {
+    document.querySelectorAll('[data-menu]').forEach(m => m.classList.add('hidden'));
+  }
+
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-menu-btn]');
+    const menu = e.target.closest('[data-menu]');
+
+    if (btn) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const wrap = btn.closest('.actions');
+      const m = wrap?.querySelector('[data-menu]');
+      const wasOpen = m && !m.classList.contains('hidden');
+
+      closeAllMenus();
+
+      if (m && !wasOpen) {
+        m.classList.remove('hidden');
+      }
+      return;
+    }
+
+    if (menu) return;
+
+    closeAllMenus();
+  });
 </script>
 
 <?php require __DIR__ . '/../../layout/admin_footer.php'; ?>

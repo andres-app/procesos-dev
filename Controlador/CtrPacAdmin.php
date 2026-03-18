@@ -1,6 +1,7 @@
 <?php
 // Controlador/CtrPacAdmin.php
 require_once __DIR__ . '/../Modelo/MdPacAdmin.php';
+require_once __DIR__ . '/../Modelo/MdActividadPac.php';
 
 class CtrPacAdmin
 {
@@ -28,6 +29,22 @@ class CtrPacAdmin
         $rubros        = MdPacAdmin::listarRubros();
 
         require_once __DIR__ . '/../Vista/modulos/admin/pac.php';
+    }
+
+    public static function detalle(): void
+    {
+        $id = (int)($_GET['id'] ?? 0);
+
+        if ($id <= 0) {
+            http_response_code(400);
+            echo 'ID inválido';
+            exit;
+        }
+
+        $pac = MdPacAdmin::obtenerDetalle($id);
+        $actividades = MdPacActividad::listarPorPac($id);
+
+        require_once __DIR__ . '/../Vista/modulos/admin/pac_detalle.php';
     }
 
     public static function guardar(): void
@@ -114,5 +131,17 @@ class CtrPacAdmin
             ]);
             exit;
         }
+    }
+
+    public static function eliminar(): void
+    {
+        $id = (int)($_GET['id'] ?? 0);
+
+        if ($id > 0) {
+            MdPacAdmin::eliminar($id);
+        }
+
+        header('Location: ' . BASE_URL . '/admin/pac');
+        exit;
     }
 }
