@@ -82,11 +82,11 @@ class MdPacAdmin
         if (!empty($filtros['q'])) {
             $q = trim((string)$filtros['q']);
             $sql .= " AND (
-            p.nopac LIKE :q OR
-            p.descripcion LIKE :q OR
-            e.nombre LIKE :q OR
-            est.nombre LIKE :q
-        )";
+                p.nopac LIKE :q OR
+                p.descripcion LIKE :q OR
+                e.nombre LIKE :q OR
+                est.nombre LIKE :q
+            )";
             $params[':q'] = "%{$q}%";
         }
 
@@ -238,7 +238,7 @@ class MdPacAdmin
             ':ejecucion'    => !empty($data['ejecucion']) ? (int)$data['ejecucion'] : null,
             ':modalidad'    => !empty($data['modalidad']) ? (int)$data['modalidad'] : null,
             ':dependencia'  => !empty($data['dependencia']) ? (int)$data['dependencia'] : null,
-            ':mesconvoca' => !empty($data['mesconvoca']) ? trim((string)$data['mesconvoca']) : null,
+            ':mesconvoca'   => !empty($data['mesconvoca']) ? trim((string)$data['mesconvoca']) : null,
             ':certificado'  => ($data['certificado'] !== '' && $data['certificado'] !== null) ? (float)$data['certificado'] : 0,
             ':tipo_mercado' => !empty($data['tipo_mercado']) ? (int)$data['tipo_mercado'] : null,
             ':cantidad'     => ($data['cantidad'] !== '' && $data['cantidad'] !== null) ? (int)$data['cantidad'] : 0,
@@ -420,5 +420,241 @@ class MdPacAdmin
         $db = db();
         $st = $db->query("SELECT id, nombre FROM estado ORDER BY id");
         return $st->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public static function obtenerResumenSituacion(?int $anio = null): array
+    {
+        $db = db();
+
+        $sql = "
+            SELECT
+                p.id,
+                p.nopac,
+                p.estimado,
+                p.created_at,
+                COALESCE(ob.nombre, '') AS obac_nombre,
+                COALESCE(md.nombre, '') AS modalidad_nombre,
+                COALESCE(es.nombre, '') AS estado_nombre
+            FROM pac p
+            LEFT JOIN entidad ob   ON ob.id = p.obac
+            LEFT JOIN modalidad md ON md.id = p.modalidad
+            LEFT JOIN estado es    ON es.id = p.estado
+            WHERE 1=1
+        ";
+
+        $params = [];
+
+        if (!empty($anio)) {
+            $sql .= " AND YEAR(p.created_at) = :anio";
+            $params[':anio'] = (int)$anio;
+        }
+
+        $sql .= " ORDER BY p.id ASC";
+
+        $st = $db->prepare($sql);
+        $st->execute($params);
+        $rows = $st->fetchAll(PDO::FETCH_ASSOC);
+
+        $fasesOrden = [
+            'NORECEPCIONADOS',
+            'OBSERVADOS',
+            'ESTUDIO DE MERCADO',
+        ];
+
+        $modalidadesPorFase = [
+            'NORECEPCIONADOS'     => ['Corporativo', 'Individual'],
+            'OBSERVADOS'          => ['Corporativo', 'Individual'],
+            'ESTUDIO DE MERCADO'  => ['Individual'],
+        ];
+
+        $obacsOrden = ['CCFFAA', 'EP', 'FAP', 'MGP', 'CONIDA'];
+
+        $detalle = [];
+        foreach ($fasesOrden as $fase) {
+            $detalle[$fase] = [];
+            foreach ($modalidadesPorFase[$fase] as $modalidad) {
+                $detalle[$fase][$modalidad] = [
+                    'CCFFAA'      => 0,
+                    'EP'          => 0,
+                    'FAP'         => 0,
+                    'MGP'         => 0,
+                    'CONIDA'      => 0,
+                    'EXPEDIENTES' => 0,
+                    'PROCESOS'    => 0,
+                    'ESTIMADO'    => 0.0,
+                    '_nopac'      => [],
+                ];
+            }
+        }
+
+        foreach ($rows as $row) {
+            $fase = self::normalizarFaseResumen((string)($row['estado_nombre'] ?? ''));
+            if ($fase === null) {
+                continue;
+            }
+
+            $modalidad = self::normalizarModalidadResumen((string)($row['modalidad_nombre'] ?? ''));
+            if (!isset($detalle[$fase][$modalidad])) {
+                continue;
+            }
+
+            $obac = self::normalizarObacResumen((string)($row['obac_nombre'] ?? ''));
+
+            if ($obac !== null) {
+                $detalle[$fase][$modalidad][$obac]++;
+            }
+
+            $detalle[$fase][$modalidad]['EXPEDIENTES']++;
+            $detalle[$fase][$modalidad]['ESTIMADO'] += (float)($row['estimado'] ?? 0);
+
+            $nopacKey = trim((string)($row['nopac'] ?? ''));
+            if ($nopacKey === '') {
+                $nopacKey = 'ID-' . (string)$row['id'];
+            }
+
+            $detalle[$fase][$modalidad]['_nopac'][$nopacKey] = true;
+        }
+
+        foreach ($detalle as $fase => $mods) {
+            foreach ($mods as $modalidad => $vals) {
+                $detalle[$fase][$modalidad]['PROCESOS'] = count($vals['_nopac']);
+                unset($detalle[$fase][$modalidad]['_nopac']);
+            }
+        }
+
+        $subtotales = [];
+        foreach ($fasesOrden as $fase) {
+            $subtotales[$fase] = [
+                'CCFFAA'      => 0,
+                'EP'          => 0,
+                'FAP'         => 0,
+                'MGP'         => 0,
+                'CONIDA'      => 0,
+                'EXPEDIENTES' => 0,
+                'PROCESOS'    => 0,
+                'ESTIMADO'    => 0.0,
+            ];
+
+            foreach ($detalle[$fase] as $modalidad => $vals) {
+                foreach (['CCFFAA', 'EP', 'FAP', 'MGP', 'CONIDA', 'EXPEDIENTES', 'PROCESOS'] as $k) {
+                    $subtotales[$fase][$k] += (int)$vals[$k];
+                }
+                $subtotales[$fase]['ESTIMADO'] += (float)$vals['ESTIMADO'];
+            }
+        }
+
+        $totales = [
+            'CCFFAA'      => 0,
+            'EP'          => 0,
+            'FAP'         => 0,
+            'MGP'         => 0,
+            'CONIDA'      => 0,
+            'EXPEDIENTES' => 0,
+            'PROCESOS'    => 0,
+            'ESTIMADO'    => 0.0,
+        ];
+
+        foreach ($subtotales as $sub) {
+            foreach (['CCFFAA', 'EP', 'FAP', 'MGP', 'CONIDA', 'EXPEDIENTES', 'PROCESOS'] as $k) {
+                $totales[$k] += (int)$sub[$k];
+            }
+            $totales['ESTIMADO'] += (float)$sub['ESTIMADO'];
+        }
+
+        $valorEstimadoPorObac = [
+            'CCFFAA' => 0.0,
+            'EP'     => 0.0,
+            'FAP'    => 0.0,
+            'MGP'    => 0.0,
+            'CONIDA' => 0.0,
+        ];
+
+        foreach ($rows as $row) {
+            $fase = self::normalizarFaseResumen((string)($row['estado_nombre'] ?? ''));
+            if ($fase === null) {
+                continue;
+            }
+
+            $obac = self::normalizarObacResumen((string)($row['obac_nombre'] ?? ''));
+            if ($obac !== null) {
+                $valorEstimadoPorObac[$obac] += (float)($row['estimado'] ?? 0);
+            }
+        }
+
+        return [
+            'anio'                => $anio,
+            'fases_orden'         => $fasesOrden,
+            'modalidades_por_fase'=> $modalidadesPorFase,
+            'obacs_orden'         => $obacsOrden,
+            'detalle'             => $detalle,
+            'subtotales'          => $subtotales,
+            'totales'             => $totales,
+            'valor_estimado_obac' => $valorEstimadoPorObac,
+        ];
+    }
+
+    private static function normalizarFaseResumen(string $estadoNombre): ?string
+    {
+        $txt = mb_strtoupper(trim($estadoNombre), 'UTF-8');
+
+        if ($txt === '') {
+            return null;
+        }
+
+        if (strpos($txt, 'NO RECEPC') !== false || strpos($txt, 'NORECEPC') !== false) {
+            return 'NORECEPCIONADOS';
+        }
+
+        if (strpos($txt, 'OBSERV') !== false) {
+            return 'OBSERVADOS';
+        }
+
+        if (strpos($txt, 'ESTUDIO') !== false && strpos($txt, 'MERCADO') !== false) {
+            return 'ESTUDIO DE MERCADO';
+        }
+
+        return null;
+    }
+
+    private static function normalizarModalidadResumen(string $modalidadNombre): string
+    {
+        $txt = mb_strtoupper(trim($modalidadNombre), 'UTF-8');
+
+        if (strpos($txt, 'CORPORAT') !== false) {
+            return 'Corporativo';
+        }
+
+        return 'Individual';
+    }
+
+    private static function normalizarObacResumen(string $obacNombre): ?string
+    {
+        $txt = mb_strtoupper(trim($obacNombre), 'UTF-8');
+
+        if ($txt === '') {
+            return null;
+        }
+
+        if (strpos($txt, 'CCFFAA') !== false || strpos($txt, 'COMANDO CONJUNTO') !== false) {
+            return 'CCFFAA';
+        }
+
+        if ($txt === 'EP' || strpos($txt, 'EJERCITO') !== false) {
+            return 'EP';
+        }
+
+        if ($txt === 'FAP' || strpos($txt, 'FUERZA AEREA') !== false) {
+            return 'FAP';
+        }
+
+        if ($txt === 'MGP' || strpos($txt, 'MARINA') !== false) {
+            return 'MGP';
+        }
+
+        if (strpos($txt, 'CONIDA') !== false) {
+            return 'CONIDA';
+        }
+
+        return null;
     }
 }
