@@ -57,7 +57,7 @@ foreach ($pacs as $r) {
 }
 ?>
 
-<div class="space-y-5">
+<div class="pac-page space-y-5">
 
   <!-- Header -->
   <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
@@ -122,18 +122,18 @@ foreach ($pacs as $r) {
       <div class="font-semibold">PAC registrados</div>
     </div>
 
-    <div class="overflow-x-auto">
-      <table id="tblPac" class="min-w-full thc tbc">
+    <div>
+      <table id="tblPac" class="w-full thc tbc">
         <thead class="bg-slate-50 text-slate-600">
           <tr>
-            <th class="text-left font-medium px-4 py-3">N° PAC</th>
-            <th class="text-left font-medium px-4 py-3">P/NP</th>
-            <th class="text-left font-medium px-4 py-3">Descripción</th>
-            <th class="text-left font-medium px-4 py-3">OBAC</th>
-            <th class="text-left font-medium px-4 py-3">Fuente</th>
-            <th class="text-left font-medium px-4 py-3">Estado</th>
-            <th class="text-left font-medium px-4 py-3">Estimado</th>
-            <th class="text-right font-medium px-4 py-3">Acciones</th>
+            <th class="w-[100px]">N° PAC</th>
+            <th class="w-[80px]">P/NP</th>
+            <th class="w-[400px]">Descripción</th>
+            <th class="w-[150px]">OBAC</th>
+            <th class="w-[150px]">Fuente</th>
+            <th class="w-[150px]">Estado</th>
+            <th class="w-[120px]">Estimado</th>
+            <th class="w-[120px] text-right">Acciones</th>
           </tr>
         </thead>
 
@@ -152,7 +152,7 @@ foreach ($pacs as $r) {
               </td>
 
               <!-- Descripción (3ra columna) -->
-              <td class="px-4 py-3 max-w-[520px]">
+              <td class="px-4 py-3 w-full">
                 <div class="text-slate-900 line-clamp-2" title="<?= h($r['descripcion']) ?>">
                   <?= h($r['descripcion']) ?>
                 </div>
@@ -262,286 +262,307 @@ foreach ($pacs as $r) {
     </div>
   </div>
 
-</div>
+  <!-- Modal (Nuevo/Editar) -->
+  <div id="modalForm" class="fixed inset-0 hidden items-center justify-center p-4 z-50">
+    <div class="absolute inset-0 bg-slate-900/30" onclick="closeModal('modalForm')"></div>
 
-<!-- Modal (Nuevo/Editar) — ADAPTADO a columnas del DataTable -->
-<!-- Modal (Nuevo/Editar) -->
-<div id="modalForm" class="fixed inset-0 hidden items-center justify-center p-4 z-50">
-  <div class="absolute inset-0 bg-slate-900/30" onclick="closeModal('modalForm')"></div>
+    <div class="relative w-full max-w-5xl h-[90vh] rounded-[28px] border border-slate-200 bg-white shadow-soft overflow-hidden flex flex-col">
 
-  <div class="relative w-full max-w-5xl h-[90vh] rounded-[28px] border border-slate-200 bg-white shadow-soft overflow-hidden flex flex-col">
-
-    <!-- Header -->
-    <div class="shrink-0 px-5 py-4 border-b border-slate-200 bg-white">
-      <div class="flex items-start justify-between gap-4">
-        <div class="min-w-0">
-          <div class="text-xs text-slate-400 uppercase tracking-wide">PAC</div>
-          <div id="modalTitle" class="text-[32px] leading-none font-semibold text-slate-900 mt-1">
-            Nuevo PAC
-          </div>
-        </div>
-
-        <button
-          type="button"
-          class="rounded-full border border-slate-200 bg-white px-5 py-2 text-sm text-slate-700 hover:bg-slate-50"
-          onclick="closeModal('modalForm')">
-          Cerrar
-        </button>
-      </div>
-    </div>
-
-    <!-- Body -->
-    <div class="flex-1 overflow-y-auto px-5 py-5">
-      <form id="pacForm" class="grid grid-cols-1 md:grid-cols-6 gap-x-4 gap-y-5" onsubmit="return false;">
-        <input type="hidden" id="pac_id" value="">
-
-        <!-- DATOS PRINCIPALES -->
-        <div class="md:col-span-6">
-          <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-            Datos principales
-          </div>
-        </div>
-
-        <div class="md:col-span-2">
-          <label class="block text-xs text-slate-500 mb-1.5">N° PAC</label>
-          <input
-            id="pac_nopac"
-            class="field"
-            placeholder="Ej: 0043"
-            autocomplete="off">
-        </div>
-
-        <div class="md:col-span-1">
-          <label class="block text-xs text-slate-500 mb-1.5">P/NP</label>
-          <select id="pac_pn" class="field">
-            <option value="P">P</option>
-            <option value="NP">NP</option>
-          </select>
-        </div>
-
-        <div class="md:col-span-1">
-          <label class="block text-xs text-slate-500 mb-1.5">Estado</label>
-          <select id="pac_estado" class="field">
-            <option value="">Seleccionar...</option>
-            <?php foreach ($estados as $es): ?>
-              <option value="<?= (int)$es['id'] ?>"><?= h($es['nombre']) ?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-
-        <div class="md:col-span-2">
-          <label class="block text-xs text-slate-500 mb-1.5">Fuente</label>
-          <select id="pac_fuente" class="field">
-            <option value="">Seleccionar...</option>
-            <?php foreach ($fuentes as $f): ?>
-              <option value="<?= (int)$f['id'] ?>"><?= h($f['nombre']) ?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-
-        <div class="md:col-span-6">
-          <div class="flex items-end justify-between gap-2">
-            <label class="block text-xs text-slate-500 mb-1.5">Descripción</label>
-            <div class="text-[11px] text-slate-400">
-              <span id="descCount">0</span>/400
+      <!-- Header -->
+      <div class="shrink-0 px-5 py-4 border-b border-slate-200 bg-white">
+        <div class="flex items-start justify-between gap-4">
+          <div class="min-w-0">
+            <div class="text-xs text-slate-400 uppercase tracking-wide">PAC</div>
+            <div id="modalTitle" class="text-[32px] leading-none font-semibold text-slate-900 mt-1">
+              Nuevo PAC
             </div>
           </div>
-          <textarea
-            id="pac_desc"
-            rows="3"
-            maxlength="400"
-            class="field min-h-[110px] resize-none"
-            placeholder="Describe el requerimiento..."></textarea>
-        </div>
 
-        <!-- CLASIFICACIÓN -->
-        <div class="md:col-span-6 pt-1">
-          <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-            Clasificación
+          <button
+            type="button"
+            class="rounded-full border border-slate-200 bg-white px-5 py-2 text-sm text-slate-700 hover:bg-slate-50"
+            onclick="closeModal('modalForm')">
+            Cerrar
+          </button>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="flex-1 overflow-y-auto px-5 py-5">
+        <form id="pacForm" class="grid grid-cols-1 md:grid-cols-6 gap-x-4 gap-y-5" onsubmit="return false;">
+          <input type="hidden" id="pac_id" value="">
+
+          <!-- DATOS PRINCIPALES -->
+          <div class="md:col-span-6">
+            <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+              Datos principales
+            </div>
           </div>
-        </div>
 
-        <div class="md:col-span-2">
-          <label class="block text-xs text-slate-500 mb-1.5">OBAC</label>
-          <select id="pac_obac" class="field">
-            <option value="">Seleccionar...</option>
-            <?php foreach ($obacs as $o): ?>
-              <option value="<?= (int)$o['id'] ?>"><?= h($o['nombre']) ?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-
-        <div class="md:col-span-2">
-          <label class="block text-xs text-slate-500 mb-1.5">Selección</label>
-          <select id="pac_seleccion" class="field">
-            <option value="">Seleccionar...</option>
-            <?php foreach ($selecciones as $s): ?>
-              <option value="<?= (int)$s['id'] ?>"><?= h($s['nombre']) ?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-
-        <div class="md:col-span-2">
-          <label class="block text-xs text-slate-500 mb-1.5">Lista</label>
-          <select id="pac_lista" class="field">
-            <option value="">Seleccionar...</option>
-            <?php foreach ($listas as $l): ?>
-              <option value="<?= (int)$l['id'] ?>"><?= h($l['nombre']) ?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-
-        <div class="md:col-span-3">
-          <label class="block text-xs text-slate-500 mb-1.5">Modalidad</label>
-          <select id="pac_modalidad" class="field">
-            <option value="">Seleccionar...</option>
-            <?php foreach ($modalidades as $m): ?>
-              <option value="<?= (int)$m['id'] ?>"><?= h($m['nombre']) ?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-
-        <div class="md:col-span-3">
-          <label class="block text-xs text-slate-500 mb-1.5">Tipo mercado</label>
-          <select id="pac_tipo_mercado" class="field">
-            <option value="">Seleccionar...</option>
-            <?php foreach ($tipos_mercado as $t): ?>
-              <option value="<?= (int)$t['id'] ?>"><?= h($t['nombre']) ?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-
-        <div class="md:col-span-3">
-          <label class="block text-xs text-slate-500 mb-1.5">Rubro</label>
-          <select id="pac_rubro" class="field">
-            <option value="">Seleccionar...</option>
-            <?php foreach ($rubros as $rubro): ?>
-              <option value="<?= (int)$rubro['id'] ?>"><?= h($rubro['nombre']) ?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-
-        <!-- ORGANIZACIÓN -->
-        <div class="md:col-span-6 pt-1">
-          <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-            Organización
+          <div class="md:col-span-2">
+            <label class="block text-xs text-slate-500 mb-1.5">N° PAC</label>
+            <input
+              id="pac_nopac"
+              class="field"
+              placeholder="Ej: 0043"
+              autocomplete="off">
           </div>
-        </div>
 
-        <div class="md:col-span-3">
-          <label class="block text-xs text-slate-500 mb-1.5">Ejecución</label>
-          <select id="pac_ejecucion" class="field">
-            <option value="">Seleccionar...</option>
-            <?php foreach ($entidades as $e): ?>
-              <option value="<?= (int)$e['id'] ?>"><?= h($e['nombre']) ?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-
-        <div class="md:col-span-3">
-          <label class="block text-xs text-slate-500 mb-1.5">Dependencia</label>
-          <select id="pac_dependencia" class="field">
-            <option value="">Seleccionar...</option>
-            <?php foreach ($dependencias as $d): ?>
-              <option value="<?= (int)$d['id'] ?>"><?= h($d['nombre']) ?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-
-        <!-- PROGRAMACIÓN Y MONTOS -->
-        <div class="md:col-span-6 pt-1">
-          <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-            Programación y montos
+          <div class="md:col-span-1">
+            <label class="block text-xs text-slate-500 mb-1.5">P/NP</label>
+            <select id="pac_pn" class="field">
+              <option value="P">P</option>
+              <option value="NP">NP</option>
+            </select>
           </div>
-        </div>
 
-        <div class="md:col-span-2">
-          <label class="block text-xs text-slate-500 mb-1.5">Mes convocatoria</label>
-          <select id="pac_mes_convocatoria" class="field">
-            <option value="">Seleccionar...</option>
-            <option value="ENERO">ENERO</option>
-            <option value="FEBRERO">FEBRERO</option>
-            <option value="MARZO">MARZO</option>
-            <option value="ABRIL">ABRIL</option>
-            <option value="MAYO">MAYO</option>
-            <option value="JUNIO">JUNIO</option>
-            <option value="JULIO">JULIO</option>
-            <option value="AGOSTO">AGOSTO</option>
-            <option value="SEPTIEMBRE">SEPTIEMBRE</option>
-            <option value="OCTUBRE">OCTUBRE</option>
-            <option value="NOVIEMBRE">NOVIEMBRE</option>
-            <option value="DICIEMBRE">DICIEMBRE</option>
-          </select>
-        </div>
-
-        <div class="md:col-span-2">
-          <label class="block text-xs text-slate-500 mb-1.5">Periodo</label>
-          <select id="pac_periodo" class="field">
-            <option value="">Seleccionar...</option>
-            <?php foreach ($periodos as $p): ?>
-              <option value="<?= (int)$p['id'] ?>"><?= h($p['nombre']) ?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-
-        <div class="md:col-span-2">
-          <label class="block text-xs text-slate-500 mb-1.5">Cantidad</label>
-          <input
-            id="pac_cantidad"
-            type="number"
-            min="0"
-            step="1"
-            class="field"
-            placeholder="0">
-        </div>
-
-        <div class="md:col-span-3">
-          <label class="block text-xs text-slate-500 mb-1.5">Estimado (S/.)</label>
-          <input
-            id="pac_estimado"
-            type="number"
-            min="0"
-            step="0.01"
-            inputmode="decimal"
-            class="field"
-            placeholder="Ej: 90000.00"
-            autocomplete="off">
-          <div class="mt-1 text-[11px] text-slate-400">
-            Vista: <span id="sum_estimado">S/ 0.00</span>
+          <div class="md:col-span-1">
+            <label class="block text-xs text-slate-500 mb-1.5">Estado</label>
+            <select id="pac_estado" class="field">
+              <option value="">Seleccionar...</option>
+              <?php foreach ($estados as $es): ?>
+                <option value="<?= (int)$es['id'] ?>"><?= h($es['nombre']) ?></option>
+              <?php endforeach; ?>
+            </select>
           </div>
-        </div>
 
-        <div class="md:col-span-3">
-          <label class="block text-xs text-slate-500 mb-1.5">Certificado</label>
-          <input
-            id="pac_certificado"
-            type="number"
-            min="0"
-            step="0.01"
-            inputmode="decimal"
-            class="field"
-            placeholder="Ej: 45000.00"
-            autocomplete="off">
+          <div class="md:col-span-2">
+            <label class="block text-xs text-slate-500 mb-1.5">Fuente</label>
+            <select id="pac_fuente" class="field">
+              <option value="">Seleccionar...</option>
+              <?php foreach ($fuentes as $f): ?>
+                <option value="<?= (int)$f['id'] ?>"><?= h($f['nombre']) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <div class="md:col-span-6">
+            <div class="flex items-end justify-between gap-2">
+              <label class="block text-xs text-slate-500 mb-1.5">Descripción</label>
+              <div class="text-[11px] text-slate-400">
+                <span id="descCount">0</span>/400
+              </div>
+            </div>
+            <textarea
+              id="pac_desc"
+              rows="3"
+              maxlength="400"
+              class="field min-h-[110px] resize-none"
+              placeholder="Describe el requerimiento..."></textarea>
+          </div>
+
+          <!-- CLASIFICACIÓN -->
+          <div class="md:col-span-6 pt-1">
+            <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+              Clasificación
+            </div>
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="block text-xs text-slate-500 mb-1.5">OBAC</label>
+            <select id="pac_obac" class="field">
+              <option value="">Seleccionar...</option>
+              <?php foreach ($obacs as $o): ?>
+                <option value="<?= (int)$o['id'] ?>"><?= h($o['nombre']) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="block text-xs text-slate-500 mb-1.5">Selección</label>
+            <select id="pac_seleccion" class="field">
+              <option value="">Seleccionar...</option>
+              <?php foreach ($selecciones as $s): ?>
+                <option value="<?= (int)$s['id'] ?>"><?= h($s['nombre']) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="block text-xs text-slate-500 mb-1.5">Lista</label>
+            <select id="pac_lista" class="field">
+              <option value="">Seleccionar...</option>
+              <?php foreach ($listas as $l): ?>
+                <option value="<?= (int)$l['id'] ?>"><?= h($l['nombre']) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <div class="md:col-span-3">
+            <label class="block text-xs text-slate-500 mb-1.5">Modalidad</label>
+            <select id="pac_modalidad" class="field">
+              <option value="">Seleccionar...</option>
+              <?php foreach ($modalidades as $m): ?>
+                <option value="<?= (int)$m['id'] ?>"><?= h($m['nombre']) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <div class="md:col-span-3">
+            <label class="block text-xs text-slate-500 mb-1.5">Tipo mercado</label>
+            <select id="pac_tipo_mercado" class="field">
+              <option value="">Seleccionar...</option>
+              <?php foreach ($tipos_mercado as $t): ?>
+                <option value="<?= (int)$t['id'] ?>"><?= h($t['nombre']) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <div class="md:col-span-3">
+            <label class="block text-xs text-slate-500 mb-1.5">Rubro</label>
+            <select id="pac_rubro" class="field">
+              <option value="">Seleccionar...</option>
+              <?php foreach ($rubros as $rubro): ?>
+                <option value="<?= (int)$rubro['id'] ?>"><?= h($rubro['nombre']) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <!-- ORGANIZACIÓN -->
+          <div class="md:col-span-6 pt-1">
+            <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+              Organización
+            </div>
+          </div>
+
+          <div class="md:col-span-3">
+            <label class="block text-xs text-slate-500 mb-1.5">Ejecución</label>
+            <select id="pac_ejecucion" class="field">
+              <option value="">Seleccionar...</option>
+              <?php foreach ($entidades as $e): ?>
+                <option value="<?= (int)$e['id'] ?>"><?= h($e['nombre']) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <div class="md:col-span-3">
+            <label class="block text-xs text-slate-500 mb-1.5">Dependencia</label>
+            <select id="pac_dependencia" class="field">
+              <option value="">Seleccionar...</option>
+              <?php foreach ($dependencias as $d): ?>
+                <option value="<?= (int)$d['id'] ?>"><?= h($d['nombre']) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <!-- PROGRAMACIÓN Y MONTOS -->
+          <div class="md:col-span-6 pt-1">
+            <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+              Programación y montos
+            </div>
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="block text-xs text-slate-500 mb-1.5">Mes convocatoria</label>
+            <select id="pac_mes_convocatoria" class="field">
+              <option value="">Seleccionar...</option>
+              <option value="ENERO">ENERO</option>
+              <option value="FEBRERO">FEBRERO</option>
+              <option value="MARZO">MARZO</option>
+              <option value="ABRIL">ABRIL</option>
+              <option value="MAYO">MAYO</option>
+              <option value="JUNIO">JUNIO</option>
+              <option value="JULIO">JULIO</option>
+              <option value="AGOSTO">AGOSTO</option>
+              <option value="SEPTIEMBRE">SEPTIEMBRE</option>
+              <option value="OCTUBRE">OCTUBRE</option>
+              <option value="NOVIEMBRE">NOVIEMBRE</option>
+              <option value="DICIEMBRE">DICIEMBRE</option>
+            </select>
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="block text-xs text-slate-500 mb-1.5">Periodo</label>
+            <select id="pac_periodo" class="field">
+              <option value="">Seleccionar...</option>
+              <?php foreach ($periodos as $p): ?>
+                <option value="<?= (int)$p['id'] ?>"><?= h($p['nombre']) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="block text-xs text-slate-500 mb-1.5">Cantidad</label>
+            <input
+              id="pac_cantidad"
+              type="number"
+              min="0"
+              step="1"
+              class="field"
+              placeholder="0">
+          </div>
+
+          <div class="md:col-span-3">
+            <label class="block text-xs text-slate-500 mb-1.5">Estimado (S/.)</label>
+            <input
+              id="pac_estimado"
+              type="number"
+              min="0"
+              step="0.01"
+              inputmode="decimal"
+              class="field"
+              placeholder="Ej: 90000.00"
+              autocomplete="off">
+            <div class="mt-1 text-[11px] text-slate-400">
+              Vista: <span id="sum_estimado">S/ 0.00</span>
+            </div>
+          </div>
+
+          <div class="md:col-span-3">
+            <label class="block text-xs text-slate-500 mb-1.5">Certificado</label>
+            <input
+              id="pac_certificado"
+              type="number"
+              min="0"
+              step="0.01"
+              inputmode="decimal"
+              class="field"
+              placeholder="Ej: 45000.00"
+              autocomplete="off">
+          </div>
+        </form>
+      </div>
+
+      <!-- Footer -->
+      <div class="shrink-0 px-5 py-4 border-t border-slate-200 bg-white">
+        <div class="flex items-center justify-end gap-2">
+          <button
+            type="button"
+            class="rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm hover:bg-slate-50"
+            onclick="closeModal('modalForm')">
+            Cancelar
+          </button>
+
+          <button
+            id="btnSavePac"
+            type="button"
+            class="rounded-2xl bg-slate-900 text-white px-5 py-2.5 text-sm font-medium hover:bg-slate-800"
+            onclick="fakeSave()">
+            Guardar
+          </button>
         </div>
-      </form>
+      </div>
     </div>
+  </div>
 
-    <!-- Footer -->
-    <div class="shrink-0 px-5 py-4 border-t border-slate-200 bg-white">
-      <div class="flex items-center justify-end gap-2">
-        <button
-          type="button"
-          class="rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm hover:bg-slate-50"
-          onclick="closeModal('modalForm')">
-          Cancelar
-        </button>
+  <!-- Modal delete -->
+  <div id="modalDelete" class="fixed inset-0 hidden items-center justify-center p-4 z-50">
+    <div class="absolute inset-0 bg-slate-900/30" onclick="closeModal('modalDelete')"></div>
 
-        <button
-          id="btnSavePac"
-          type="button"
-          class="rounded-2xl bg-slate-900 text-white px-5 py-2.5 text-sm font-medium hover:bg-slate-800"
-          onclick="fakeSave()">
-          Guardar
+    <div class="relative w-full max-w-md rounded-3xl border border-slate-200 glass shadow-soft">
+      <div class="px-5 py-4 border-b border-slate-200">
+        <div class="text-xs text-slate-500">Eliminar</div>
+        <div class="text-lg font-semibold">Confirmación</div>
+      </div>
+      <div class="p-5 text-sm text-slate-700">
+        ¿Eliminar el PAC <span id="delPac" class="font-semibold"></span>? (solo maqueta)
+      </div>
+      <div class="p-5 pt-0 flex justify-end gap-2">
+        <button class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm hover:bg-slate-50"
+          onclick="closeModal('modalDelete')">Cancelar</button>
+        <button class="rounded-2xl border border-rose-200 bg-rose-50 text-rose-700 px-4 py-2.5 text-sm hover:bg-rose-100"
+          onclick="fakeDelete()">
+          Eliminar (maqueta)
         </button>
       </div>
     </div>
@@ -549,7 +570,7 @@ foreach ($pacs as $r) {
 </div>
 
 <style>
-  .chip {
+  .pac-page .chip {
     display: inline-flex;
     align-items: center;
     gap: .35rem;
@@ -562,87 +583,50 @@ foreach ($pacs as $r) {
     max-width: 100%;
   }
 
-  .chip--muted span {
+  .pac-page .chip--muted span {
     color: rgb(15, 23, 42);
     font-weight: 600;
   }
-</style>
 
-<!-- Modal delete -->
-<div id="modalDelete" class="fixed inset-0 hidden items-center justify-center p-4">
-  <div class="absolute inset-0 bg-slate-900/30" onclick="closeModal('modalDelete')"></div>
-
-  <div class="relative w-full max-w-md rounded-3xl border border-slate-200 glass shadow-soft">
-    <div class="px-5 py-4 border-b border-slate-200">
-      <div class="text-xs text-slate-500">Eliminar</div>
-      <div class="text-lg font-semibold">Confirmación</div>
-    </div>
-    <div class="p-5 text-sm text-slate-700">
-      ¿Eliminar el PAC <span id="delPac" class="font-semibold"></span>? (solo maqueta)
-    </div>
-    <div class="p-5 pt-0 flex justify-end gap-2">
-      <button class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm hover:bg-slate-50"
-        onclick="closeModal('modalDelete')">Cancelar</button>
-      <button class="rounded-2xl border border-rose-200 bg-rose-50 text-rose-700 px-4 py-2.5 text-sm hover:bg-rose-100"
-        onclick="fakeDelete()">
-        Eliminar (maqueta)
-      </button>
-    </div>
-  </div>
-</div>
-
-<style>
-  .glass {
+  .pac-page .glass {
     background: rgba(255, 255, 255, .78);
     backdrop-filter: blur(10px);
   }
 
-  .shadow-soft {
+  .pac-page .shadow-soft {
     box-shadow: 0 10px 24px rgba(15, 23, 42, .08);
   }
 
-  /* Compact helpers */
-  .card {
+  .pac-page .card {
     border-radius: 14px;
   }
 
-  .btn {
+  .pac-page .btn {
     border-radius: 12px;
     padding: 8px 12px;
     font-size: 13px;
   }
 
-  .btn-primary {
+  .pac-page .btn-primary {
     background: #0f172a;
     color: #fff;
   }
 
-  .btn-primary:hover {
+  .pac-page .btn-primary:hover {
     background: #111827;
   }
 
-  .btn-ghost:hover {
+  .pac-page .btn-ghost:hover {
     background: #f8fafc;
   }
 
-  .inp {
+  .pac-page .inp {
     border-radius: 14px;
     padding: 9px 12px;
     font-size: 13px;
   }
 
-  .thc th {
-    padding: 10px 12px;
-    font-size: 12px;
-  }
-
-  .tbc td {
-    padding: 10px 12px;
-    font-size: 13px;
-  }
-
-  /* Icon actions (sutil + compacto) */
-  .iconbtn {
+  .pac-page .iconbtn {
     width: 34px;
     height: 34px;
     border-radius: 12px;
@@ -652,44 +636,41 @@ foreach ($pacs as $r) {
     align-items: center;
     justify-content: center;
     color: rgb(71, 85, 105);
-    /* slate-600 */
     transition: background .15s ease, border-color .15s ease, color .15s ease, transform .05s ease;
   }
 
-  .iconbtn:hover {
+  .pac-page .iconbtn:hover {
     background: rgb(248, 250, 252);
     border-color: rgba(148, 163, 184, .7);
     color: rgb(15, 23, 42);
-    /* slate-900 */
   }
 
-  .iconbtn:active {
+  .pac-page .iconbtn:active {
     transform: scale(.98);
   }
 
-  .iconbtn:focus-visible {
+  .pac-page .iconbtn:focus-visible {
     outline: none;
     box-shadow: 0 0 0 3px rgba(148, 163, 184, .35);
   }
 
-  .iconbtn .ico {
+  .pac-page .iconbtn .ico {
     width: 16px;
     height: 16px;
     display: block;
   }
 
-  /* Danger solo en hover (no “grita” por defecto) */
-  .iconbtn--danger {
+  .pac-page .iconbtn--danger {
     color: rgb(71, 85, 105);
   }
 
-  .iconbtn--danger:hover {
+  .pac-page .iconbtn--danger:hover {
     background: rgba(244, 63, 94, .08);
     border-color: rgba(244, 63, 94, .35);
     color: rgb(190, 18, 60);
   }
 
-  .field {
+  .pac-page .field {
     width: 100%;
     height: 44px;
     border-radius: 18px;
@@ -702,11 +683,22 @@ foreach ($pacs as $r) {
     transition: .15s ease;
   }
 
-  .actions {
+  .pac-page .field:focus {
+    border-color: rgb(148, 163, 184);
+    box-shadow: 0 0 0 3px rgba(148, 163, 184, .18);
+  }
+
+  .pac-page textarea.field {
+    height: auto;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .pac-page .actions {
     position: relative;
   }
 
-  .menu {
+  .pac-page .menu {
     position: absolute;
     right: 0;
     top: 42px;
@@ -719,11 +711,11 @@ foreach ($pacs as $r) {
     z-index: 30;
   }
 
-  .menu.hidden {
+  .pac-page .menu.hidden {
     display: none;
   }
 
-  .menu-item {
+  .pac-page .menu-item {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -740,26 +732,15 @@ foreach ($pacs as $r) {
     text-align: left;
   }
 
-  .menu-item:hover {
+  .pac-page .menu-item:hover {
     background: #f1f5f9;
   }
 
-  .menu-item.danger {
+  .pac-page .menu-item.danger {
     color: #e11d48;
   }
 
-  .field:focus {
-    border-color: rgb(148, 163, 184);
-    box-shadow: 0 0 0 3px rgba(148, 163, 184, .18);
-  }
-
-  textarea.field {
-    height: auto;
-    padding-top: 12px;
-    padding-bottom: 12px;
-  }
-
-  #modalForm .overflow-y-auto {
+  .pac-page #modalForm .overflow-y-auto {
     scrollbar-gutter: stable;
   }
 </style>
