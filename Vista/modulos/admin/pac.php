@@ -25,11 +25,12 @@ function pill($txt, $tone = 'slate')
 
 function toneEstado($estado)
 {
-  $e = strtoupper($estado);
+  $e = strtoupper(trim((string)$estado));
   if ($e === 'PUBLICADO') return 'green';
-  if ($e === 'BORRADOR') return 'slate';
   if ($e === 'OBSERVADO') return 'amber';
-  if ($e === 'ANULADO') return 'rose';
+  if ($e === 'SUBSANADO') return 'blue';
+  if ($e === 'SOLICITADO') return 'slate';
+  if ($e === 'ESTUDIO DE MERCADO') return 'rose';
   return 'slate';
 }
 
@@ -168,7 +169,7 @@ foreach ($pacs as $r) {
 
               <!-- Estado -->
               <td class="px-4 py-3">
-                <?= pill(h($r['estado']), toneEstado($r['estado'])) ?>
+                <?= pill(h($r['estado_nombre'] ?? '-'), toneEstado($r['estado_nombre'] ?? '')) ?>
               </td>
 
               <!-- Estimado -->
@@ -321,7 +322,10 @@ foreach ($pacs as $r) {
         <div class="md:col-span-1">
           <label class="block text-xs text-slate-500 mb-1.5">Estado</label>
           <select id="pac_estado" class="field">
-            <option value="PUBLICADO">PUBLICADO</option>
+            <option value="">Seleccionar...</option>
+            <?php foreach ($estados as $es): ?>
+              <option value="<?= (int)$es['id'] ?>"><?= h($es['nombre']) ?></option>
+            <?php endforeach; ?>
           </select>
         </div>
 
@@ -832,7 +836,7 @@ foreach ($pacs as $r) {
     $('pac_id').value = '';
     $('pac_nopac').value = '';
     $('pac_pn').value = 'NP';
-    $('pac_estado').value = 'PUBLICADO';
+    $('pac_estado').value = '';
     $('pac_fuente').value = '';
     $('pac_desc').value = '';
     $('pac_obac').value = '';
@@ -875,7 +879,7 @@ foreach ($pacs as $r) {
     $('pac_id').value = id ?? '';
     $('pac_nopac').value = nopac ?? '';
     $('pac_pn').value = pn ?? 'NP';
-    $('pac_estado').value = estado ?? 'PUBLICADO';
+    $('pac_estado').value = estado ?? '';
     $('pac_obac').value = obac ?? '';
     $('pac_seleccion').value = seleccion ?? '';
     $('pac_fuente').value = fuente ?? '';

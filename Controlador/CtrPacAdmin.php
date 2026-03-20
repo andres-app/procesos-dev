@@ -17,6 +17,7 @@ class CtrPacAdmin
 
         $pacs = MdPacAdmin::listar($filtros);
 
+        $estados       = MdPacAdmin::listarEstados();
         $obacs         = MdPacAdmin::listarObac();
         $fuentes       = MdPacAdmin::listarFuente();
         $selecciones   = MdPacAdmin::listarSeleccion();
