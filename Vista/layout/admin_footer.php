@@ -136,58 +136,67 @@ window.addEventListener('resize', () => {
 
 /* ===== DATATABLE GLOBAL ===== */
 
-document.addEventListener('DOMContentLoaded', function(){
-
-  if(!window.jQuery || !jQuery.fn.DataTable) return;
+document.addEventListener('DOMContentLoaded', function () {
+  if (!window.jQuery || !jQuery.fn.DataTable) return;
 
   const tabla = document.getElementById('tblPac');
+  if (!tabla) return;
 
-  if(!tabla) return;
+  let dt;
 
-  const dt = jQuery('#tblPac').DataTable({
-
-    pageLength:10,
-    lengthMenu:[10,25,50,100],
-
-    paging:true,
-    info:true,
-    ordering:true,
-    order: [],
-    searching:true,
-
-    autoWidth:false,
-
-    dom:'<"top"l>rt<"bottom"ip>',
-
-    columnDefs:[
-      {orderable:false,targets:[7]}
-    ],
-
-    language:{
-      lengthMenu:"Ver _MENU_",
-      info:"Mostrando _START_ a _END_ de _TOTAL_",
-      infoEmpty:"Mostrando 0 a 0 de 0",
-      zeroRecords:"No se encontraron resultados",
-      emptyTable:"No hay registros",
-      paginate:{
-        previous:"‹",
-        next:"›"
+  if (jQuery.fn.DataTable.isDataTable(tabla)) {
+    dt = jQuery(tabla).DataTable();
+  } else {
+    dt = jQuery(tabla).DataTable({
+      pageLength: 10,
+      lengthMenu: [10, 25, 50, 100],
+      paging: true,
+      info: true,
+      ordering: true,
+      order: [],
+      searching: true,
+      autoWidth: false,
+      dom: '<"top"l>rt<"bottom"ip>',
+      columnDefs: [
+        { orderable: false, targets: [7] }
+      ],
+      language: {
+        lengthMenu: "Ver _MENU_",
+        info: "Mostrando _START_ a _END_ de _TOTAL_",
+        infoEmpty: "Mostrando 0 a 0 de 0",
+        zeroRecords: "No se encontraron resultados",
+        emptyTable: "No hay registros",
+        paginate: {
+          previous: "‹",
+          next: "›"
+        }
+      },
+      initComplete: function () {
+        tabla.classList.remove('opacity-0');
+        tabla.classList.add('dt-ready');
+        this.api().columns.adjust();
       }
-    }
+    });
+  }
 
-  });
+  tabla.classList.remove('opacity-0');
+  tabla.classList.add('dt-ready');
+  dt.columns.adjust();
 
-  /* conectar buscador superior */
   const buscador = document.querySelector(
     'input[placeholder="Buscar por N° PAC, OBAC, descripción…"]'
   );
 
-  if(buscador){
-    buscador.addEventListener('input', function(e){
+  if (buscador && !buscador.dataset.dtBound) {
+    buscador.addEventListener('input', function (e) {
       dt.search(e.target.value).draw();
     });
+    buscador.dataset.dtBound = '1';
   }
 
+  window.addEventListener('resize', function () {
+    dt.columns.adjust();
+  });
 });
 </script>
 

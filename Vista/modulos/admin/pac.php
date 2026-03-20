@@ -33,7 +33,6 @@ function toneEstado($estado)
   if ($e === 'ESTUDIO DE MERCADO') return 'rose';
   return 'slate';
 }
-
 ?>
 
 <?php
@@ -43,9 +42,9 @@ $cntNP = 0;
 $sumP  = 0.0;
 $sumNP = 0.0;
 
-foreach ($pacs as $r) {
-  $pn  = strtoupper(trim((string)($r['pn'] ?? 'NP')));
-  $est = (float)($r['estimado'] ?? 0);
+foreach ($pacs as $row) {
+  $pn  = strtoupper(trim((string)($row['pn'] ?? 'NP')));
+  $est = (float)($row['estimado'] ?? 0);
 
   if ($pn === 'P') {
     $cntP++;
@@ -63,42 +62,48 @@ foreach ($pacs as $r) {
   <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
     <div>
       <div class="text-xs text-slate-500">Administrador</div>
-      <h1 class="text-xl font-semibold tracking-tight leading-tight">PAC</h1>
+      <h1 class="text-xl font-semibold leading-tight tracking-tight">PAC</h1>
       <div class="text-xs text-slate-500">Mantenimiento</div>
     </div>
 
-    <div class="flex flex-col sm:flex-row gap-2">
+    <div class="flex flex-col gap-2 sm:flex-row">
       <div class="relative">
         <input
           placeholder="Buscar por N° PAC, OBAC, descripción…"
-          class="w-full sm:w-80 border border-slate-200 bg-white outline-none focus:ring-2 focus:ring-slate-200 inp" />
-        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">⌕</span>
+          class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 pr-9 text-[13px] text-slate-700 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200 sm:w-80" />
+        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">⌕</span>
       </div>
 
-      <button class="border border-slate-200 bg-white btn btn-ghost">Filtros</button>
+      <button
+        type="button"
+        class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-[13px] text-slate-700 transition hover:bg-slate-50">
+        Filtros
+      </button>
 
-      <button id="btnNew" class="btn btn-primary">+ Nuevo PAC</button>
+      <button
+        id="btnNew"
+        type="button"
+        class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-3 py-2 text-[13px] font-medium text-white transition hover:bg-slate-800">
+        + Nuevo PAC
+      </button>
     </div>
   </div>
 
   <!-- KPIs -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
-    <!-- Total PAC Programables -->
-    <div class="rounded-3xl bg-white border border-slate-200 p-4 shadow-soft">
+  <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="rounded-3xl border border-slate-200 bg-white p-4 shadow-soft">
       <div class="text-xs text-slate-500">Total PAC Programables</div>
       <div class="mt-1 text-2xl font-semibold"><?= (int)$cntP ?></div>
       <div class="mt-2 text-xs text-slate-500">P</div>
     </div>
 
-    <!-- Total PAC No Programables -->
-    <div class="rounded-3xl bg-white border border-slate-200 p-4 shadow-soft">
+    <div class="rounded-3xl border border-slate-200 bg-white p-4 shadow-soft">
       <div class="text-xs text-slate-500">Total PAC No Programables</div>
       <div class="mt-1 text-2xl font-semibold"><?= (int)$cntNP ?></div>
       <div class="mt-2 text-xs text-slate-500">NP</div>
     </div>
 
-    <!-- Estimado total Programables -->
-    <div class="rounded-3xl bg-white border border-slate-200 p-4 shadow-soft">
+    <div class="rounded-3xl border border-slate-200 bg-white p-4 shadow-soft">
       <div class="text-xs text-slate-500">Estimado total Programables</div>
       <div class="mt-1 text-2xl font-semibold">
         S/ <?= number_format($sumP, 2, '.', ',') ?>
@@ -106,8 +111,7 @@ foreach ($pacs as $r) {
       <div class="mt-2 text-xs text-slate-500">Suma de estimados (P)</div>
     </div>
 
-    <!-- Estimado total No Programables -->
-    <div class="rounded-3xl bg-white border border-slate-200 p-4 shadow-soft">
+    <div class="rounded-3xl border border-slate-200 bg-white p-4 shadow-soft">
       <div class="text-xs text-slate-500">Estimado total No Programables</div>
       <div class="mt-1 text-2xl font-semibold">
         S/ <?= number_format($sumNP, 2, '.', ',') ?>
@@ -117,13 +121,13 @@ foreach ($pacs as $r) {
   </div>
 
   <!-- Tabla -->
-  <div class="card border border-slate-200 bg-white shadow-soft overflow-hidden">
-    <div class="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+  <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-soft">
+    <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
       <div class="font-semibold">PAC registrados</div>
     </div>
 
     <div>
-      <table id="tblPac" class="w-full thc tbc">
+      <table id="tblPac" class="w-full table-fixed thc tbc opacity-0">
         <thead class="bg-slate-50 text-slate-600">
           <tr>
             <th class="w-[100px]">N° PAC</th>
@@ -141,76 +145,69 @@ foreach ($pacs as $r) {
           <?php foreach ($pacs as $r): ?>
             <tr class="hover:bg-slate-50">
 
-              <!-- N° PAC -->
               <td class="px-4 py-3 font-semibold text-slate-900">
                 <?= h($r['nopac']) ?>
               </td>
 
-              <!-- P / NP -->
               <td class="px-4 py-3">
                 <?= pill(h($r['pn'] ?? 'NP'), ($r['pn'] ?? 'NP') === 'P' ? 'blue' : 'slate') ?>
               </td>
 
-              <!-- Descripción (3ra columna) -->
-              <td class="px-4 py-3 w-full">
-                <div class="text-slate-900 line-clamp-2" title="<?= h($r['descripcion']) ?>">
+              <td class="w-full px-4 py-3">
+                <div class="line-clamp-2 text-slate-900" title="<?= h($r['descripcion']) ?>">
                   <?= h($r['descripcion']) ?>
                 </div>
               </td>
-              <!-- OBAC -->
+
               <td class="px-4 py-3">
                 <?= pill(h($r['obac_nombre'] ?? '-'), 'blue') ?>
               </td>
 
-              <!-- Fuente -->
               <td class="px-4 py-3">
                 <?= pill(h($r['fuente_nombre'] ?? '-'), 'amber') ?>
               </td>
 
-              <!-- Estado -->
               <td class="px-4 py-3">
                 <?= pill(h($r['estado_nombre'] ?? '-'), toneEstado($r['estado_nombre'] ?? '')) ?>
               </td>
 
-              <!-- Estimado -->
-              <td class="px-4 py-3 whitespace-nowrap">
+              <td class="whitespace-nowrap px-4 py-3">
                 S/ <?= number_format((float)$r['estimado'], 2) ?>
               </td>
 
-              <!-- Acciones -->
               <td class="px-4 py-3">
-                <div class="flex justify-end items-center gap-1.5">
+                <div class="flex items-center justify-end gap-1.5">
 
-                  <!-- Ver detalle -->
                   <a
                     href="<?= BASE_URL ?>/admin/pac_detalle?id=<?= (int)$r['id'] ?>"
-                    class="iconbtn"
+                    class="inline-flex h-[34px] w-[34px] items-center justify-center rounded-xl border border-slate-300/60 bg-white text-slate-600 transition hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200 active:scale-[.98]"
                     title="Ver detalle"
                     aria-label="Ver detalle PAC <?= h($r['nopac']) ?>">
-                    <svg viewBox="0 0 24 24" class="ico" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" class="h-4 w-4" aria-hidden="true">
                       <path fill="currentColor"
                         d="M12 5c-5.5 0-9.5 4.5-10.8 6.2a1.3 1.3 0 0 0 0 1.6C2.5 14.5 6.5 19 12 19s9.5-4.5 10.8-6.2a1.3 1.3 0 0 0 0-1.6C21.5 9.5 17.5 5 12 5zm0 12c-4.4 0-7.7-3.4-9-5 1.3-1.6 4.6-5 9-5s7.7 3.4 9 5c-1.3 1.6-4.6 5-9 5zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm0 4.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
                     </svg>
                   </a>
 
-                  <!-- Menú -->
-                  <div class="actions">
+                  <div class="relative">
                     <button
                       type="button"
-                      class="iconbtn"
+                      class="inline-flex h-[34px] w-[34px] items-center justify-center rounded-xl border border-slate-300/60 bg-white text-slate-600 transition hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200 active:scale-[.98]"
                       data-menu-btn
                       title="Más acciones"
                       aria-label="Más acciones PAC <?= h($r['nopac']) ?>">
-                      <svg viewBox="0 0 24 24" class="ico" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" class="h-4 w-4" aria-hidden="true">
                         <path fill="currentColor"
                           d="M6 10.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm6 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm6 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z" />
                       </svg>
                     </button>
 
-                    <div class="menu hidden" data-menu>
+                    <div
+                      class="absolute right-0 top-[42px] z-30 hidden min-w-[170px] rounded-2xl border border-slate-200 bg-white p-1.5 shadow-[0_20px_45px_rgba(15,23,42,.12)]"
+                      data-menu>
                       <button
                         type="button"
-                        class="menu-item"
+                        class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13px] font-semibold text-slate-900 transition hover:bg-slate-100"
                         onclick="openEdit(
                           <?= (int)$r['id'] ?>,
                           '<?= h($r['nopac']) ?>',
@@ -237,7 +234,7 @@ foreach ($pacs as $r) {
 
                       <button
                         type="button"
-                        class="menu-item danger"
+                        class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13px] font-semibold text-rose-600 transition hover:bg-rose-50"
                         onclick="openDelete(<?= (int)$r['id'] ?>, '<?= h($r['nopac']) ?>')">
                         🗑️ Eliminar
                       </button>
@@ -256,31 +253,30 @@ foreach ($pacs as $r) {
               </td>
             </tr>
           <?php endif; ?>
-
         </tbody>
       </table>
     </div>
   </div>
 
   <!-- Modal (Nuevo/Editar) -->
-  <div id="modalForm" class="fixed inset-0 hidden items-center justify-center p-4 z-50">
+  <div id="modalForm" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
     <div class="absolute inset-0 bg-slate-900/30" onclick="closeModal('modalForm')"></div>
 
-    <div class="relative w-full max-w-5xl h-[90vh] rounded-[28px] border border-slate-200 bg-white shadow-soft overflow-hidden flex flex-col">
+    <div class="relative flex h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-soft">
 
       <!-- Header -->
-      <div class="shrink-0 px-5 py-4 border-b border-slate-200 bg-white">
+      <div class="shrink-0 border-b border-slate-200 bg-white px-5 py-4">
         <div class="flex items-start justify-between gap-4">
           <div class="min-w-0">
-            <div class="text-xs text-slate-400 uppercase tracking-wide">PAC</div>
-            <div id="modalTitle" class="text-[32px] leading-none font-semibold text-slate-900 mt-1">
+            <div class="text-xs uppercase tracking-wide text-slate-400">PAC</div>
+            <div id="modalTitle" class="mt-1 text-[32px] font-semibold leading-none text-slate-900">
               Nuevo PAC
             </div>
           </div>
 
           <button
             type="button"
-            class="rounded-full border border-slate-200 bg-white px-5 py-2 text-sm text-slate-700 hover:bg-slate-50"
+            class="rounded-full border border-slate-200 bg-white px-5 py-2 text-sm text-slate-700 transition hover:bg-slate-50"
             onclick="closeModal('modalForm')">
             Cerrar
           </button>
@@ -289,10 +285,9 @@ foreach ($pacs as $r) {
 
       <!-- Body -->
       <div class="flex-1 overflow-y-auto px-5 py-5">
-        <form id="pacForm" class="grid grid-cols-1 md:grid-cols-6 gap-x-4 gap-y-5" onsubmit="return false;">
+        <form id="pacForm" class="grid grid-cols-1 gap-x-4 gap-y-5 md:grid-cols-6" onsubmit="return false;">
           <input type="hidden" id="pac_id" value="">
 
-          <!-- DATOS PRINCIPALES -->
           <div class="md:col-span-6">
             <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
               Datos principales
@@ -300,25 +295,25 @@ foreach ($pacs as $r) {
           </div>
 
           <div class="md:col-span-2">
-            <label class="block text-xs text-slate-500 mb-1.5">N° PAC</label>
+            <label class="mb-1.5 block text-xs text-slate-500">N° PAC</label>
             <input
               id="pac_nopac"
-              class="field"
+              class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200"
               placeholder="Ej: 0043"
               autocomplete="off">
           </div>
 
           <div class="md:col-span-1">
-            <label class="block text-xs text-slate-500 mb-1.5">P/NP</label>
-            <select id="pac_pn" class="field">
+            <label class="mb-1.5 block text-xs text-slate-500">P/NP</label>
+            <select id="pac_pn" class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
               <option value="P">P</option>
               <option value="NP">NP</option>
             </select>
           </div>
 
           <div class="md:col-span-1">
-            <label class="block text-xs text-slate-500 mb-1.5">Estado</label>
-            <select id="pac_estado" class="field">
+            <label class="mb-1.5 block text-xs text-slate-500">Estado</label>
+            <select id="pac_estado" class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
               <option value="">Seleccionar...</option>
               <?php foreach ($estados as $es): ?>
                 <option value="<?= (int)$es['id'] ?>"><?= h($es['nombre']) ?></option>
@@ -327,8 +322,8 @@ foreach ($pacs as $r) {
           </div>
 
           <div class="md:col-span-2">
-            <label class="block text-xs text-slate-500 mb-1.5">Fuente</label>
-            <select id="pac_fuente" class="field">
+            <label class="mb-1.5 block text-xs text-slate-500">Fuente</label>
+            <select id="pac_fuente" class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
               <option value="">Seleccionar...</option>
               <?php foreach ($fuentes as $f): ?>
                 <option value="<?= (int)$f['id'] ?>"><?= h($f['nombre']) ?></option>
@@ -338,7 +333,7 @@ foreach ($pacs as $r) {
 
           <div class="md:col-span-6">
             <div class="flex items-end justify-between gap-2">
-              <label class="block text-xs text-slate-500 mb-1.5">Descripción</label>
+              <label class="mb-1.5 block text-xs text-slate-500">Descripción</label>
               <div class="text-[11px] text-slate-400">
                 <span id="descCount">0</span>/400
               </div>
@@ -347,11 +342,10 @@ foreach ($pacs as $r) {
               id="pac_desc"
               rows="3"
               maxlength="400"
-              class="field min-h-[110px] resize-none"
+              class="min-h-[110px] w-full resize-none rounded-2xl border border-slate-200 bg-white px-3.5 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200"
               placeholder="Describe el requerimiento..."></textarea>
           </div>
 
-          <!-- CLASIFICACIÓN -->
           <div class="md:col-span-6 pt-1">
             <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
               Clasificación
@@ -359,8 +353,8 @@ foreach ($pacs as $r) {
           </div>
 
           <div class="md:col-span-2">
-            <label class="block text-xs text-slate-500 mb-1.5">OBAC</label>
-            <select id="pac_obac" class="field">
+            <label class="mb-1.5 block text-xs text-slate-500">OBAC</label>
+            <select id="pac_obac" class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
               <option value="">Seleccionar...</option>
               <?php foreach ($obacs as $o): ?>
                 <option value="<?= (int)$o['id'] ?>"><?= h($o['nombre']) ?></option>
@@ -369,8 +363,8 @@ foreach ($pacs as $r) {
           </div>
 
           <div class="md:col-span-2">
-            <label class="block text-xs text-slate-500 mb-1.5">Selección</label>
-            <select id="pac_seleccion" class="field">
+            <label class="mb-1.5 block text-xs text-slate-500">Selección</label>
+            <select id="pac_seleccion" class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
               <option value="">Seleccionar...</option>
               <?php foreach ($selecciones as $s): ?>
                 <option value="<?= (int)$s['id'] ?>"><?= h($s['nombre']) ?></option>
@@ -379,8 +373,8 @@ foreach ($pacs as $r) {
           </div>
 
           <div class="md:col-span-2">
-            <label class="block text-xs text-slate-500 mb-1.5">Lista</label>
-            <select id="pac_lista" class="field">
+            <label class="mb-1.5 block text-xs text-slate-500">Lista</label>
+            <select id="pac_lista" class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
               <option value="">Seleccionar...</option>
               <?php foreach ($listas as $l): ?>
                 <option value="<?= (int)$l['id'] ?>"><?= h($l['nombre']) ?></option>
@@ -389,8 +383,8 @@ foreach ($pacs as $r) {
           </div>
 
           <div class="md:col-span-3">
-            <label class="block text-xs text-slate-500 mb-1.5">Modalidad</label>
-            <select id="pac_modalidad" class="field">
+            <label class="mb-1.5 block text-xs text-slate-500">Modalidad</label>
+            <select id="pac_modalidad" class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
               <option value="">Seleccionar...</option>
               <?php foreach ($modalidades as $m): ?>
                 <option value="<?= (int)$m['id'] ?>"><?= h($m['nombre']) ?></option>
@@ -399,8 +393,8 @@ foreach ($pacs as $r) {
           </div>
 
           <div class="md:col-span-3">
-            <label class="block text-xs text-slate-500 mb-1.5">Tipo mercado</label>
-            <select id="pac_tipo_mercado" class="field">
+            <label class="mb-1.5 block text-xs text-slate-500">Tipo mercado</label>
+            <select id="pac_tipo_mercado" class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
               <option value="">Seleccionar...</option>
               <?php foreach ($tipos_mercado as $t): ?>
                 <option value="<?= (int)$t['id'] ?>"><?= h($t['nombre']) ?></option>
@@ -409,8 +403,8 @@ foreach ($pacs as $r) {
           </div>
 
           <div class="md:col-span-3">
-            <label class="block text-xs text-slate-500 mb-1.5">Rubro</label>
-            <select id="pac_rubro" class="field">
+            <label class="mb-1.5 block text-xs text-slate-500">Rubro</label>
+            <select id="pac_rubro" class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
               <option value="">Seleccionar...</option>
               <?php foreach ($rubros as $rubro): ?>
                 <option value="<?= (int)$rubro['id'] ?>"><?= h($rubro['nombre']) ?></option>
@@ -418,7 +412,6 @@ foreach ($pacs as $r) {
             </select>
           </div>
 
-          <!-- ORGANIZACIÓN -->
           <div class="md:col-span-6 pt-1">
             <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
               Organización
@@ -426,8 +419,8 @@ foreach ($pacs as $r) {
           </div>
 
           <div class="md:col-span-3">
-            <label class="block text-xs text-slate-500 mb-1.5">Ejecución</label>
-            <select id="pac_ejecucion" class="field">
+            <label class="mb-1.5 block text-xs text-slate-500">Ejecución</label>
+            <select id="pac_ejecucion" class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
               <option value="">Seleccionar...</option>
               <?php foreach ($entidades as $e): ?>
                 <option value="<?= (int)$e['id'] ?>"><?= h($e['nombre']) ?></option>
@@ -436,8 +429,8 @@ foreach ($pacs as $r) {
           </div>
 
           <div class="md:col-span-3">
-            <label class="block text-xs text-slate-500 mb-1.5">Dependencia</label>
-            <select id="pac_dependencia" class="field">
+            <label class="mb-1.5 block text-xs text-slate-500">Dependencia</label>
+            <select id="pac_dependencia" class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
               <option value="">Seleccionar...</option>
               <?php foreach ($dependencias as $d): ?>
                 <option value="<?= (int)$d['id'] ?>"><?= h($d['nombre']) ?></option>
@@ -445,7 +438,6 @@ foreach ($pacs as $r) {
             </select>
           </div>
 
-          <!-- PROGRAMACIÓN Y MONTOS -->
           <div class="md:col-span-6 pt-1">
             <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
               Programación y montos
@@ -453,8 +445,8 @@ foreach ($pacs as $r) {
           </div>
 
           <div class="md:col-span-2">
-            <label class="block text-xs text-slate-500 mb-1.5">Mes convocatoria</label>
-            <select id="pac_mes_convocatoria" class="field">
+            <label class="mb-1.5 block text-xs text-slate-500">Mes convocatoria</label>
+            <select id="pac_mes_convocatoria" class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
               <option value="">Seleccionar...</option>
               <option value="ENERO">ENERO</option>
               <option value="FEBRERO">FEBRERO</option>
@@ -472,8 +464,8 @@ foreach ($pacs as $r) {
           </div>
 
           <div class="md:col-span-2">
-            <label class="block text-xs text-slate-500 mb-1.5">Periodo</label>
-            <select id="pac_periodo" class="field">
+            <label class="mb-1.5 block text-xs text-slate-500">Periodo</label>
+            <select id="pac_periodo" class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
               <option value="">Seleccionar...</option>
               <?php foreach ($periodos as $p): ?>
                 <option value="<?= (int)$p['id'] ?>"><?= h($p['nombre']) ?></option>
@@ -482,25 +474,25 @@ foreach ($pacs as $r) {
           </div>
 
           <div class="md:col-span-2">
-            <label class="block text-xs text-slate-500 mb-1.5">Cantidad</label>
+            <label class="mb-1.5 block text-xs text-slate-500">Cantidad</label>
             <input
               id="pac_cantidad"
               type="number"
               min="0"
               step="1"
-              class="field"
+              class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200"
               placeholder="0">
           </div>
 
           <div class="md:col-span-3">
-            <label class="block text-xs text-slate-500 mb-1.5">Estimado (S/.)</label>
+            <label class="mb-1.5 block text-xs text-slate-500">Estimado (S/.)</label>
             <input
               id="pac_estimado"
               type="number"
               min="0"
               step="0.01"
               inputmode="decimal"
-              class="field"
+              class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200"
               placeholder="Ej: 90000.00"
               autocomplete="off">
             <div class="mt-1 text-[11px] text-slate-400">
@@ -509,14 +501,14 @@ foreach ($pacs as $r) {
           </div>
 
           <div class="md:col-span-3">
-            <label class="block text-xs text-slate-500 mb-1.5">Certificado</label>
+            <label class="mb-1.5 block text-xs text-slate-500">Certificado</label>
             <input
               id="pac_certificado"
               type="number"
               min="0"
               step="0.01"
               inputmode="decimal"
-              class="field"
+              class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200"
               placeholder="Ej: 45000.00"
               autocomplete="off">
           </div>
@@ -524,11 +516,11 @@ foreach ($pacs as $r) {
       </div>
 
       <!-- Footer -->
-      <div class="shrink-0 px-5 py-4 border-t border-slate-200 bg-white">
+      <div class="shrink-0 border-t border-slate-200 bg-white px-5 py-4">
         <div class="flex items-center justify-end gap-2">
           <button
             type="button"
-            class="rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm hover:bg-slate-50"
+            class="rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm transition hover:bg-slate-50"
             onclick="closeModal('modalForm')">
             Cancelar
           </button>
@@ -536,7 +528,7 @@ foreach ($pacs as $r) {
           <button
             id="btnSavePac"
             type="button"
-            class="rounded-2xl bg-slate-900 text-white px-5 py-2.5 text-sm font-medium hover:bg-slate-800"
+            class="rounded-2xl bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
             onclick="fakeSave()">
             Guardar
           </button>
@@ -546,23 +538,32 @@ foreach ($pacs as $r) {
   </div>
 
   <!-- Modal delete -->
-  <div id="modalDelete" class="fixed inset-0 hidden items-center justify-center p-4 z-50">
+  <div id="modalDelete" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
     <div class="absolute inset-0 bg-slate-900/30" onclick="closeModal('modalDelete')"></div>
 
     <div class="relative w-full max-w-md rounded-3xl border border-slate-200 glass shadow-soft">
-      <div class="px-5 py-4 border-b border-slate-200">
+      <div class="border-b border-slate-200 px-5 py-4">
         <div class="text-xs text-slate-500">Eliminar</div>
         <div class="text-lg font-semibold">Confirmación</div>
       </div>
+
       <div class="p-5 text-sm text-slate-700">
-        ¿Eliminar el PAC <span id="delPac" class="font-semibold"></span>? (solo maqueta)
+        ¿Eliminar el PAC <span id="delPac" class="font-semibold"></span>?
       </div>
-      <div class="p-5 pt-0 flex justify-end gap-2">
-        <button class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm hover:bg-slate-50"
-          onclick="closeModal('modalDelete')">Cancelar</button>
-        <button class="rounded-2xl border border-rose-200 bg-rose-50 text-rose-700 px-4 py-2.5 text-sm hover:bg-rose-100"
+
+      <div class="flex justify-end gap-2 p-5 pt-0">
+        <button
+          type="button"
+          class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm transition hover:bg-slate-50"
+          onclick="closeModal('modalDelete')">
+          Cancelar
+        </button>
+
+        <button
+          type="button"
+          class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm text-rose-700 transition hover:bg-rose-100"
           onclick="fakeDelete()">
-          Eliminar (maqueta)
+          Eliminar
         </button>
       </div>
     </div>
@@ -570,24 +571,6 @@ foreach ($pacs as $r) {
 </div>
 
 <style>
-  .pac-page .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: .35rem;
-    padding: .25rem .55rem;
-    border-radius: 999px;
-    font-size: 12px;
-    border: 1px solid rgba(148, 163, 184, .45);
-    background: rgba(255, 255, 255, .85);
-    color: rgb(71, 85, 105);
-    max-width: 100%;
-  }
-
-  .pac-page .chip--muted span {
-    color: rgb(15, 23, 42);
-    font-weight: 600;
-  }
-
   .pac-page .glass {
     background: rgba(255, 255, 255, .78);
     backdrop-filter: blur(10px);
@@ -597,151 +580,13 @@ foreach ($pacs as $r) {
     box-shadow: 0 10px 24px rgba(15, 23, 42, .08);
   }
 
-  .pac-page .card {
-    border-radius: 14px;
-  }
-
-  .pac-page .btn {
-    border-radius: 12px;
-    padding: 8px 12px;
-    font-size: 13px;
-  }
-
-  .pac-page .btn-primary {
-    background: #0f172a;
-    color: #fff;
-  }
-
-  .pac-page .btn-primary:hover {
-    background: #111827;
-  }
-
-  .pac-page .btn-ghost:hover {
-    background: #f8fafc;
-  }
-
-  .pac-page .inp {
-    border-radius: 14px;
-    padding: 9px 12px;
-    font-size: 13px;
-  }
-
-  .pac-page .iconbtn {
-    width: 34px;
-    height: 34px;
-    border-radius: 12px;
-    border: 1px solid rgba(148, 163, 184, .45);
-    background: rgba(255, 255, 255, .9);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: rgb(71, 85, 105);
-    transition: background .15s ease, border-color .15s ease, color .15s ease, transform .05s ease;
-  }
-
-  .pac-page .iconbtn:hover {
-    background: rgb(248, 250, 252);
-    border-color: rgba(148, 163, 184, .7);
-    color: rgb(15, 23, 42);
-  }
-
-  .pac-page .iconbtn:active {
-    transform: scale(.98);
-  }
-
-  .pac-page .iconbtn:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(148, 163, 184, .35);
-  }
-
-  .pac-page .iconbtn .ico {
-    width: 16px;
-    height: 16px;
-    display: block;
-  }
-
-  .pac-page .iconbtn--danger {
-    color: rgb(71, 85, 105);
-  }
-
-  .pac-page .iconbtn--danger:hover {
-    background: rgba(244, 63, 94, .08);
-    border-color: rgba(244, 63, 94, .35);
-    color: rgb(190, 18, 60);
-  }
-
-  .pac-page .field {
-    width: 100%;
-    height: 44px;
-    border-radius: 18px;
-    border: 1px solid rgb(226, 232, 240);
-    background: #fff;
-    padding: 0 14px;
-    font-size: 14px;
-    color: rgb(15, 23, 42);
-    outline: none;
-    transition: .15s ease;
-  }
-
-  .pac-page .field:focus {
-    border-color: rgb(148, 163, 184);
-    box-shadow: 0 0 0 3px rgba(148, 163, 184, .18);
-  }
-
-  .pac-page textarea.field {
-    height: auto;
-    padding-top: 12px;
-    padding-bottom: 12px;
-  }
-
-  .pac-page .actions {
-    position: relative;
-  }
-
-  .pac-page .menu {
-    position: absolute;
-    right: 0;
-    top: 42px;
-    min-width: 170px;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    box-shadow: 0 20px 45px rgba(15, 23, 42, .12);
-    padding: 6px;
-    z-index: 30;
-  }
-
-  .pac-page .menu.hidden {
-    display: none;
-  }
-
-  .pac-page .menu-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    padding: 10px 12px;
-    border-radius: 12px;
-    font-size: 13px;
-    font-weight: 700;
-    color: #0f172a;
-    text-decoration: none;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    text-align: left;
-  }
-
-  .pac-page .menu-item:hover {
-    background: #f1f5f9;
-  }
-
-  .pac-page .menu-item.danger {
-    color: #e11d48;
-  }
-
   .pac-page #modalForm .overflow-y-auto {
     scrollbar-gutter: stable;
+  }
+
+  .pac-page .dt-ready {
+    opacity: 1 !important;
+    transition: opacity .15s ease;
   }
 </style>
 
@@ -753,7 +598,10 @@ foreach ($pacs as $r) {
     if (!el) return;
     el.classList.remove('hidden');
     el.classList.add('flex');
-    if (id === 'modalForm') refreshSummary();
+
+    if (id === 'modalForm') {
+      refreshSummary();
+    }
   }
 
   function closeModal(id) {
@@ -766,6 +614,7 @@ foreach ($pacs as $r) {
   function fmtMoney(n) {
     const v = Number(String(n ?? '').replace(/,/g, ''));
     if (Number.isNaN(v)) return 'S/ 0.00';
+
     return 'S/ ' + v.toLocaleString('es-PE', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
@@ -857,6 +706,8 @@ foreach ($pacs as $r) {
     cantidad,
     rubro
   ) {
+    $('modalTitle').textContent = 'Editar PAC';
+
     $('pac_id').value = id ?? '';
     $('pac_nopac').value = nopac ?? '';
     $('pac_pn').value = pn ?? 'NP';
@@ -876,18 +727,20 @@ foreach ($pacs as $r) {
     $('pac_tipo_mercado').value = tipo_mercado ?? '';
     $('pac_cantidad').value = cantidad ?? '';
     $('pac_rubro').value = rubro ?? '';
+
     openModal('modalForm');
   }
   window.openEdit = openEdit;
 
   function openDelete(id, nopac) {
-    $('delPac').textContent = (nopac ?? '-') + ' (ID ' + (id ?? '-') + ')';
+    $('delPac').textContent = nopac ?? '';
+    $('modalDelete').dataset.id = String(id ?? '');
     openModal('modalDelete');
   }
   window.openDelete = openDelete;
 
   async function fakeSave() {
-    const btn = document.getElementById('btnSavePac');
+    const btn = $('btnSavePac');
     const textoOriginal = btn ? btn.textContent : 'Guardar';
 
     if (btn) {
@@ -896,25 +749,25 @@ foreach ($pacs as $r) {
     }
 
     const fd = new FormData();
-    fd.append('id', document.getElementById('pac_id').value);
-    fd.append('nopac', document.getElementById('pac_nopac').value.trim());
-    fd.append('pn', document.getElementById('pac_pn').value);
-    fd.append('estado', document.getElementById('pac_estado').value);
-    fd.append('descripcion', document.getElementById('pac_desc').value.trim());
-    fd.append('obac', document.getElementById('pac_obac').value);
-    fd.append('seleccion', document.getElementById('pac_seleccion').value);
-    fd.append('fuente', document.getElementById('pac_fuente').value);
-    fd.append('estimado', document.getElementById('pac_estimado').value);
-    fd.append('periodo', document.getElementById('pac_periodo').value);
-    fd.append('lista', document.getElementById('pac_lista').value);
-    fd.append('ejecucion', document.getElementById('pac_ejecucion').value);
-    fd.append('modalidad', document.getElementById('pac_modalidad').value);
-    fd.append('dependencia', document.getElementById('pac_dependencia').value);
-    fd.append('mesconvoca', document.getElementById('pac_mes_convocatoria').value);
-    fd.append('certificado', document.getElementById('pac_certificado').value);
-    fd.append('tipo_mercado', document.getElementById('pac_tipo_mercado').value);
-    fd.append('cantidad', document.getElementById('pac_cantidad').value);
-    fd.append('rubro', document.getElementById('pac_rubro').value);
+    fd.append('id', $('pac_id').value);
+    fd.append('nopac', $('pac_nopac').value);
+    fd.append('pn', $('pac_pn').value);
+    fd.append('estado', $('pac_estado').value);
+    fd.append('descripcion', $('pac_desc').value);
+    fd.append('obac', $('pac_obac').value);
+    fd.append('seleccion', $('pac_seleccion').value);
+    fd.append('fuente', $('pac_fuente').value);
+    fd.append('estimado', $('pac_estimado').value);
+    fd.append('periodo', $('pac_periodo').value);
+    fd.append('lista', $('pac_lista').value);
+    fd.append('ejecucion', $('pac_ejecucion').value);
+    fd.append('modalidad', $('pac_modalidad').value);
+    fd.append('dependencia', $('pac_dependencia').value);
+    fd.append('mesconvoca', $('pac_mes_convocatoria').value);
+    fd.append('certificado', $('pac_certificado').value);
+    fd.append('tipo_mercado', $('pac_tipo_mercado').value);
+    fd.append('cantidad', $('pac_cantidad').value);
+    fd.append('rubro', $('pac_rubro').value);
 
     try {
       const resp = await fetch('<?= BASE_URL ?>/admin/pac_guardar', {
@@ -964,7 +817,9 @@ foreach ($pacs as $r) {
   window.fakeDelete = fakeDelete;
 
   function closeAllMenus() {
-    document.querySelectorAll('[data-menu]').forEach(m => m.classList.add('hidden'));
+    document.querySelectorAll('[data-menu]').forEach((m) => {
+      m.classList.add('hidden');
+    });
   }
 
   document.addEventListener('click', (e) => {
@@ -975,7 +830,7 @@ foreach ($pacs as $r) {
       e.preventDefault();
       e.stopPropagation();
 
-      const wrap = btn.closest('.actions');
+      const wrap = btn.closest('.relative');
       const m = wrap?.querySelector('[data-menu]');
       const wasOpen = m && !m.classList.contains('hidden');
 
