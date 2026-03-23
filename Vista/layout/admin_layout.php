@@ -1,4 +1,5 @@
 <?php
+// Vista/layout/admin_layout.php
 $titulo = $titulo ?? 'Admin';
 $active = $active ?? '';
 $adminUser = $_SESSION['admin_user'] ?? 'Admin';
@@ -35,6 +36,10 @@ $hrefLogout    = "/public/admin/logout";
     <!-- DataTables CSS -->
     <link rel="stylesheet"
         href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css" />
+
+    <!-- DataTables Responsive CSS -->
+    <link rel="stylesheet"
+        href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css" />
 
     <style>
         /* ===== Compact default ===== */

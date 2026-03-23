@@ -11,6 +11,9 @@
 <!-- DataTables -->
 <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
 
+<!-- DataTables Responsive -->
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+
 <script>
 /* ===== TOASTER GLOBAL ===== */
 
@@ -81,7 +84,6 @@ function showToast(message, type = 'info', title = '') {
   btnClose?.addEventListener('click', closeToast);
 
   container.appendChild(wrap);
-
   setTimeout(closeToast, duration);
 }
 
@@ -89,50 +91,39 @@ window.showToast = showToast;
 
 /* ===== SIDEBAR ===== */
 
-(function(){
+(function () {
+  const btn = document.getElementById('btnToggle');
+  const overlay = document.getElementById('overlay');
 
-const btn = document.getElementById('btnToggle');
-const overlay = document.getElementById('overlay');
+  const isDesktop = () => window.innerWidth >= 1024;
 
-const isDesktop = () => window.innerWidth >= 1024;
+  if (!btn) return;
 
-if(!btn) return;
+  btn.addEventListener('click', () => {
+    if (isDesktop()) {
+      document.body.classList.toggle('sb-rail');
+    } else {
+      document.body.classList.toggle('sb-open');
+      overlay?.classList.toggle('hidden');
+    }
+  });
 
-btn.addEventListener('click', () => {
-
-  if(isDesktop()){
-    document.body.classList.toggle('sb-rail');
-  }
-  else{
-    document.body.classList.toggle('sb-open');
-    overlay?.classList.toggle('hidden');
-  }
-
-});
-
-overlay?.addEventListener('click', () => {
-
-  document.body.classList.remove('sb-open');
-  overlay.classList.add('hidden');
-
-});
-
-window.addEventListener('resize', () => {
-
-  if(isDesktop()){
-
+  overlay?.addEventListener('click', () => {
     document.body.classList.remove('sb-open');
     overlay?.classList.add('hidden');
+  });
 
-  }else{
-
-    document.body.classList.remove('sb-rail');
-
-  }
-
-});
-
+  window.addEventListener('resize', () => {
+    if (isDesktop()) {
+      document.body.classList.remove('sb-open');
+      overlay?.classList.add('hidden');
+    } else {
+      document.body.classList.remove('sb-rail');
+    }
+  });
 })();
+
+/* ===== DATATABLE GLOBAL ===== */
 
 /* ===== DATATABLE GLOBAL ===== */
 
@@ -156,9 +147,11 @@ document.addEventListener('DOMContentLoaded', function () {
       order: [],
       searching: true,
       autoWidth: false,
+      scrollX: true,
+      scrollCollapse: true,
       dom: '<"top"l>rt<"bottom"ip>',
       columnDefs: [
-        { orderable: false, targets: [7] }
+        { targets: 7, orderable: false, searchable: false }
       ],
       language: {
         lengthMenu: "Ver _MENU_",
@@ -166,6 +159,7 @@ document.addEventListener('DOMContentLoaded', function () {
         infoEmpty: "Mostrando 0 a 0 de 0",
         zeroRecords: "No se encontraron resultados",
         emptyTable: "No hay registros",
+        search: "Buscar:",
         paginate: {
           previous: "‹",
           next: "›"
@@ -183,9 +177,7 @@ document.addEventListener('DOMContentLoaded', function () {
   tabla.classList.add('dt-ready');
   dt.columns.adjust();
 
-  const buscador = document.querySelector(
-    'input[placeholder="Buscar por N° PAC, OBAC, descripción…"]'
-  );
+  const buscador = document.querySelector('input[placeholder="Buscar por N° PAC, OBAC, descripción…"]');
 
   if (buscador && !buscador.dataset.dtBound) {
     buscador.addEventListener('input', function (e) {

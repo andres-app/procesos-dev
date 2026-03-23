@@ -126,18 +126,18 @@ foreach ($pacs as $row) {
       <div class="font-semibold">PAC registrados</div>
     </div>
 
-    <div>
-      <table id="tblPac" class="w-full table-fixed thc tbc opacity-0">
+    <div class="w-full overflow-x-auto">
+      <table id="tblPac" class="display w-full thc tbc opacity-0">
         <thead class="bg-slate-50 text-slate-600">
           <tr>
-            <th class="w-[100px]">N° PAC</th>
-            <th class="w-[80px]">P/NP</th>
-            <th class="w-[400px]">Descripción</th>
-            <th class="w-[150px]">OBAC</th>
-            <th class="w-[150px]">Fuente</th>
-            <th class="w-[150px]">Estado</th>
-            <th class="w-[120px]">Estimado</th>
-            <th class="w-[120px] text-right">Acciones</th>
+            <th>N° PAC</th>
+            <th>P/NP</th>
+            <th>Descripción</th>
+            <th>OBAC</th>
+            <th>Fuente</th>
+            <th>Estado</th>
+            <th>Estimado</th>
+            <th class="text-right">Acciones</th>
           </tr>
         </thead>
 
@@ -587,6 +587,70 @@ foreach ($pacs as $row) {
   .pac-page .dt-ready {
     opacity: 1 !important;
     transition: opacity .15s ease;
+  }
+
+  .pac-page table.dataTable {
+    width: 100% !important;
+    border-collapse: separate !important;
+    border-spacing: 0;
+  }
+
+  .pac-page table.dataTable thead th,
+  .pac-page table.dataTable tbody td {
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  .pac-page table.dataTable tbody td:nth-child(3) {
+    white-space: normal;
+    min-width: 320px;
+  }
+
+  .pac-page .dataTables_scrollHead,
+  .pac-page .dataTables_scrollBody {
+    border: 0 !important;
+  }
+
+  .pac-page .dataTables_wrapper .dataTables_filter input,
+  .pac-page .dataTables_wrapper .dataTables_length select {
+    max-width: 100%;
+  }
+
+  .pac-page .dataTables_wrapper .dataTables_filter,
+  .pac-page .dataTables_wrapper .dataTables_length {
+    width: 100%;
+  }
+
+  .pac-page .dataTables_wrapper .dataTables_filter label,
+  .pac-page .dataTables_wrapper .dataTables_length label {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    width: 100%;
+  }
+
+  @media (max-width: 640px) {
+    .pac-page .dataTables_wrapper {
+      padding: 10px;
+    }
+
+    .pac-page .dataTables_wrapper .dataTables_filter input {
+      width: 100% !important;
+      margin-left: 0 !important;
+    }
+
+    .pac-page .dataTables_wrapper .dataTables_length,
+    .pac-page .dataTables_wrapper .dataTables_filter,
+    .pac-page .dataTables_wrapper .dataTables_info,
+    .pac-page .dataTables_wrapper .dataTables_paginate {
+      text-align: left !important;
+      float: none !important;
+    }
+
+    .pac-page .dataTables_wrapper .dataTables_paginate {
+      justify-content: flex-start !important;
+    }
   }
 </style>
 
