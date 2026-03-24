@@ -86,7 +86,7 @@ if ($module === 'admin') {
 
     /*
     |--------------------------------------------------------------------------
-    | EXPORTS (ADMIN) - MAQUETA
+    | EXPORTS (ADMIN)
     | URLs:
     |   /admin/export_excel/estado
     |   /admin/export_pdf/estado
@@ -134,15 +134,27 @@ if ($module === 'admin') {
         exit;
     }
 
-    if ($subRoute === 'pac_actividad_guardar') {
-        require_once __DIR__ . '/../Controlador/CtrActividadPac.php';
-        CtrPacActividad::guardar();
-        exit;
-    }
-
     if ($subRoute === 'pac_eliminar') {
         require_once __DIR__ . '/../Controlador/CtrPacAdmin.php';
         CtrPacAdmin::eliminar();
+        exit;
+    }
+
+    if ($subRoute === 'pac_plantilla_csv') {
+        require_once __DIR__ . '/../Controlador/CtrPacAdmin.php';
+        CtrPacAdmin::descargarPlantillaCsv();
+        exit;
+    }
+
+    if ($subRoute === 'pac_importar_csv') {
+        require_once __DIR__ . '/../Controlador/CtrPacAdmin.php';
+        CtrPacAdmin::importarCsv();
+        exit;
+    }
+
+    if ($subRoute === 'pac_actividad_guardar') {
+        require_once __DIR__ . '/../Controlador/CtrActividadPac.php';
+        CtrPacActividad::guardar();
         exit;
     }
 

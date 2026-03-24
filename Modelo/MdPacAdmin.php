@@ -582,14 +582,14 @@ class MdPacAdmin
         }
 
         return [
-            'anio'                => $anio,
-            'fases_orden'         => $fasesOrden,
-            'modalidades_por_fase'=> $modalidadesPorFase,
-            'obacs_orden'         => $obacsOrden,
-            'detalle'             => $detalle,
-            'subtotales'          => $subtotales,
-            'totales'             => $totales,
-            'valor_estimado_obac' => $valorEstimadoPorObac,
+            'anio'                 => $anio,
+            'fases_orden'          => $fasesOrden,
+            'modalidades_por_fase' => $modalidadesPorFase,
+            'obacs_orden'          => $obacsOrden,
+            'detalle'              => $detalle,
+            'subtotales'           => $subtotales,
+            'totales'              => $totales,
+            'valor_estimado_obac'  => $valorEstimadoPorObac,
         ];
     }
 
@@ -656,5 +656,502 @@ class MdPacAdmin
         }
 
         return null;
+    }
+
+    public static function importarDesdeCsv(string $tmpPath): array
+    {
+        $db = db();
+
+        $fp = fopen($tmpPath, 'r');
+        if (!$fp) {
+            throw new Exception('No se pudo abrir el archivo CSV.');
+        }
+
+        $insertados = 0;
+        $omitidos   = 0;
+        $errores    = [];
+        $filaNumero = 0;
+
+        try {
+            $delimiter = self::detectarSeparadorCsv($tmpPath);
+
+            $db->beginTransaction();
+
+            while (($row = fgetcsv($fp, 0, $delimiter)) !== false) {
+                $filaNumero++;
+
+                // limpiar BOM en primera celda
+                if ($filaNumero === 1 && isset($row[0])) {
+                    $row[0] = preg_replace('/^\xEF\xBB\xBF/', '', (string)$row[0]);
+                }
+
+                // Ignorar cabecera
+                if ($filaNumero === 1) {
+                    continue;
+                }
+
+                $row = array_map(static function ($v) {
+                    return trim((string)$v);
+                }, $row);
+
+                // Ignorar filas vacías
+                if (count(array_filter($row, static fn($v) => $v !== '')) === 0) {
+                    $omitidos++;
+                    continue;
+                }
+
+                // Completar columnas faltantes
+                $row = array_pad($row, 18, '');
+
+                [
+                    $nopac,
+                    $pn,
+                    $descripcion,
+                    $obacTexto,
+                    $fuenteTexto,
+                    $estadoTexto,
+                    $estimado,
+                    $seleccionTexto,
+                    $listaTexto,
+                    $modalidadTexto,
+                    $tipoMercadoTexto,
+                    $rubroTexto,
+                    $ejecucionTexto,
+                    $dependenciaTexto,
+                    $mesconvoca,
+                    $periodoTexto,
+                    $cantidad,
+                    $certificado
+                ] = $row;
+
+                $nopac       = trim($nopac);
+                $descripcion = trim($descripcion);
+                $pn          = strtoupper(trim($pn ?: 'NP'));
+
+                if ($nopac === '' || $descripcion === '') {
+                    $errores[] = "Fila {$filaNumero}: nopac y descripción son obligatorios.";
+                    $omitidos++;
+                    continue;
+                }
+
+                if (!in_array($pn, ['P', 'NP'], true)) {
+                    $pn = 'NP';
+                }
+
+                $estimado    = self::normalizarDecimal($estimado);
+                $certificado = self::normalizarDecimal($certificado);
+                $cantidad    = self::normalizarEntero($cantidad);
+                $mesconvoca  = self::normalizarMesConvocatoria($mesconvoca);
+
+                try {
+                    $estadoId      = self::buscarIdPorNombre('estado', $estadoTexto);
+                    $obacId        = self::buscarIdPorNombre('obac', $obacTexto);
+                    $fuenteId      = self::buscarIdPorNombre('fuente', $fuenteTexto);
+                    $seleccionId   = self::buscarIdPorNombre('seleccion', $seleccionTexto);
+                    $listaId       = self::buscarIdPorNombre('lista', $listaTexto);
+                    $modalidadId   = self::buscarIdPorNombre('modalidad', $modalidadTexto);
+                    $tipoMercadoId = self::buscarIdPorNombre('tipo_mercado', $tipoMercadoTexto);
+                    $rubroId       = self::buscarIdPorNombre('rubro', $rubroTexto);
+                    $ejecucionId   = self::buscarIdPorNombre('entidad', $ejecucionTexto);
+                    $dependenciaId = self::buscarIdPorNombre('dependencia', $dependenciaTexto);
+                    $periodoId     = self::buscarIdPorNombre('periodo', $periodoTexto);
+                } catch (Throwable $e) {
+                    $errores[] = "Fila {$filaNumero}: " . $e->getMessage();
+                    $omitidos++;
+                    continue;
+                }
+
+                if (self::existePac($nopac, $obacId, $pn)) {
+                    $errores[] = "Fila {$filaNumero}: ya existe un PAC con N° PAC '{$nopac}', OBAC '{$obacTexto}' y P/NP '{$pn}'.";
+                    $omitidos++;
+                    continue;
+                }
+
+                $sql = "INSERT INTO pac (
+                            nopac,
+                            pn,
+                            descripcion,
+                            obac,
+                            fuente,
+                            estado,
+                            estimado,
+                            seleccion,
+                            lista,
+                            modalidad,
+                            tipo_mercado,
+                            rubro,
+                            ejecucion,
+                            dependencia,
+                            mesconvoca,
+                            periodo,
+                            cantidad,
+                            certificado
+                        ) VALUES (
+                            :nopac,
+                            :pn,
+                            :descripcion,
+                            :obac,
+                            :fuente,
+                            :estado,
+                            :estimado,
+                            :seleccion,
+                            :lista,
+                            :modalidad,
+                            :tipo_mercado,
+                            :rubro,
+                            :ejecucion,
+                            :dependencia,
+                            :mesconvoca,
+                            :periodo,
+                            :cantidad,
+                            :certificado
+                        )";
+
+                $st = $db->prepare($sql);
+                $st->bindValue(':nopac', $nopac, PDO::PARAM_STR);
+                $st->bindValue(':pn', $pn, PDO::PARAM_STR);
+                $st->bindValue(':descripcion', $descripcion, PDO::PARAM_STR);
+                $st->bindValue(':obac', $obacId, $obacId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+                $st->bindValue(':fuente', $fuenteId, $fuenteId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+                $st->bindValue(':estado', $estadoId, $estadoId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+                $st->bindValue(':estimado', $estimado);
+                $st->bindValue(':seleccion', $seleccionId, $seleccionId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+                $st->bindValue(':lista', $listaId, $listaId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+                $st->bindValue(':modalidad', $modalidadId, $modalidadId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+                $st->bindValue(':tipo_mercado', $tipoMercadoId, $tipoMercadoId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+                $st->bindValue(':rubro', $rubroId, $rubroId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+                $st->bindValue(':ejecucion', $ejecucionId, $ejecucionId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+                $st->bindValue(':dependencia', $dependenciaId, $dependenciaId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+                $st->bindValue(':mesconvoca', $mesconvoca, $mesconvoca === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
+                $st->bindValue(':periodo', $periodoId, $periodoId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+                $st->bindValue(':cantidad', $cantidad, PDO::PARAM_INT);
+                $st->bindValue(':certificado', $certificado);
+
+                try {
+                    $st->execute();
+                    $insertados++;
+                } catch (Throwable $e) {
+                    $errores[] = "Fila {$filaNumero}: error al insertar. " . $e->getMessage();
+                    $omitidos++;
+                }
+            }
+
+            $db->commit();
+
+            return [
+                'insertados' => $insertados,
+                'omitidos'   => $omitidos,
+                'errores'    => $errores,
+            ];
+        } catch (Throwable $e) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+            throw $e;
+        } finally {
+            fclose($fp);
+        }
+    }
+
+    private static function detectarSeparadorCsv(string $tmpPath): string
+    {
+        $muestra = file_get_contents($tmpPath, false, null, 0, 4096);
+        if ($muestra === false) {
+            return ';';
+        }
+
+        $muestra = preg_replace('/^\xEF\xBB\xBF/', '', $muestra);
+        $primeraLinea = strtok($muestra, "\r\n");
+        $primeraLinea = (string)$primeraLinea;
+
+        $conteos = [
+            ';'  => substr_count($primeraLinea, ';'),
+            ','  => substr_count($primeraLinea, ','),
+            "\t" => substr_count($primeraLinea, "\t"),
+        ];
+
+        arsort($conteos);
+        $sep = (string)array_key_first($conteos);
+
+        return ($conteos[$sep] ?? 0) > 0 ? $sep : ';';
+    }
+
+    private static function normalizarDecimal($valor): float
+    {
+        $valor = trim((string)$valor);
+
+        if ($valor === '') {
+            return 0.00;
+        }
+
+        $valor = str_replace(['S/', 's/', ' '], '', $valor);
+
+        // Si viene como 12.345,67 o 12345,67
+        if (preg_match('/^\d{1,3}(\.\d{3})*,\d+$/', $valor) === 1) {
+            $valor = str_replace('.', '', $valor);
+            $valor = str_replace(',', '.', $valor);
+        } else {
+            $valor = str_replace(',', '', $valor);
+        }
+
+        return (float)$valor;
+    }
+
+    private static function normalizarEntero($valor): int
+    {
+        $valor = trim((string)$valor);
+        if ($valor === '') {
+            return 0;
+        }
+
+        return (int)$valor;
+    }
+
+    private static function normalizarMesConvocatoria(string $valor): ?string
+    {
+        $valor = self::normalizarTextoImportacion($valor);
+
+        if ($valor === '') {
+            return null;
+        }
+
+        $map = [
+            'ENERO'      => 'ENERO',
+            'FEBRERO'    => 'FEBRERO',
+            'MARZO'      => 'MARZO',
+            'ABRIL'      => 'ABRIL',
+            'MAYO'       => 'MAYO',
+            'JUNIO'      => 'JUNIO',
+            'JULIO'      => 'JULIO',
+            'AGOSTO'     => 'AGOSTO',
+            'SETIEMBRE'  => 'SEPTIEMBRE',
+            'SEPTIEMBRE' => 'SEPTIEMBRE',
+            'OCTUBRE'    => 'OCTUBRE',
+            'NOVIEMBRE'  => 'NOVIEMBRE',
+            'DICIEMBRE'  => 'DICIEMBRE',
+        ];
+
+        return $map[$valor] ?? strtoupper(trim($valor));
+    }
+
+    private static function buscarIdPorNombre(string $tipo, string $nombre): ?int
+    {
+        $nombreOriginal = trim((string)$nombre);
+        if ($nombreOriginal === '') {
+            return null;
+        }
+
+        $db = db();
+
+        $map = [
+            'estado'       => ['tabla' => 'estado',       'campo' => 'nombre', 'label' => 'Estado'],
+            'obac'         => ['tabla' => 'entidad',      'campo' => 'nombre', 'label' => 'OBAC'],
+            'fuente'       => ['tabla' => 'fuente',       'campo' => 'nombre', 'label' => 'Fuente'],
+            'seleccion'    => ['tabla' => 'seleccion',    'campo' => 'nombre', 'label' => 'Selección'],
+            'lista'        => ['tabla' => 'listas',       'campo' => 'nombre', 'label' => 'Lista'],
+            'modalidad'    => ['tabla' => 'modalidad',    'campo' => 'nombre', 'label' => 'Modalidad'],
+            'tipo_mercado' => ['tabla' => 'tipo_mercado', 'campo' => 'nombre', 'label' => 'Tipo de mercado'],
+            'rubro'        => ['tabla' => 'rubro',        'campo' => 'nombre', 'label' => 'Rubro'],
+            'entidad'      => ['tabla' => 'entidad',      'campo' => 'nombre', 'label' => 'Ejecución'],
+            'dependencia'  => ['tabla' => 'dependencia',  'campo' => 'nombre', 'label' => 'Dependencia'],
+            'periodo'      => ['tabla' => 'periodo',      'campo' => 'nombre', 'label' => 'Periodo'],
+        ];
+
+        if (!isset($map[$tipo])) {
+            return null;
+        }
+
+        $cfg = $map[$tipo];
+
+        $nombreNormalizado = self::resolverAliasImportacion($tipo, $nombreOriginal);
+        $nombreNormalizado = self::normalizarTextoImportacion($nombreNormalizado);
+
+        // 1) Coincidencia exacta normalizada
+        $sql = "SELECT id, {$cfg['campo']} AS nombre
+        FROM {$cfg['tabla']}";
+        $st = $db->prepare($sql);
+        $st->bindValue(':nombre', $nombreNormalizado, PDO::PARAM_STR);
+        $st->execute();
+
+        $row = $st->fetch(PDO::FETCH_ASSOC);
+        if ($row) {
+            return (int)$row['id'];
+        }
+
+        // 2) Coincidencia flexible recorriendo catálogo
+        $st = $db->query("SELECT id, {$cfg['campo']} AS nombre FROM {$cfg['tabla']} ORDER BY {$cfg['campo']}");
+        $items = $st->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($items as $item) {
+            $cat = self::normalizarTextoImportacion((string)$item['nombre']);
+
+            // Coincidencia exacta
+            if ($cat === $nombreNormalizado) {
+                return (int)$item['id'];
+            }
+
+            // Coincidencia parcial (clave para FAP, CCFFAA, etc.)
+            if (strpos($cat, $nombreNormalizado) !== false) {
+                return (int)$item['id'];
+            }
+        }
+
+        throw new Exception($cfg['label'] . " no reconocido: '{$nombreOriginal}'.");
+    }
+
+    private static function normalizarTextoImportacion(string $texto): string
+    {
+        $texto = trim($texto);
+
+        if ($texto === '') {
+            return '';
+        }
+
+        $reemplazos = [
+            'Á' => 'A',
+            'À' => 'A',
+            'Ä' => 'A',
+            'Â' => 'A',
+            'É' => 'E',
+            'È' => 'E',
+            'Ë' => 'E',
+            'Ê' => 'E',
+            'Í' => 'I',
+            'Ì' => 'I',
+            'Ï' => 'I',
+            'Î' => 'I',
+            'Ó' => 'O',
+            'Ò' => 'O',
+            'Ö' => 'O',
+            'Ô' => 'O',
+            'Ú' => 'U',
+            'Ù' => 'U',
+            'Ü' => 'U',
+            'Û' => 'U',
+            'á' => 'A',
+            'à' => 'A',
+            'ä' => 'A',
+            'â' => 'A',
+            'é' => 'E',
+            'è' => 'E',
+            'ë' => 'E',
+            'ê' => 'E',
+            'í' => 'I',
+            'ì' => 'I',
+            'ï' => 'I',
+            'î' => 'I',
+            'ó' => 'O',
+            'ò' => 'O',
+            'ö' => 'O',
+            'ô' => 'O',
+            'ú' => 'U',
+            'ù' => 'U',
+            'ü' => 'U',
+            'û' => 'U',
+            'Ñ' => 'N',
+            'ñ' => 'N',
+        ];
+
+        $texto = strtr($texto, $reemplazos);
+        $texto = strtoupper($texto);
+        $texto = preg_replace('/[^\p{L}\p{N}\s]/u', ' ', $texto);
+        $texto = preg_replace('/\s+/', ' ', $texto);
+
+        return trim((string)$texto);
+    }
+
+    private static function resolverAliasImportacion(string $tipo, string $texto): string
+    {
+        $valor = self::normalizarTextoImportacion($texto);
+
+        $aliases = [
+            'estado' => [
+                'PUBICADO'                => 'PUBLICADO',
+                'PUBLICADA'               => 'PUBLICADO',
+                'PUBLICADO'               => 'PUBLICADO',
+
+                'SOLICITADO'              => 'SOLICITADO',
+                'SOLICITADA'              => 'SOLICITADO',
+
+                'OBSERVADO'               => 'OBSERVADO',
+                'OBSERVADA'               => 'OBSERVADO',
+                'OBSERVADOS'              => 'OBSERVADO',
+
+                'SUBSANADO'               => 'SUBSANADO',
+                'SUBSANADA'               => 'SUBSANADO',
+
+                'ESTUDIO MERCADO'         => 'ESTUDIO DE MERCADO',
+                'ESTUDIO DE MERCADO'      => 'ESTUDIO DE MERCADO',
+            ],
+
+            'obac' => [
+                'CCFFAA'                         => 'COMANDO CONJUNTO DE LAS FUERZAS ARMADAS',
+                'COMANDO CONJUNTO'               => 'COMANDO CONJUNTO DE LAS FUERZAS ARMADAS',
+
+                'EP'                             => 'EJERCITO DEL PERU',
+                'EJERCITO'                       => 'EJERCITO DEL PERU',
+                'EJERCITO DEL PERU'              => 'EJERCITO DEL PERU',
+
+                'FAP'                            => 'FUERZA AEREA DEL PERU',
+                'FUERZA AEREA'                   => 'FUERZA AEREA DEL PERU',
+                'FUERZA AEREA DEL PERU'          => 'FUERZA AEREA DEL PERU',
+
+                'MGP'                            => 'MARINA DE GUERRA DEL PERU',
+                'MARINA'                         => 'MARINA DE GUERRA DEL PERU',
+                'MARINA DE GUERRA'               => 'MARINA DE GUERRA DEL PERU',
+                'MARINA DE GUERRA DEL PERU'      => 'MARINA DE GUERRA DEL PERU',
+
+                'CONIDA'                         => 'COMISION NACIONAL DE INVESTIGACION Y DESARROLLO AEROESPACIAL',
+            ],
+
+            'entidad' => [
+                'CCFFAA'                         => 'COMANDO CONJUNTO DE LAS FUERZAS ARMADAS',
+                'COMANDO CONJUNTO'               => 'COMANDO CONJUNTO DE LAS FUERZAS ARMADAS',
+
+                'EP'                             => 'EJERCITO DEL PERU',
+                'EJERCITO'                       => 'EJERCITO DEL PERU',
+                'EJERCITO DEL PERU'              => 'EJERCITO DEL PERU',
+
+                'FAP'                            => 'FUERZA AEREA DEL PERU',
+                'FUERZA AEREA'                   => 'FUERZA AEREA DEL PERU',
+                'FUERZA AEREA DEL PERU'          => 'FUERZA AEREA DEL PERU',
+
+                'MGP'                            => 'MARINA DE GUERRA DEL PERU',
+                'MARINA'                         => 'MARINA DE GUERRA DEL PERU',
+                'MARINA DE GUERRA'               => 'MARINA DE GUERRA DEL PERU',
+                'MARINA DE GUERRA DEL PERU'      => 'MARINA DE GUERRA DEL PERU',
+
+                'CONIDA'                         => 'COMISION NACIONAL DE INVESTIGACION Y DESARROLLO AEROESPACIAL',
+            ],
+
+            'tipo_mercado' => [
+                'NACIONAL'               => 'NACIONAL',
+                'MERCADO NACIONAL'       => 'NACIONAL',
+
+                'EXTRANJERO'             => 'EXTRANJERO',
+                'MERCADO EXTRANJERO'     => 'EXTRANJERO',
+            ],
+
+            'lista' => [
+                'LCMN' => 'LCMN',
+                'LGCS' => 'LGCS',
+                'LGCE' => 'LGCE',
+                'LCME' => 'LCME',
+            ],
+
+            'modalidad' => [
+                'CORPORATIVA'    => 'CORPORATIVO',
+                'CORPORATIVO'    => 'CORPORATIVO',
+                'INDIVIDUAL'     => 'INDIVIDUAL',
+            ],
+
+            'periodo' => [
+                '2025' => '2025',
+                '2026' => '2026',
+                '2027' => '2027',
+            ],
+        ];
+
+        return $aliases[$tipo][$valor] ?? $valor;
     }
 }

@@ -57,7 +57,7 @@ class CtrPacAdmin
                 'id'           => $_POST['id'] ?? null,
                 'nopac'        => $_POST['nopac'] ?? '',
                 'pn'           => $_POST['pn'] ?? 'NP',
-                'estado'       => $_POST['estado'] ?? 'PUBLICADO',
+                'estado'       => $_POST['estado'] ?? null,
                 'descripcion'  => $_POST['descripcion'] ?? '',
                 'obac'         => $_POST['obac'] ?? null,
                 'seleccion'    => $_POST['seleccion'] ?? null,
@@ -144,5 +144,153 @@ class CtrPacAdmin
 
         header('Location: ' . BASE_URL . '/admin/pac');
         exit;
+    }
+
+    public static function descargarPlantillaCsv(): void
+    {
+        header('Content-Type: text/csv; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="plantilla_pac.csv"');
+        echo "\xEF\xBB\xBF";
+
+        $out = fopen('php://output', 'w');
+
+        fputcsv($out, [
+            'nopac',
+            'pn',
+            'descripcion',
+            'obac',
+            'fuente',
+            'estado',
+            'estimado',
+            'seleccion',
+            'lista',
+            'modalidad',
+            'tipo_mercado',
+            'rubro',
+            'ejecucion',
+            'dependencia',
+            'mesconvoca',
+            'periodo',
+            'cantidad',
+            'certificado'
+        ], ';');
+
+        fputcsv($out, [
+            '800',
+            'P',
+            'EJEMPLO MASIVO 1',
+            'FAP',
+            'RECURSOS ORDINARIOS',
+            'PUBLICADO',
+            '316800.00',
+            'ADJUDICACION SIMPLIFICADA',
+            'LCMN',
+            'INDIVIDUAL',
+            'NACIONAL',
+            'SERVICIO',
+            'FAP',
+            '',
+            'MARZO',
+            '2026',
+            '1',
+            '316800.00'
+        ], ';');
+
+        fputcsv($out, [
+            '900',
+            'NP',
+            'EJEMPLO MASIVO 2',
+            'CCFFAA',
+            'RECURSOS ORDINARIOS',
+            'OBSERVADO',
+            '85000.00',
+            'COMPARACION DE PRECIOS',
+            'LCMN',
+            'INDIVIDUAL',
+            'EXTRANJERO',
+            'BIEN',
+            'CCFFAA',
+            '',
+            'ABRIL',
+            '2026',
+            '1',
+            '0.00'
+        ], ';');
+
+        fclose($out);
+        exit;
+    }
+
+    public static function importarCsv(): void
+    {
+        header('Content-Type: application/json; charset=UTF-8');
+
+        try {
+            if (!isset($_FILES['csv_file'])) {
+                echo json_encode([
+                    'ok'  => false,
+                    'msg' => 'No se recibió ningún archivo CSV.'
+                ]);
+                exit;
+            }
+
+            $archivo = $_FILES['csv_file'];
+
+            if (($archivo['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+                echo json_encode([
+                    'ok'  => false,
+                    'msg' => 'Error al subir el archivo CSV.'
+                ]);
+                exit;
+            }
+
+            if (
+                empty($archivo['tmp_name']) ||
+                !is_uploaded_file($archivo['tmp_name'])
+            ) {
+                echo json_encode([
+                    'ok'  => false,
+                    'msg' => 'Archivo CSV inválido.'
+                ]);
+                exit;
+            }
+
+            $ext = strtolower(pathinfo((string)($archivo['name'] ?? ''), PATHINFO_EXTENSION));
+            if ($ext !== 'csv') {
+                echo json_encode([
+                    'ok'  => false,
+                    'msg' => 'El archivo debe tener extensión .csv'
+                ]);
+                exit;
+            }
+
+            $resultado = MdPacAdmin::importarDesdeCsv($archivo['tmp_name']);
+
+            $insertados = (int)($resultado['insertados'] ?? 0);
+            $omitidos   = (int)($resultado['omitidos'] ?? 0);
+            $errores    = $resultado['errores'] ?? [];
+
+            $msg = 'Importación realizada correctamente.';
+            if ($insertados > 0 && $omitidos > 0) {
+                $msg = 'Importación parcial completada.';
+            } elseif ($insertados === 0 && $omitidos > 0) {
+                $msg = 'No se importaron registros válidos.';
+            }
+
+            echo json_encode([
+                'ok'         => true,
+                'msg'        => $msg,
+                'insertados' => $insertados,
+                'omitidos'   => $omitidos,
+                'errores'    => $errores
+            ]);
+            exit;
+        } catch (Throwable $e) {
+            echo json_encode([
+                'ok'  => false,
+                'msg' => $e->getMessage()
+            ]);
+            exit;
+        }
     }
 }

@@ -1,6 +1,5 @@
 <?php
 // Vista/modulos/admin/pac.php
-// Apple-like UI + responsive desktop
 $titulo = 'PAC';
 $active = 'pac';
 require __DIR__ . '/../../layout/admin_layout.php';
@@ -33,10 +32,8 @@ function toneEstado($estado)
   if ($e === 'ESTUDIO DE MERCADO') return 'rose';
   return 'slate';
 }
-?>
 
-<?php
-// ===== KPIs (Programables / No programables) =====
+// ===== KPIs =====
 $cntP  = 0;
 $cntNP = 0;
 $sumP  = 0.0;
@@ -66,7 +63,7 @@ foreach ($pacs as $row) {
       <div class="text-xs text-slate-500">Mantenimiento</div>
     </div>
 
-    <div class="flex flex-col gap-2 sm:flex-row">
+    <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
       <div class="relative">
         <input
           placeholder="Buscar por N° PAC, OBAC, descripción…"
@@ -78,6 +75,19 @@ foreach ($pacs as $row) {
         type="button"
         class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-[13px] text-slate-700 transition hover:bg-slate-50">
         Filtros
+      </button>
+
+      <a
+        href="<?= BASE_URL ?>/admin/pac_plantilla_csv"
+        class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-[13px] text-slate-700 transition hover:bg-slate-50">
+        Descargar plantilla CSV
+      </a>
+
+      <button
+        id="btnImport"
+        type="button"
+        class="inline-flex items-center justify-center rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-[13px] font-medium text-blue-700 transition hover:bg-blue-100">
+        Importación masiva
       </button>
 
       <button
@@ -144,7 +154,6 @@ foreach ($pacs as $row) {
         <tbody class="divide-y divide-slate-100">
           <?php foreach ($pacs as $r): ?>
             <tr class="hover:bg-slate-50">
-
               <td class="px-4 py-3 font-semibold text-slate-900">
                 <?= h($r['nopac']) ?>
               </td>
@@ -242,7 +251,6 @@ foreach ($pacs as $row) {
                   </div>
                 </div>
               </td>
-
             </tr>
           <?php endforeach; ?>
 
@@ -258,13 +266,76 @@ foreach ($pacs as $row) {
     </div>
   </div>
 
+  <!-- Modal importación -->
+  <div id="modalImport" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-900/30" onclick="closeModal('modalImport')"></div>
+
+    <div class="relative w-full max-w-2xl rounded-[28px] border border-slate-200 bg-white shadow-soft">
+      <div class="border-b border-slate-200 px-5 py-4">
+        <div class="text-xs uppercase tracking-wide text-slate-400">PAC</div>
+        <div class="mt-1 text-2xl font-semibold text-slate-900">Importación masiva CSV</div>
+      </div>
+
+      <div class="space-y-4 px-5 py-5">
+        <div class="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+          <div class="font-semibold">Indicaciones</div>
+          <ul class="mt-2 list-disc space-y-1 pl-5 text-[13px]">
+            <li>Descarga la plantilla y completa los datos sobre ese archivo.</li>
+            <li>La primera fila se ignora automáticamente porque se toma como encabezado.</li>
+            <li>Formato permitido: <strong>.csv</strong></li>
+            <li>Se recomienda guardar el CSV en UTF-8.</li>
+          </ul>
+        </div>
+
+        <div class="flex flex-col gap-3 sm:flex-row">
+          <a
+            href="<?= BASE_URL ?>/admin/pac_plantilla_csv"
+            class="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 transition hover:bg-slate-50">
+            Descargar plantilla
+          </a>
+
+          <label
+            for="csv_file"
+            class="inline-flex cursor-pointer items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 transition hover:bg-slate-50">
+            Seleccionar archivo CSV
+          </label>
+        </div>
+
+        <form id="importForm" enctype="multipart/form-data" onsubmit="return false;">
+          <input id="csv_file" name="csv_file" type="file" accept=".csv,text/csv" class="hidden">
+
+          <div id="csvFileName" class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-500">
+            Ningún archivo seleccionado
+          </div>
+        </form>
+
+        <div id="importResult" class="hidden rounded-2xl border px-4 py-3 text-sm"></div>
+      </div>
+
+      <div class="flex justify-end gap-2 border-t border-slate-200 px-5 py-4">
+        <button
+          type="button"
+          class="rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm transition hover:bg-slate-50"
+          onclick="closeModal('modalImport')">
+          Cancelar
+        </button>
+
+        <button
+          id="btnSendImport"
+          type="button"
+          class="rounded-2xl bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
+          onclick="importCsvPac()">
+          Importar CSV
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal (Nuevo/Editar) -->
   <div id="modalForm" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
     <div class="absolute inset-0 bg-slate-900/30" onclick="closeModal('modalForm')"></div>
 
     <div class="relative flex h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-soft">
-
-      <!-- Header -->
       <div class="shrink-0 border-b border-slate-200 bg-white px-5 py-4">
         <div class="flex items-start justify-between gap-4">
           <div class="min-w-0">
@@ -283,7 +354,6 @@ foreach ($pacs as $row) {
         </div>
       </div>
 
-      <!-- Body -->
       <div class="flex-1 overflow-y-auto px-5 py-5">
         <form id="pacForm" class="grid grid-cols-1 gap-x-4 gap-y-5 md:grid-cols-6" onsubmit="return false;">
           <input type="hidden" id="pac_id" value="">
@@ -515,7 +585,6 @@ foreach ($pacs as $row) {
         </form>
       </div>
 
-      <!-- Footer -->
       <div class="shrink-0 border-t border-slate-200 bg-white px-5 py-4">
         <div class="flex items-center justify-end gap-2">
           <button
@@ -749,6 +818,19 @@ foreach ($pacs as $row) {
     openModal('modalForm');
   });
 
+  $('btnImport')?.addEventListener('click', () => {
+    $('csv_file').value = '';
+    $('csvFileName').textContent = 'Ningún archivo seleccionado';
+    $('importResult').className = 'hidden rounded-2xl border px-4 py-3 text-sm';
+    $('importResult').innerHTML = '';
+    openModal('modalImport');
+  });
+
+  $('csv_file')?.addEventListener('change', (e) => {
+    const file = e.target.files?.[0];
+    $('csvFileName').textContent = file ? file.name : 'Ningún archivo seleccionado';
+  });
+
   function openEdit(
     id,
     nopac,
@@ -851,12 +933,7 @@ foreach ($pacs as $row) {
       }
 
       closeModal('modalForm');
-
-      showToast(
-        data.msg || 'PAC guardado correctamente.',
-        'success',
-        'Correcto'
-      );
+      showToast(data.msg || 'PAC guardado correctamente.', 'success', 'Correcto');
 
       setTimeout(() => {
         window.location.reload();
@@ -873,6 +950,79 @@ foreach ($pacs as $row) {
     }
   }
   window.fakeSave = fakeSave;
+
+  async function importCsvPac() {
+    const fileInput = $('csv_file');
+    const resultBox = $('importResult');
+    const btn = $('btnSendImport');
+    const file = fileInput?.files?.[0];
+
+    if (!file) {
+      showToast('Selecciona un archivo CSV.', 'error', 'Error');
+      return;
+    }
+
+    const original = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Importando...';
+
+    resultBox.className = 'hidden rounded-2xl border px-4 py-3 text-sm';
+    resultBox.innerHTML = '';
+
+    const fd = new FormData();
+    fd.append('csv_file', file);
+
+    try {
+      const resp = await fetch('<?= BASE_URL ?>/admin/pac_importar_csv', {
+        method: 'POST',
+        body: fd
+      });
+
+      const data = await resp.json();
+
+      if (!data.ok) {
+        resultBox.className = 'rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700';
+        resultBox.innerHTML = `
+          <div class="font-semibold">No se pudo importar</div>
+          <div class="mt-1">${data.msg || 'Ocurrió un error en la importación.'}</div>
+          ${Array.isArray(data.errores) && data.errores.length ? `<ul class="mt-2 list-disc pl-5">${data.errores.map(x => `<li>${x}</li>`).join('')}</ul>` : ''}
+        `;
+        showToast(data.msg || 'No se pudo importar el CSV.', 'error', 'Error');
+        btn.disabled = false;
+        btn.textContent = original;
+        return;
+      }
+
+      resultBox.className = 'rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700';
+      resultBox.innerHTML = `
+        <div class="font-semibold">Importación completada</div>
+        <div class="mt-1">${data.msg || 'Proceso finalizado correctamente.'}</div>
+        <div class="mt-2">
+          <strong>Insertados:</strong> ${data.insertados ?? 0}
+          ${typeof data.omitidos !== 'undefined' ? ` | <strong>Omitidos:</strong> ${data.omitidos}` : ''}
+        </div>
+        ${Array.isArray(data.errores) && data.errores.length ? `<ul class="mt-2 list-disc pl-5">${data.errores.map(x => `<li>${x}</li>`).join('')}</ul>` : ''}
+      `;
+
+      showToast(data.msg || 'CSV importado correctamente.', 'success', 'Correcto');
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 1200);
+
+    } catch (err) {
+      console.error(err);
+      resultBox.className = 'rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700';
+      resultBox.innerHTML = `
+        <div class="font-semibold">Error</div>
+        <div class="mt-1">Ocurrió un error al procesar la importación.</div>
+      `;
+      showToast('Error al importar el CSV.', 'error', 'Error');
+      btn.disabled = false;
+      btn.textContent = original;
+    }
+  }
+  window.importCsvPac = importCsvPac;
 
   function fakeDelete() {
     showToast('Eliminado correctamente.', 'success', 'Correcto');
@@ -907,7 +1057,6 @@ foreach ($pacs as $row) {
     }
 
     if (menu) return;
-
     closeAllMenus();
   });
 </script>
