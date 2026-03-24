@@ -1,4 +1,5 @@
 <?php
+  /* Vista/layout/header.php */
 require_once __DIR__ . '/../../Config/config.php';
 ?>
 <!DOCTYPE html>

@@ -1,4 +1,5 @@
 <?php
+  /* Vista/layout/bottom-nav.php */
 $path = $_GET['url'] ?? 'dashboard';
 $moduloActual = explode('/', trim($path, '/'))[0];
 

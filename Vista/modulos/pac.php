@@ -1,4 +1,5 @@
 <?php
+  /* Vista/modulos/pac.php */
 $titulo = 'PAC | Procesos';
 $appName = 'Seguimiento de Procesos';
 $usuario = 'Andres';
