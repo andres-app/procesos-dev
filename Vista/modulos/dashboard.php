@@ -1,4 +1,5 @@
 <?php
+/* Vista/modulos/dashboard.php */
 $titulo = 'Inicio | Procesos';
 $appName = 'Seguimiento de Procesos';
 $usuario = 'Andres';
@@ -47,52 +48,53 @@ require __DIR__ . '/../layout/header.php';
     top: calc(var(--sat) + 86px);
     left: 0;
     right: 0;
-    bottom: calc(var(--tabbar-height) + var(--tabbar-offset) + var(--sab) + 10px);
-    overflow: hidden;
+    bottom: calc(78px + var(--sab) + 16px);
+    overflow: auto;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    padding:
-      8px calc(var(--sar) + 20px) 8px calc(var(--sal) + 20px);
+    flex-direction: column;
     z-index: 1;
-    background: transparent;
+    background: #F9FAFB;
+    padding: 14px calc(var(--sar) + 20px) 10px calc(var(--sal) + 20px);
+    -webkit-overflow-scrolling: touch;
   }
 
   .dashboard-grid {
     width: 100%;
     max-width: 430px;
+    min-height: 100%;
     margin: 0 auto;
 
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18px;
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 1fr;
+    gap: 14px;
 
-    align-content: center;
-    justify-content: center;
+    flex: 1 1 auto;
   }
 
   .apple-card {
-    min-height: 158px;
-    border-radius: 30px;
+    height: 100%;
+    min-height: 150px;
+    border-radius: 24px;
+
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 10px;
+
     text-align: center;
     text-decoration: none;
+
     position: relative;
     overflow: hidden;
 
-    border: 1px solid rgba(255, 255, 255, .22);
-    box-shadow:
-      0 16px 34px rgba(0, 0, 0, .18),
-      inset 0 1px 0 rgba(255, 255, 255, .36);
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
 
-    backdrop-filter: blur(10px) saturate(130%);
-    -webkit-backdrop-filter: blur(10px) saturate(130%);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, .08);
 
-    transition: transform .14s ease, box-shadow .14s ease;
+    transition: transform .12s ease, box-shadow .12s ease;
     -webkit-tap-highlight-color: transparent;
   }
 
@@ -100,23 +102,26 @@ require __DIR__ . '/../layout/header.php';
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, rgba(255, 255, 255, .16), rgba(255, 255, 255, 0) 48%);
+    background: linear-gradient(180deg,
+        rgba(255, 255, 255, .16),
+        rgba(255, 255, 255, 0) 48%);
     pointer-events: none;
   }
 
   .apple-card:active {
-    transform: scale(.965);
+    transform: scale(.97);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, .08);
   }
 
   .apple-card .icon {
-    font-size: 3.55rem;
+    font-size: 2.7rem;
     line-height: 1;
     filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .12));
   }
 
   .apple-card span {
-    font-size: .98rem;
-    font-weight: 800;
+    font-size: 1rem;
+    font-weight: 700;
     letter-spacing: -.2px;
     line-height: 1.1;
   }
@@ -147,32 +152,31 @@ require __DIR__ . '/../layout/header.php';
   }
 
   .card-alertas {
-    background: linear-gradient(180deg, rgba(158, 34, 52, .94), rgba(135, 8, 28, .96));
-    color: #ff4d73;
+    background: linear-gradient(180deg, #7A0C19, #5A0712);
+    color: #fff;
     border: 1px solid rgba(255, 255, 255, .16);
   }
 
   @media (max-width: 390px) {
     .dashboard-main {
-      padding-left: calc(var(--sal) + 16px);
-      padding-right: calc(var(--sar) + 16px);
+      padding: 12px calc(var(--sar) + 16px) 8px calc(var(--sal) + 16px);
     }
 
     .dashboard-grid {
-      gap: 14px;
+      gap: 12px;
     }
 
     .apple-card {
-      min-height: 146px;
-      border-radius: 26px;
+      min-height: 138px;
+      border-radius: 22px;
     }
 
     .apple-card .icon {
-      font-size: 3rem;
+      font-size: 2.45rem;
     }
 
     .apple-card span {
-      font-size: .93rem;
+      font-size: .92rem;
     }
   }
 </style>

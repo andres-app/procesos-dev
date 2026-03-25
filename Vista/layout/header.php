@@ -1,5 +1,5 @@
 <?php
-  /* Vista/layout/header.php */
+/* Vista/layout/header.php */
 require_once __DIR__ . '/../../Config/config.php';
 ?>
 <!DOCTYPE html>
@@ -28,9 +28,9 @@ require_once __DIR__ . '/../../Config/config.php';
       --sal: env(safe-area-inset-left);
 
       --header-height: 92px;
-      --tabbar-height: 88px;
-      --tabbar-offset: 14px;
-      --tabbar-total-space: calc(var(--tabbar-height) + var(--tabbar-offset) + var(--sab) + 8px);
+      --tabbar-height: 78px;
+      --tabbar-offset: 8px;
+      --tabbar-total-space: calc(var(--tabbar-height) + var(--tabbar-offset) + var(--sab));
     }
 
     * {
@@ -47,15 +47,13 @@ require_once __DIR__ . '/../../Config/config.php';
       overflow: hidden;
       overscroll-behavior: none;
       -webkit-text-size-adjust: 100%;
-      background-color: #5A0712;
-      background-image: linear-gradient(180deg, #8D0E1C 0%, #6C0915 45%, #5A0712 100%);
-      background-repeat: no-repeat;
-      background-size: cover;
+      background: #F9FAFB;
+      /* blanco elegante */
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", sans-serif;
     }
 
     body {
-      color: #fff;
+      color: #111827;
       position: relative;
     }
 
@@ -65,22 +63,11 @@ require_once __DIR__ . '/../../Config/config.php';
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: #5A0712;
-      background-image: linear-gradient(180deg, #8D0E1C 0%, #6C0915 45%, #5A0712 100%);
-      background-repeat: no-repeat;
-      background-size: cover;
+      background: #F9FAFB;
     }
 
     .app-shell::after {
-      content: "";
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: -2px;
-      height: calc(env(safe-area-inset-bottom) + 40px);
-      background: #5A0712;
-      z-index: 0;
-      pointer-events: none;
+      display: none;
     }
 
     .page {
@@ -104,9 +91,17 @@ require_once __DIR__ . '/../../Config/config.php';
       z-index: 20;
       padding:
         calc(var(--sat) + 10px) calc(var(--sar) + 16px) 12px calc(var(--sal) + 16px);
-      background: linear-gradient(180deg, rgba(125, 8, 24, .80), rgba(125, 8, 24, .58) 68%, rgba(125, 8, 24, 0));
-      backdrop-filter: blur(14px) saturate(140%);
-      -webkit-backdrop-filter: blur(14px) saturate(140%);
+      background: rgba(122, 12, 25, 0.92);
+      /* guinda */
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .appbar-title,
+    .appbar-sub,
+    .app-avatar,
+    .app-ico {
+      color: #fff;
     }
 
     .appbar-inner {
@@ -207,12 +202,12 @@ require_once __DIR__ . '/../../Config/config.php';
     .preloader {
       position: fixed;
       inset: 0;
-      background: rgba(90, 7, 18, .90);
+      background: #F9FAFB;
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 9999;
-      transition: opacity .25s ease;
+      transition: opacity .22s ease;
     }
 
     .preloader.hide {
@@ -221,7 +216,7 @@ require_once __DIR__ . '/../../Config/config.php';
     }
 
     .loader-card {
-      background: rgba(255, 255, 255, .95);
+      background: #FFFFFF;
       color: #7A0C19;
       padding: 24px 28px;
       border-radius: 24px;
@@ -229,7 +224,8 @@ require_once __DIR__ . '/../../Config/config.php';
       flex-direction: column;
       align-items: center;
       gap: 12px;
-      box-shadow: 0 16px 38px rgba(0, 0, 0, .22);
+      box-shadow: 0 16px 38px rgba(0, 0, 0, .14);
+      border: 1px solid #E5E7EB;
     }
 
     .spinner {
@@ -237,7 +233,7 @@ require_once __DIR__ . '/../../Config/config.php';
       height: 34px;
       border-radius: 50%;
       border: 3px solid #E5E7EB;
-      border-top-color: #B38B00;
+      border-top-color: #7A0C19;
       animation: spin .9s linear infinite;
     }
 
@@ -269,7 +265,7 @@ require_once __DIR__ . '/../../Config/config.php';
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('<?= BASE_URL ?>/service-worker.js');
+        navigator.serviceWorker.register('<?= BASE_URL ?>/service-worker.js?v=2');
       });
     }
   </script>

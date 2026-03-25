@@ -1,13 +1,15 @@
 /* ===== public/css/app.css ===== */
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
-  background: #5A0712;
+  background: #F9FAFB;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", sans-serif;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", sans-serif;
+  color: #111827;
 }
 
 /* Contenedor principal tipo app móvil */
@@ -15,6 +17,7 @@ body {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  background: #F9FAFB;
 }
 
 /* Área de contenido real */

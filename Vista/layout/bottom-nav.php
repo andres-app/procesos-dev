@@ -1,5 +1,5 @@
 <?php
-  /* Vista/layout/bottom-nav.php */
+/* Vista/layout/bottom-nav.php */
 $path = $_GET['url'] ?? 'dashboard';
 $moduloActual = explode('/', trim($path, '/'))[0];
 
@@ -51,25 +51,26 @@ function isActive($m, $actual)
     position: fixed;
     left: 18px;
     right: 18px;
-    bottom: calc(var(--sab) + 6px);
-    height: var(--tabbar-height);
+    bottom: calc(var(--sab) + 8px);
+    height: 78px;
     z-index: 30;
 
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     align-items: center;
 
-    padding: 8px;
-    border-radius: 28px;
+    padding: 6px;
+    border-radius: 26px;
 
-    background: rgba(250, 247, 248, .96);
+    background: rgba(255, 255, 255, .97);
+    border: 1px solid #E5E7EB;
+
     backdrop-filter: blur(18px) saturate(180%);
     -webkit-backdrop-filter: blur(18px) saturate(180%);
 
-    border: 1px solid rgba(255,255,255,.7);
     box-shadow:
-      0 14px 36px rgba(0,0,0,.22),
-      inset 0 1px 0 rgba(255,255,255,.75);
+      0 10px 28px rgba(0, 0, 0, .16),
+      inset 0 1px 0 rgba(255, 255, 255, .75);
   }
 
   .ios-tab {
@@ -78,10 +79,10 @@ function isActive($m, $actual)
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 6px;
-    border-radius: 22px;
+    gap: 4px;
+    border-radius: 20px;
     text-decoration: none;
-    color: rgba(17,24,39,.42);
+    color: rgba(17, 24, 39, .42);
     transition: transform .14s ease, color .14s ease, background .14s ease;
     -webkit-tap-highlight-color: transparent;
   }
@@ -91,13 +92,13 @@ function isActive($m, $actual)
   }
 
   .ios-tab.is-active {
-    color: #173f79;
-    background: rgba(0,0,0,.04);
+    color: #7A0C19;
+    background: rgba(122, 12, 25, .08);
   }
 
   .ios-ico {
-    width: 25px;
-    height: 25px;
+    width: 23px;
+    height: 23px;
   }
 
   .ios-ico .stroke {
@@ -123,13 +124,14 @@ function isActive($m, $actual)
   }
 
   .ios-label {
-    font-size: .70rem;
+    font-size: .68rem;
     font-weight: 700;
     line-height: 1;
-    letter-spacing: .15px;
+    letter-spacing: .1px;
   }
 </style>
 
 </div>
 </body>
+
 </html>
