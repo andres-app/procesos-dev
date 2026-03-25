@@ -48,13 +48,13 @@ require __DIR__ . '/../layout/header.php';
     top: calc(var(--sat) + 86px);
     left: 0;
     right: 0;
-    bottom: calc(78px + var(--sab) + 16px);
+    bottom: var(--tabbar-total-space);
     overflow: auto;
     display: flex;
     flex-direction: column;
     z-index: 1;
     background: #F9FAFB;
-    padding: 14px calc(var(--sar) + 20px) 10px calc(var(--sal) + 20px);
+    padding: 14px calc(var(--sar) + 20px) 12px calc(var(--sal) + 20px);
     -webkit-overflow-scrolling: touch;
   }
 

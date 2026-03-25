@@ -51,8 +51,8 @@ function isActive($m, $actual)
     position: fixed;
     left: 18px;
     right: 18px;
-    bottom: calc(var(--sab) + 8px);
-    height: 78px;
+    bottom: var(--sab);
+    height: var(--tabbar-height);
     z-index: 30;
 
     display: grid;

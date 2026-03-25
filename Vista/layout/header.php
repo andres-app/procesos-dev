@@ -29,8 +29,8 @@ require_once __DIR__ . '/../../Config/config.php';
 
       --header-height: 92px;
       --tabbar-height: 78px;
-      --tabbar-offset: 8px;
-      --tabbar-total-space: calc(var(--tabbar-height) + var(--tabbar-offset) + var(--sab));
+      --tabbar-offset: 0px;
+      --tabbar-total-space: calc(var(--tabbar-height) + var(--sab));
     }
 
     * {
