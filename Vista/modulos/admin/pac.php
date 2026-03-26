@@ -287,12 +287,19 @@ foreach ($pacs as $row) {
           </ul>
         </div>
 
-        <div class="flex flex-col gap-3 sm:flex-row">
+        <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <a
             href="<?= BASE_URL ?>/admin/pac_plantilla_csv"
             class="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 transition hover:bg-slate-50">
             Descargar plantilla
           </a>
+
+          <button
+            type="button"
+            onclick="openModal('modalGuiaCsv')"
+            class="inline-flex items-center justify-center rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700 transition hover:bg-amber-100">
+            Ver guía de llenado
+          </button>
 
           <label
             for="csv_file"
@@ -327,6 +334,265 @@ foreach ($pacs as $row) {
           onclick="importCsvPac()">
           Importar CSV
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal guía CSV -->
+  <div id="modalGuiaCsv" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-900/30" onclick="closeModal('modalGuiaCsv')"></div>
+
+    <div class="relative flex h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-soft">
+      <div class="shrink-0 border-b border-slate-200 bg-white px-5 py-4">
+        <div class="flex items-start justify-between gap-4">
+          <div class="min-w-0">
+            <div class="text-xs uppercase tracking-wide text-slate-400">Importación</div>
+            <div class="mt-1 text-[28px] font-semibold leading-none text-slate-900">
+              Guía de llenado CSV
+            </div>
+            <div class="mt-2 text-sm text-slate-500">
+              Usa estos valores para completar la plantilla y evitar errores al importar.
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="rounded-full border border-slate-200 bg-white px-5 py-2 text-sm text-slate-700 transition hover:bg-slate-50"
+            onclick="closeModal('modalGuiaCsv')">
+            Cerrar
+          </button>
+        </div>
+      </div>
+
+      <div class="flex-1 space-y-6 overflow-y-auto px-5 py-5">
+        <div class="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+          <div class="font-semibold">Indicaciones rápidas</div>
+          <ul class="mt-2 list-disc space-y-1 pl-5 text-[13px]">
+            <li>No cambies el orden de las columnas.</li>
+            <li>La primera fila del archivo debe ser el encabezado.</li>
+            <li>Usa los valores tal como aparecen en esta guía.</li>
+            <li>Si un campo no aplica y no es obligatorio, déjalo vacío.</li>
+            <li>Campos mínimos recomendados: <strong>nopac</strong>, <strong>pn</strong>, <strong>descripcion</strong>, <strong>obac</strong>.</li>
+          </ul>
+        </div>
+
+        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <div class="border-b border-slate-200 px-4 py-3 font-semibold text-slate-900">
+            Estructura del archivo CSV
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead class="bg-slate-50 text-slate-600">
+                <tr>
+                  <th class="px-4 py-3 text-left">Columna</th>
+                  <th class="px-4 py-3 text-left">Ejemplo</th>
+                  <th class="px-4 py-3 text-left">Uso</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 text-slate-700">
+                <tr>
+                  <td class="px-4 py-3 font-medium">nopac</td>
+                  <td class="px-4 py-3">800</td>
+                  <td class="px-4 py-3">Número PAC</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-3 font-medium">pn</td>
+                  <td class="px-4 py-3">P o NP</td>
+                  <td class="px-4 py-3">Tipo de PAC</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-3 font-medium">descripcion</td>
+                  <td class="px-4 py-3">EJEMPLO MASIVO FAP</td>
+                  <td class="px-4 py-3">Descripción del requerimiento</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-3 font-medium">obac</td>
+                  <td class="px-4 py-3">FAP</td>
+                  <td class="px-4 py-3">Catálogo entidad / OBAC</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-3 font-medium">fuente</td>
+                  <td class="px-4 py-3">RO</td>
+                  <td class="px-4 py-3">Código exacto de fuente</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-3 font-medium">estado</td>
+                  <td class="px-4 py-3">PUBLICADO</td>
+                  <td class="px-4 py-3">Estado del PAC</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-3 font-medium">estimado</td>
+                  <td class="px-4 py-3">316800.00</td>
+                  <td class="px-4 py-3">Monto decimal sin S/</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-3 font-medium">seleccion</td>
+                  <td class="px-4 py-3">ADJUDICACION SIMPLIFICADA</td>
+                  <td class="px-4 py-3">Tipo de selección</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-3 font-medium">lista</td>
+                  <td class="px-4 py-3">LCMN</td>
+                  <td class="px-4 py-3">Código exacto</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-3 font-medium">modalidad</td>
+                  <td class="px-4 py-3">INDIVIDUAL</td>
+                  <td class="px-4 py-3">Modalidad válida</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-3 font-medium">tipo_mercado</td>
+                  <td class="px-4 py-3">NACIONAL</td>
+                  <td class="px-4 py-3">NACIONAL o EXTRANJERO</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-3 font-medium">rubro</td>
+                  <td class="px-4 py-3">SERVICIO</td>
+                  <td class="px-4 py-3">Bien, Servicio, Obra, etc.</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-3 font-medium">ejecucion</td>
+                  <td class="px-4 py-3">FAP</td>
+                  <td class="px-4 py-3">Entidad de ejecución</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-3 font-medium">dependencia</td>
+                  <td class="px-4 py-3"></td>
+                  <td class="px-4 py-3">Opcional</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-3 font-medium">mesconvoca</td>
+                  <td class="px-4 py-3">MARZO</td>
+                  <td class="px-4 py-3">Mes en mayúsculas</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-3 font-medium">periodo</td>
+                  <td class="px-4 py-3">2026</td>
+                  <td class="px-4 py-3">Año</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-3 font-medium">cantidad</td>
+                  <td class="px-4 py-3">1</td>
+                  <td class="px-4 py-3">Entero</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-3 font-medium">certificado</td>
+                  <td class="px-4 py-3">316800.00</td>
+                  <td class="px-4 py-3">Monto decimal</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+          <div class="font-semibold">Fila ejemplo correcta</div>
+          <div class="mt-2 overflow-x-auto rounded-xl border border-emerald-200 bg-white px-3 py-3 font-mono text-[12px] text-slate-700">
+            800;P;EJEMPLO MASIVO FAP;FAP;RO;PUBLICADO;316800.00;ADJUDICACION SIMPLIFICADA;LCMN;INDIVIDUAL;NACIONAL;SERVICIO;FAP;;MARZO;2026;1;316800.00
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+          <div class="rounded-2xl border border-slate-200 bg-white p-4">
+            <div class="mb-3 font-semibold text-slate-900">OBAC / Ejecución válidos</div>
+            <div class="flex flex-wrap gap-2">
+              <?php foreach ($obacs as $item): ?>
+                <span class="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs text-blue-700">
+                  <?= h($item['nombre']) ?>
+                </span>
+              <?php endforeach; ?>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-slate-200 bg-white p-4">
+            <div class="mb-3 font-semibold text-slate-900">Estados válidos</div>
+            <div class="flex flex-wrap gap-2">
+              <?php foreach ($estados as $item): ?>
+                <span class="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs text-emerald-700">
+                  <?= h($item['nombre']) ?>
+                </span>
+              <?php endforeach; ?>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-slate-200 bg-white p-4">
+            <div class="mb-3 font-semibold text-slate-900">Fuentes válidas</div>
+            <div class="flex flex-wrap gap-2">
+              <?php foreach ($fuentes as $item): ?>
+                <span class="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs text-amber-700">
+                  <?= h($item['nombre']) ?>
+                </span>
+              <?php endforeach; ?>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-slate-200 bg-white p-4">
+            <div class="mb-3 font-semibold text-slate-900">Selecciones válidas</div>
+            <div class="flex flex-wrap gap-2">
+              <?php foreach ($selecciones as $item): ?>
+                <span class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-700">
+                  <?= h($item['nombre']) ?>
+                </span>
+              <?php endforeach; ?>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-slate-200 bg-white p-4">
+            <div class="mb-3 font-semibold text-slate-900">Listas válidas</div>
+            <div class="flex flex-wrap gap-2">
+              <?php foreach ($listas as $item): ?>
+                <span class="rounded-full border border-fuchsia-200 bg-fuchsia-50 px-3 py-1 text-xs text-fuchsia-700">
+                  <?= h($item['nombre']) ?>
+                </span>
+              <?php endforeach; ?>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-slate-200 bg-white p-4">
+            <div class="mb-3 font-semibold text-slate-900">Modalidades válidas</div>
+            <div class="flex flex-wrap gap-2">
+              <?php foreach ($modalidades as $item): ?>
+                <span class="rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs text-cyan-700">
+                  <?= h($item['nombre']) ?>
+                </span>
+              <?php endforeach; ?>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-slate-200 bg-white p-4">
+            <div class="mb-3 font-semibold text-slate-900">Tipo de mercado válido</div>
+            <div class="flex flex-wrap gap-2">
+              <?php foreach ($tipos_mercado as $item): ?>
+                <span class="rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs text-rose-700">
+                  <?= h($item['nombre']) ?>
+                </span>
+              <?php endforeach; ?>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-slate-200 bg-white p-4">
+            <div class="mb-3 font-semibold text-slate-900">Rubros válidos</div>
+            <div class="flex flex-wrap gap-2">
+              <?php foreach ($rubros as $item): ?>
+                <span class="rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs text-violet-700">
+                  <?= h($item['nombre']) ?>
+                </span>
+              <?php endforeach; ?>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-slate-200 bg-white p-4 xl:col-span-2">
+            <div class="mb-3 font-semibold text-slate-900">Períodos válidos</div>
+            <div class="flex flex-wrap gap-2">
+              <?php foreach ($periodos as $item): ?>
+                <span class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-700">
+                  <?= h($item['nombre']) ?>
+                </span>
+              <?php endforeach; ?>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
