@@ -267,16 +267,16 @@ foreach ($pacs as $row) {
   </div>
 
   <!-- Modal importación -->
-  <div id="modalImport" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
-    <div class="absolute inset-0 bg-slate-900/30" onclick="closeModal('modalImport')"></div>
+<div id="modalImport" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+  <div class="absolute inset-0 bg-slate-900/30" onclick="closeModal('modalImport')"></div>
 
-    <div class="relative w-full max-w-2xl rounded-[28px] border border-slate-200 bg-white shadow-soft">
+  <div class="relative flex max-h-[88vh] w-full max-w-2xl flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-soft">
       <div class="border-b border-slate-200 px-5 py-4">
         <div class="text-xs uppercase tracking-wide text-slate-400">PAC</div>
         <div class="mt-1 text-2xl font-semibold text-slate-900">Importación masiva CSV</div>
       </div>
 
-      <div class="space-y-4 px-5 py-5">
+      <div class="flex-1 space-y-4 overflow-y-auto px-5 py-5">
         <div class="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
           <div class="font-semibold">Indicaciones</div>
           <ul class="mt-2 list-disc space-y-1 pl-5 text-[13px]">
@@ -1248,11 +1248,16 @@ foreach ($pacs as $row) {
 
       if (!data.ok) {
         resultBox.className = 'rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700';
+
         resultBox.innerHTML = `
-          <div class="font-semibold">No se pudo importar</div>
-          <div class="mt-1">${data.msg || 'Ocurrió un error en la importación.'}</div>
-          ${Array.isArray(data.errores) && data.errores.length ? `<ul class="mt-2 list-disc pl-5">${data.errores.map(x => `<li>${x}</li>`).join('')}</ul>` : ''}
-        `;
+  <div class="font-semibold">No se pudo importar</div>
+  <div class="mt-1">${data.msg || 'Ocurrió un error en la importación.'}</div>
+
+  ${Array.isArray(data.errores) && data.errores.length
+    ? `<ul class="mt-2 list-disc pl-5 max-h-40 overflow-auto">${data.errores.map(x => `<li>${x}</li>`).join('')}</ul>`
+    : ''
+  }
+`;
         showToast(data.msg || 'No se pudo importar el CSV.', 'error', 'Error');
         btn.disabled = false;
         btn.textContent = original;
@@ -1261,28 +1266,63 @@ foreach ($pacs as $row) {
 
       resultBox.className = 'rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700';
       resultBox.innerHTML = `
-        <div class="font-semibold">Importación completada</div>
-        <div class="mt-1">${data.msg || 'Proceso finalizado correctamente.'}</div>
-        <div class="mt-2">
-          <strong>Insertados:</strong> ${data.insertados ?? 0}
-          ${typeof data.omitidos !== 'undefined' ? ` | <strong>Omitidos:</strong> ${data.omitidos}` : ''}
-        </div>
-        ${Array.isArray(data.errores) && data.errores.length ? `<ul class="mt-2 list-disc pl-5">${data.errores.map(x => `<li>${x}</li>`).join('')}</ul>` : ''}
-      `;
+  <div class="font-semibold">Importación completada</div>
+  <div class="mt-1">${data.msg || 'Proceso finalizado correctamente.'}</div>
+
+  <div class="mt-2">
+    <strong>Insertados:</strong> ${data.insertados ?? 0}
+    ${typeof data.omitidos !== 'undefined' ? ` | <strong>Omitidos:</strong> ${data.omitidos}` : ''}
+  </div>
+
+  ${Array.isArray(data.errores) && data.errores.length
+    ? `<ul class="mt-2 list-disc pl-5 max-h-40 overflow-auto">${data.errores.map(x => `<li>${x}</li>`).join('')}</ul>`
+    : ''
+  }
+
+  <div class="mt-4 flex gap-2">
+    <button
+      type="button"
+      class="rounded-xl bg-slate-900 px-4 py-2 text-white text-sm"
+      onclick="location.reload()">
+      Actualizar tabla
+    </button>
+
+    <button
+      type="button"
+      class="rounded-xl border border-slate-300 px-4 py-2 text-sm"
+      onclick="closeModal('modalImport')">
+      Cerrar
+    </button>
+  </div>
+`;
 
       showToast(data.msg || 'CSV importado correctamente.', 'success', 'Correcto');
-
-      setTimeout(() => {
-        window.location.reload();
-      }, 1200);
+      btn.disabled = false;
+      btn.textContent = original;
 
     } catch (err) {
       console.error(err);
       resultBox.className = 'rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700';
       resultBox.innerHTML = `
-        <div class="font-semibold">Error</div>
-        <div class="mt-1">Ocurrió un error al procesar la importación.</div>
-      `;
+  <div class="font-semibold">Error</div>
+  <div class="mt-1">Ocurrió un error al procesar la importación.</div>
+
+  <div class="mt-4 flex gap-2">
+    <button
+      type="button"
+      class="rounded-xl bg-slate-900 px-4 py-2 text-white text-sm"
+      onclick="importCsvPac()">
+      Reintentar
+    </button>
+
+    <button
+      type="button"
+      class="rounded-xl border border-slate-300 px-4 py-2 text-sm"
+      onclick="closeModal('modalImport')">
+      Cerrar
+    </button>
+  </div>
+`;
       showToast('Error al importar el CSV.', 'error', 'Error');
       btn.disabled = false;
       btn.textContent = original;
