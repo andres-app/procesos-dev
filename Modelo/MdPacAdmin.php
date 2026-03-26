@@ -966,32 +966,33 @@ class MdPacAdmin
         $nombreNormalizado = self::resolverAliasImportacion($tipo, $nombreOriginal);
         $nombreNormalizado = self::normalizarTextoImportacion($nombreNormalizado);
 
-        // 1) Coincidencia exacta normalizada
-        $sql = "SELECT id, {$cfg['campo']} AS nombre
-        FROM {$cfg['tabla']}";
-        $st = $db->prepare($sql);
-        $st->bindValue(':nombre', $nombreNormalizado, PDO::PARAM_STR);
-        $st->execute();
-
-        $row = $st->fetch(PDO::FETCH_ASSOC);
-        if ($row) {
-            return (int)$row['id'];
-        }
-
-        // 2) Coincidencia flexible recorriendo catálogo
         $st = $db->query("SELECT id, {$cfg['campo']} AS nombre FROM {$cfg['tabla']} ORDER BY {$cfg['campo']}");
         $items = $st->fetchAll(PDO::FETCH_ASSOC);
 
+        // 1) PRIMERA PASADA: coincidencia exacta únicamente
         foreach ($items as $item) {
             $cat = self::normalizarTextoImportacion((string)$item['nombre']);
 
-            // Coincidencia exacta
             if ($cat === $nombreNormalizado) {
                 return (int)$item['id'];
             }
+        }
 
-            // Coincidencia parcial (clave para FAP, CCFFAA, etc.)
-            if (strpos($cat, $nombreNormalizado) !== false) {
+        // 2) Si el valor es corto/código, NO permitir coincidencia parcial
+        // evita que "RO" haga match con "D Y T RDR RO"
+        if (mb_strlen($nombreNormalizado, 'UTF-8') <= 4) {
+            throw new Exception($cfg['label'] . " no reconocido: '{$nombreOriginal}'.");
+        }
+
+        // 3) SEGUNDA PASADA: coincidencia parcial solo para textos largos
+        foreach ($items as $item) {
+            $cat = self::normalizarTextoImportacion((string)$item['nombre']);
+
+            if ($nombreNormalizado !== '' && strpos($cat, $nombreNormalizado) !== false) {
+                return (int)$item['id'];
+            }
+
+            if ($cat !== '' && strpos($nombreNormalizado, $cat) !== false) {
                 return (int)$item['id'];
             }
         }
@@ -1085,64 +1086,130 @@ class MdPacAdmin
             ],
 
             'obac' => [
-                'CCFFAA'                         => 'COMANDO CONJUNTO DE LAS FUERZAS ARMADAS',
-                'COMANDO CONJUNTO'               => 'COMANDO CONJUNTO DE LAS FUERZAS ARMADAS',
+                'ACFFAA'                  => 'ACFFAA',
+                'CCFFAA'                  => 'CCFFAA',
+                'EP'                      => 'EP',
+                'FAP'                     => 'FAP',
+                'MGP'                     => 'MGP',
+                'CONIDA'                  => 'CONIDA',
+                'MINDEF'                  => 'MINDEF',
 
-                'EP'                             => 'EJERCITO DEL PERU',
-                'EJERCITO'                       => 'EJERCITO DEL PERU',
-                'EJERCITO DEL PERU'              => 'EJERCITO DEL PERU',
+                'COMANDO CONJUNTO'        => 'CCFFAA',
+                'COMANDO CONJUNTO DE LAS FUERZAS ARMADAS' => 'CCFFAA',
 
-                'FAP'                            => 'FUERZA AEREA DEL PERU',
-                'FUERZA AEREA'                   => 'FUERZA AEREA DEL PERU',
-                'FUERZA AEREA DEL PERU'          => 'FUERZA AEREA DEL PERU',
+                'EJERCITO'                => 'EP',
+                'EJERCITO DEL PERU'       => 'EP',
 
-                'MGP'                            => 'MARINA DE GUERRA DEL PERU',
-                'MARINA'                         => 'MARINA DE GUERRA DEL PERU',
-                'MARINA DE GUERRA'               => 'MARINA DE GUERRA DEL PERU',
-                'MARINA DE GUERRA DEL PERU'      => 'MARINA DE GUERRA DEL PERU',
+                'FUERZA AEREA'            => 'FAP',
+                'FUERZA AEREA DEL PERU'   => 'FAP',
 
-                'CONIDA'                         => 'COMISION NACIONAL DE INVESTIGACION Y DESARROLLO AEROESPACIAL',
+                'MARINA'                  => 'MGP',
+                'MARINA DE GUERRA'        => 'MGP',
+                'MARINA DE GUERRA DEL PERU' => 'MGP',
             ],
 
             'entidad' => [
-                'CCFFAA'                         => 'COMANDO CONJUNTO DE LAS FUERZAS ARMADAS',
-                'COMANDO CONJUNTO'               => 'COMANDO CONJUNTO DE LAS FUERZAS ARMADAS',
+                'ACFFAA'                  => 'ACFFAA',
+                'CCFFAA'                  => 'CCFFAA',
+                'EP'                      => 'EP',
+                'FAP'                     => 'FAP',
+                'MGP'                     => 'MGP',
+                'CONIDA'                  => 'CONIDA',
+                'MINDEF'                  => 'MINDEF',
 
-                'EP'                             => 'EJERCITO DEL PERU',
-                'EJERCITO'                       => 'EJERCITO DEL PERU',
-                'EJERCITO DEL PERU'              => 'EJERCITO DEL PERU',
+                'COMANDO CONJUNTO'        => 'CCFFAA',
+                'COMANDO CONJUNTO DE LAS FUERZAS ARMADAS' => 'CCFFAA',
 
-                'FAP'                            => 'FUERZA AEREA DEL PERU',
-                'FUERZA AEREA'                   => 'FUERZA AEREA DEL PERU',
-                'FUERZA AEREA DEL PERU'          => 'FUERZA AEREA DEL PERU',
+                'EJERCITO'                => 'EP',
+                'EJERCITO DEL PERU'       => 'EP',
 
-                'MGP'                            => 'MARINA DE GUERRA DEL PERU',
-                'MARINA'                         => 'MARINA DE GUERRA DEL PERU',
-                'MARINA DE GUERRA'               => 'MARINA DE GUERRA DEL PERU',
-                'MARINA DE GUERRA DEL PERU'      => 'MARINA DE GUERRA DEL PERU',
+                'FUERZA AEREA'            => 'FAP',
+                'FUERZA AEREA DEL PERU'   => 'FAP',
 
-                'CONIDA'                         => 'COMISION NACIONAL DE INVESTIGACION Y DESARROLLO AEROESPACIAL',
+                'MARINA'                  => 'MGP',
+                'MARINA DE GUERRA'        => 'MGP',
+                'MARINA DE GUERRA DEL PERU' => 'MGP',
             ],
 
-            'tipo_mercado' => [
-                'NACIONAL'               => 'NACIONAL',
-                'MERCADO NACIONAL'       => 'NACIONAL',
+            'fuente' => [
+                'RO'                      => 'RO',
+                'RECURSO ORDINARIO'       => 'RO',
+                'RECURSOS ORDINARIOS'     => 'RO',
 
-                'EXTRANJERO'             => 'EXTRANJERO',
-                'MERCADO EXTRANJERO'     => 'EXTRANJERO',
+                'RDR'                     => 'RDR',
+                'RECURSOS DIRECTAMENTE RECAUDADOS' => 'RDR',
+
+                'RD'                      => 'RD',
+                'DONACIONES Y TRANSFERENCIAS' => 'DYT',
+                'DYT'                     => 'DYT',
+                'D Y T'                   => 'DYT',
+                'D Y T FP'                => 'D Y T FP',
+                'D Y T RDR RO'            => 'D Y T RDR RO',
+                'D Y T RDR RP'            => 'D Y T RDR RP',
+                'D Y T RO'                => 'D Y T RO',
+                'D Y T ROOC'              => 'D Y T ROOC',
+                'RDR D Y T'               => 'RDR D Y T',
+                'RDR FP'                  => 'RDR FP',
+                'RDR ROOC'                => 'RDR ROOC',
+                'RO FP'                   => 'RO FP',
+                'RO RDR'                  => 'RO RDR',
+                'RO ROOC'                 => 'RO ROOC',
+                'RO ROOC'                 => 'RO ROOC',
+                'ROOC'                    => 'ROOC',
+                'ROOC RD'                 => 'ROOC RD',
+                'VRAEM'                   => 'VRAEM',
+            ],
+
+            'seleccion' => [
+                'ADJUDICACION SIMPLIFICADA'   => 'ADJUDICACION SIMPLIFICADA',
+                'AS'                          => 'ADJUDICACION SIMPLIFICADA',
+
+                'COMPARACION DE PRECIOS'      => 'COMPARACION DE PRECIOS',
+                'CPRE'                        => 'COMPARACION DE PRECIOS',
+
+                'CONCURSO PUBLICO'            => 'CONCURSO PUBLICO',
+                'CP'                          => 'CONCURSO PUBLICO',
+
+                'LICITACION PUBLICA'          => 'LICITACION PUBLICA',
+                'LP'                          => 'LICITACION PUBLICA',
+
+                'SUBASTA INVERSA ELECTRONICA' => 'SUBASTA INVERSA ELECTRONICA',
+                'SIE'                         => 'SUBASTA INVERSA ELECTRONICA',
+
+                'CONTRATACION DIRECTA'        => 'CONTRATACION DIRECTA',
+                'CD'                          => 'CONTRATACION DIRECTA',
+
+                'REGIMEN ESPECIAL'            => 'REGIMEN ESPECIAL',
+                'RES'                         => 'REGIMEN ESPECIAL',
             ],
 
             'lista' => [
                 'LCMN' => 'LCMN',
-                'LGCS' => 'LGCS',
                 'LGCE' => 'LGCE',
+                'LGCS' => 'LGCS',
                 'LCME' => 'LCME',
             ],
 
             'modalidad' => [
-                'CORPORATIVA'    => 'CORPORATIVO',
-                'CORPORATIVO'    => 'CORPORATIVO',
-                'INDIVIDUAL'     => 'INDIVIDUAL',
+                'CORPORATIVA' => 'CORPORATIVO',
+                'CORPORATIVO' => 'CORPORATIVO',
+                'INDIVIDUAL'  => 'INDIVIDUAL',
+            ],
+
+            'tipo_mercado' => [
+                'NACIONAL'           => 'NACIONAL',
+                'MERCADO NACIONAL'   => 'NACIONAL',
+                'EXTRANJERO'         => 'EXTRANJERO',
+                'MERCADO EXTRANJERO' => 'EXTRANJERO',
+            ],
+
+            'rubro' => [
+                'BIEN'               => 'BIEN',
+                'BIENES'             => 'BIEN',
+                'SERVICIO'           => 'SERVICIO',
+                'SERVICIOS'          => 'SERVICIO',
+                'OBRA'               => 'OBRA',
+                'CONSULTORIA DE OBRA' => 'CONSULTORIA DE OBRA',
             ],
 
             'periodo' => [

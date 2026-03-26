@@ -180,7 +180,7 @@ class CtrPacAdmin
             'P',
             'EJEMPLO MASIVO 1',
             'FAP',
-            'RECURSOS ORDINARIOS',
+            'RO',
             'PUBLICADO',
             '316800.00',
             'ADJUDICACION SIMPLIFICADA',
@@ -194,6 +194,27 @@ class CtrPacAdmin
             '2026',
             '1',
             '316800.00'
+        ], ';');
+
+        fputcsv($out, [
+            '900',
+            'NP',
+            'EJEMPLO MASIVO 2',
+            'CCFFAA',
+            'RO',
+            'OBSERVADO',
+            '85000.00',
+            'COMPARACION DE PRECIOS',
+            'LCMN',
+            'INDIVIDUAL',
+            'EXTRANJERO',
+            'BIEN',
+            'CCFFAA',
+            '',
+            'ABRIL',
+            '2026',
+            '1',
+            '0.00'
         ], ';');
 
         fputcsv($out, [
