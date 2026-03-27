@@ -267,10 +267,10 @@ foreach ($pacs as $row) {
   </div>
 
   <!-- Modal importación -->
-<div id="modalImport" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
-  <div class="absolute inset-0 bg-slate-900/30" onclick="closeModal('modalImport')"></div>
+  <div id="modalImport" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-900/30" onclick="closeModal('modalImport')"></div>
 
-  <div class="relative flex max-h-[88vh] w-full max-w-2xl flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-soft">
+    <div class="relative flex max-h-[88vh] w-full max-w-2xl flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-soft">
       <div class="border-b border-slate-200 px-5 py-4">
         <div class="text-xs uppercase tracking-wide text-slate-400">PAC</div>
         <div class="mt-1 text-2xl font-semibold text-slate-900">Importación masiva CSV</div>
@@ -1215,6 +1215,7 @@ foreach ($pacs as $row) {
       }
     }
   }
+
   window.fakeSave = fakeSave;
 
   async function importCsvPac() {
@@ -1244,20 +1245,74 @@ foreach ($pacs as $row) {
         body: fd
       });
 
-      const data = await resp.json();
+      const rawText = await resp.text();
+      let data = null;
+
+      try {
+        data = JSON.parse(rawText);
+      } catch (jsonError) {
+        console.error('Respuesta no válida del servidor:', rawText);
+
+        resultBox.className = 'rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700';
+        resultBox.innerHTML = `
+          <div class="font-semibold">Error del servidor</div>
+          <div class="mt-1">La respuesta no es un JSON válido.</div>
+
+          <div class="mt-2 rounded-xl bg-white/70 p-3 font-mono text-[12px] text-slate-700 max-h-40 overflow-auto">
+            ${String(rawText || 'Respuesta vacía del servidor.').replace(/</g, '&lt;').replace(/>/g, '&gt;')}
+          </div>
+
+          <div class="mt-4 flex gap-2">
+            <button
+              type="button"
+              class="rounded-xl bg-slate-900 px-4 py-2 text-white text-sm"
+              onclick="importCsvPac()">
+              Reintentar
+            </button>
+
+            <button
+              type="button"
+              class="rounded-xl border border-slate-300 px-4 py-2 text-sm"
+              onclick="closeModal('modalImport')">
+              Cerrar
+            </button>
+          </div>
+        `;
+
+        showToast('El servidor devolvió una respuesta inválida.', 'error', 'Error');
+        btn.disabled = false;
+        btn.textContent = original;
+        return;
+      }
 
       if (!data.ok) {
         resultBox.className = 'rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700';
-
         resultBox.innerHTML = `
-  <div class="font-semibold">No se pudo importar</div>
-  <div class="mt-1">${data.msg || 'Ocurrió un error en la importación.'}</div>
+          <div class="font-semibold">No se pudo importar</div>
+          <div class="mt-1">${data.msg || 'Ocurrió un error en la importación.'}</div>
 
-  ${Array.isArray(data.errores) && data.errores.length
-    ? `<ul class="mt-2 list-disc pl-5 max-h-40 overflow-auto">${data.errores.map(x => `<li>${x}</li>`).join('')}</ul>`
-    : ''
-  }
-`;
+          ${Array.isArray(data.errores) && data.errores.length
+            ? `<ul class="mt-2 list-disc pl-5 max-h-40 overflow-auto">${data.errores.map(x => `<li>${x}</li>`).join('')}</ul>`
+            : ''
+          }
+
+          <div class="mt-4 flex gap-2">
+            <button
+              type="button"
+              class="rounded-xl bg-slate-900 px-4 py-2 text-white text-sm"
+              onclick="importCsvPac()">
+              Reintentar
+            </button>
+
+            <button
+              type="button"
+              class="rounded-xl border border-slate-300 px-4 py-2 text-sm"
+              onclick="closeModal('modalImport')">
+              Cerrar
+            </button>
+          </div>
+        `;
+
         showToast(data.msg || 'No se pudo importar el CSV.', 'error', 'Error');
         btn.disabled = false;
         btn.textContent = original;
@@ -1266,35 +1321,35 @@ foreach ($pacs as $row) {
 
       resultBox.className = 'rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700';
       resultBox.innerHTML = `
-  <div class="font-semibold">Importación completada</div>
-  <div class="mt-1">${data.msg || 'Proceso finalizado correctamente.'}</div>
+        <div class="font-semibold">Importación completada</div>
+        <div class="mt-1">${data.msg || 'Proceso finalizado correctamente.'}</div>
 
-  <div class="mt-2">
-    <strong>Insertados:</strong> ${data.insertados ?? 0}
-    ${typeof data.omitidos !== 'undefined' ? ` | <strong>Omitidos:</strong> ${data.omitidos}` : ''}
-  </div>
+        <div class="mt-2">
+          <strong>Insertados:</strong> ${data.insertados ?? 0}
+          ${typeof data.omitidos !== 'undefined' ? ` | <strong>Omitidos:</strong> ${data.omitidos}` : ''}
+        </div>
 
-  ${Array.isArray(data.errores) && data.errores.length
-    ? `<ul class="mt-2 list-disc pl-5 max-h-40 overflow-auto">${data.errores.map(x => `<li>${x}</li>`).join('')}</ul>`
-    : ''
-  }
+        ${Array.isArray(data.errores) && data.errores.length
+          ? `<ul class="mt-2 list-disc pl-5 max-h-40 overflow-auto">${data.errores.map(x => `<li>${x}</li>`).join('')}</ul>`
+          : ''
+        }
 
-  <div class="mt-4 flex gap-2">
-    <button
-      type="button"
-      class="rounded-xl bg-slate-900 px-4 py-2 text-white text-sm"
-      onclick="location.reload()">
-      Actualizar tabla
-    </button>
+        <div class="mt-4 flex gap-2">
+          <button
+            type="button"
+            class="rounded-xl bg-slate-900 px-4 py-2 text-white text-sm"
+            onclick="location.reload()">
+            Actualizar tabla
+          </button>
 
-    <button
-      type="button"
-      class="rounded-xl border border-slate-300 px-4 py-2 text-sm"
-      onclick="closeModal('modalImport')">
-      Cerrar
-    </button>
-  </div>
-`;
+          <button
+            type="button"
+            class="rounded-xl border border-slate-300 px-4 py-2 text-sm"
+            onclick="closeModal('modalImport')">
+            Cerrar
+          </button>
+        </div>
+      `;
 
       showToast(data.msg || 'CSV importado correctamente.', 'success', 'Correcto');
       btn.disabled = false;
@@ -1304,30 +1359,31 @@ foreach ($pacs as $row) {
       console.error(err);
       resultBox.className = 'rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700';
       resultBox.innerHTML = `
-  <div class="font-semibold">Error</div>
-  <div class="mt-1">Ocurrió un error al procesar la importación.</div>
+        <div class="font-semibold">Error</div>
+        <div class="mt-1">Ocurrió un error al procesar la importación.</div>
 
-  <div class="mt-4 flex gap-2">
-    <button
-      type="button"
-      class="rounded-xl bg-slate-900 px-4 py-2 text-white text-sm"
-      onclick="importCsvPac()">
-      Reintentar
-    </button>
+        <div class="mt-4 flex gap-2">
+          <button
+            type="button"
+            class="rounded-xl bg-slate-900 px-4 py-2 text-white text-sm"
+            onclick="importCsvPac()">
+            Reintentar
+          </button>
 
-    <button
-      type="button"
-      class="rounded-xl border border-slate-300 px-4 py-2 text-sm"
-      onclick="closeModal('modalImport')">
-      Cerrar
-    </button>
-  </div>
-`;
+          <button
+            type="button"
+            class="rounded-xl border border-slate-300 px-4 py-2 text-sm"
+            onclick="closeModal('modalImport')">
+            Cerrar
+          </button>
+        </div>
+      `;
       showToast('Error al importar el CSV.', 'error', 'Error');
       btn.disabled = false;
       btn.textContent = original;
     }
   }
+
   window.importCsvPac = importCsvPac;
 
   function fakeDelete() {

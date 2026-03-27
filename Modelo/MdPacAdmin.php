@@ -658,155 +658,169 @@ class MdPacAdmin
         return null;
     }
 
-    public static function importarDesdeCsv(string $tmpPath): array
-    {
-        $db = db();
+public static function importarDesdeCsv(string $tmpPath): array
+{
+    $db = db();
 
-        $fp = fopen($tmpPath, 'r');
-        if (!$fp) {
-            throw new Exception('No se pudo abrir el archivo CSV.');
+    $fp = fopen($tmpPath, 'r');
+    if (!$fp) {
+        return [
+            'insertados' => 0,
+            'omitidos'   => 0,
+            'errores'    => ['No se pudo abrir el archivo CSV.'],
+        ];
+    }
+
+    $insertados = 0;
+    $omitidos   = 0;
+    $errores    = [];
+    $filaNumero = 0;
+
+    try {
+        $delimiter = self::detectarSeparadorCsv($tmpPath);
+
+        if (!$db->inTransaction()) {
+            $db->beginTransaction();
         }
 
-        $insertados = 0;
-        $omitidos   = 0;
-        $errores    = [];
-        $filaNumero = 0;
+        while (($row = fgetcsv($fp, 0, $delimiter)) !== false) {
+            $filaNumero++;
 
-        try {
-            $delimiter = self::detectarSeparadorCsv($tmpPath);
+            if ($filaNumero === 1 && isset($row[0])) {
+                $row[0] = preg_replace('/^\xEF\xBB\xBF/', '', (string)$row[0]);
+            }
 
-            $db->beginTransaction();
+            if ($filaNumero === 1) {
+                continue;
+            }
 
-            while (($row = fgetcsv($fp, 0, $delimiter)) !== false) {
-                $filaNumero++;
+            $row = array_map(static function ($v) {
+                return trim((string)$v);
+            }, $row);
 
-                // limpiar BOM en primera celda
-                if ($filaNumero === 1 && isset($row[0])) {
-                    $row[0] = preg_replace('/^\xEF\xBB\xBF/', '', (string)$row[0]);
-                }
+            if (count(array_filter($row, static fn($v) => $v !== '')) === 0) {
+                $omitidos++;
+                continue;
+            }
 
-                // Ignorar cabecera
-                if ($filaNumero === 1) {
-                    continue;
-                }
+            $row = array_pad($row, 18, '');
 
-                $row = array_map(static function ($v) {
-                    return trim((string)$v);
-                }, $row);
+            [
+                $nopac,
+                $pn,
+                $descripcion,
+                $obacTexto,
+                $fuenteTexto,
+                $estadoTexto,
+                $estimado,
+                $seleccionTexto,
+                $listaTexto,
+                $modalidadTexto,
+                $tipoMercadoTexto,
+                $rubroTexto,
+                $ejecucionTexto,
+                $dependenciaTexto,
+                $mesconvoca,
+                $periodoTexto,
+                $cantidad,
+                $certificado
+            ] = $row;
 
-                // Ignorar filas vacías
-                if (count(array_filter($row, static fn($v) => $v !== '')) === 0) {
-                    $omitidos++;
-                    continue;
-                }
+            $nopac       = trim($nopac);
+            $descripcion = self::asegurarUtf8(trim($descripcion));
+            $obacTexto   = self::asegurarUtf8(trim($obacTexto));
+            $fuenteTexto = self::asegurarUtf8(trim($fuenteTexto));
+            $estadoTexto = self::asegurarUtf8(trim($estadoTexto));
+            $seleccionTexto = self::asegurarUtf8(trim($seleccionTexto));
+            $listaTexto = self::asegurarUtf8(trim($listaTexto));
+            $modalidadTexto = self::asegurarUtf8(trim($modalidadTexto));
+            $tipoMercadoTexto = self::asegurarUtf8(trim($tipoMercadoTexto));
+            $rubroTexto = self::asegurarUtf8(trim($rubroTexto));
+            $ejecucionTexto = self::asegurarUtf8(trim($ejecucionTexto));
+            $dependenciaTexto = self::asegurarUtf8(trim($dependenciaTexto));
+            $periodoTexto = self::asegurarUtf8(trim($periodoTexto));
+            $pn = strtoupper(trim($pn ?: 'NP'));
 
-                // Completar columnas faltantes
-                $row = array_pad($row, 18, '');
+            if ($nopac === '' || $descripcion === '') {
+                $errores[] = self::asegurarUtf8("Fila {$filaNumero}: nopac y descripción son obligatorios.");
+                $omitidos++;
+                continue;
+            }
 
-                [
-                    $nopac,
-                    $pn,
-                    $descripcion,
-                    $obacTexto,
-                    $fuenteTexto,
-                    $estadoTexto,
-                    $estimado,
-                    $seleccionTexto,
-                    $listaTexto,
-                    $modalidadTexto,
-                    $tipoMercadoTexto,
-                    $rubroTexto,
-                    $ejecucionTexto,
-                    $dependenciaTexto,
-                    $mesconvoca,
-                    $periodoTexto,
-                    $cantidad,
-                    $certificado
-                ] = $row;
+            if (!in_array($pn, ['P', 'NP'], true)) {
+                $pn = 'NP';
+            }
 
-                $nopac       = trim($nopac);
-                $descripcion = trim($descripcion);
-                $pn          = strtoupper(trim($pn ?: 'NP'));
+            $estimado    = self::normalizarDecimal($estimado);
+            $certificado = self::normalizarDecimal($certificado);
+            $cantidad    = self::normalizarEntero($cantidad);
+            $mesconvoca  = self::normalizarMesConvocatoria($mesconvoca);
 
-                if ($nopac === '' || $descripcion === '') {
-                    $errores[] = "Fila {$filaNumero}: nopac y descripción son obligatorios.";
-                    $omitidos++;
-                    continue;
-                }
+            try {
+                $estadoId      = self::buscarIdPorNombre('estado', $estadoTexto);
+                $obacId        = self::buscarIdPorNombre('obac', $obacTexto);
+                $fuenteId      = self::buscarIdPorNombre('fuente', $fuenteTexto);
+                $seleccionId   = self::buscarIdPorNombre('seleccion', $seleccionTexto);
+                $listaId       = self::buscarIdPorNombre('lista', $listaTexto);
+                $modalidadId   = self::buscarIdPorNombre('modalidad', $modalidadTexto);
+                $tipoMercadoId = self::buscarIdPorNombre('tipo_mercado', $tipoMercadoTexto);
+                $rubroId       = self::buscarIdPorNombre('rubro', $rubroTexto);
+                $ejecucionId   = self::buscarIdPorNombre('entidad', $ejecucionTexto);
+                $dependenciaId = self::buscarIdPorNombre('dependencia', $dependenciaTexto);
+                $periodoId     = self::buscarIdPorNombre('periodo', $periodoTexto);
+            } catch (Throwable $e) {
+                $errores[] = self::asegurarUtf8("Fila {$filaNumero}: " . $e->getMessage());
+                $omitidos++;
+                continue;
+            }
 
-                if (!in_array($pn, ['P', 'NP'], true)) {
-                    $pn = 'NP';
-                }
+            if (self::existePac($nopac, $obacId, $pn)) {
+                $errores[] = self::asegurarUtf8("Fila {$filaNumero}: ya existe un PAC con N° PAC '{$nopac}', OBAC '{$obacTexto}' y P/NP '{$pn}'.");
+                $omitidos++;
+                continue;
+            }
 
-                $estimado    = self::normalizarDecimal($estimado);
-                $certificado = self::normalizarDecimal($certificado);
-                $cantidad    = self::normalizarEntero($cantidad);
-                $mesconvoca  = self::normalizarMesConvocatoria($mesconvoca);
+            $sql = "INSERT INTO pac (
+                        nopac,
+                        pn,
+                        descripcion,
+                        obac,
+                        fuente,
+                        estado,
+                        estimado,
+                        seleccion,
+                        lista,
+                        modalidad,
+                        tipo_mercado,
+                        rubro,
+                        ejecucion,
+                        dependencia,
+                        mesconvoca,
+                        periodo,
+                        cantidad,
+                        certificado
+                    ) VALUES (
+                        :nopac,
+                        :pn,
+                        :descripcion,
+                        :obac,
+                        :fuente,
+                        :estado,
+                        :estimado,
+                        :seleccion,
+                        :lista,
+                        :modalidad,
+                        :tipo_mercado,
+                        :rubro,
+                        :ejecucion,
+                        :dependencia,
+                        :mesconvoca,
+                        :periodo,
+                        :cantidad,
+                        :certificado
+                    )";
 
-                try {
-                    $estadoId      = self::buscarIdPorNombre('estado', $estadoTexto);
-                    $obacId        = self::buscarIdPorNombre('obac', $obacTexto);
-                    $fuenteId      = self::buscarIdPorNombre('fuente', $fuenteTexto);
-                    $seleccionId   = self::buscarIdPorNombre('seleccion', $seleccionTexto);
-                    $listaId       = self::buscarIdPorNombre('lista', $listaTexto);
-                    $modalidadId   = self::buscarIdPorNombre('modalidad', $modalidadTexto);
-                    $tipoMercadoId = self::buscarIdPorNombre('tipo_mercado', $tipoMercadoTexto);
-                    $rubroId       = self::buscarIdPorNombre('rubro', $rubroTexto);
-                    $ejecucionId   = self::buscarIdPorNombre('entidad', $ejecucionTexto);
-                    $dependenciaId = self::buscarIdPorNombre('dependencia', $dependenciaTexto);
-                    $periodoId     = self::buscarIdPorNombre('periodo', $periodoTexto);
-                } catch (Throwable $e) {
-                    $errores[] = "Fila {$filaNumero}: " . $e->getMessage();
-                    $omitidos++;
-                    continue;
-                }
-
-                if (self::existePac($nopac, $obacId, $pn)) {
-                    $errores[] = "Fila {$filaNumero}: ya existe un PAC con N° PAC '{$nopac}', OBAC '{$obacTexto}' y P/NP '{$pn}'.";
-                    $omitidos++;
-                    continue;
-                }
-
-                $sql = "INSERT INTO pac (
-                            nopac,
-                            pn,
-                            descripcion,
-                            obac,
-                            fuente,
-                            estado,
-                            estimado,
-                            seleccion,
-                            lista,
-                            modalidad,
-                            tipo_mercado,
-                            rubro,
-                            ejecucion,
-                            dependencia,
-                            mesconvoca,
-                            periodo,
-                            cantidad,
-                            certificado
-                        ) VALUES (
-                            :nopac,
-                            :pn,
-                            :descripcion,
-                            :obac,
-                            :fuente,
-                            :estado,
-                            :estimado,
-                            :seleccion,
-                            :lista,
-                            :modalidad,
-                            :tipo_mercado,
-                            :rubro,
-                            :ejecucion,
-                            :dependencia,
-                            :mesconvoca,
-                            :periodo,
-                            :cantidad,
-                            :certificado
-                        )";
-
+            try {
                 $st = $db->prepare($sql);
                 $st->bindValue(':nopac', $nopac, PDO::PARAM_STR);
                 $st->bindValue(':pn', $pn, PDO::PARAM_STR);
@@ -827,32 +841,73 @@ class MdPacAdmin
                 $st->bindValue(':cantidad', $cantidad, PDO::PARAM_INT);
                 $st->bindValue(':certificado', $certificado);
 
-                try {
-                    $st->execute();
-                    $insertados++;
-                } catch (Throwable $e) {
-                    $errores[] = "Fila {$filaNumero}: error al insertar. " . $e->getMessage();
-                    $omitidos++;
-                }
+                $st->execute();
+                $insertados++;
+            } catch (Throwable $e) {
+                $errores[] = self::asegurarUtf8("Fila {$filaNumero}: error al insertar. " . $e->getMessage());
+                $omitidos++;
+                continue;
             }
+        }
 
+        if ($db->inTransaction()) {
             $db->commit();
+        }
 
-            return [
-                'insertados' => $insertados,
-                'omitidos'   => $omitidos,
-                'errores'    => $errores,
-            ];
-        } catch (Throwable $e) {
-            if ($db->inTransaction()) {
-                $db->rollBack();
-            }
-            throw $e;
-        } finally {
+        return self::limpiarArrayUtf8([
+            'insertados' => $insertados,
+            'omitidos'   => $omitidos,
+            'errores'    => $errores,
+        ]);
+    } catch (Throwable $e) {
+        if ($db->inTransaction()) {
+            $db->rollBack();
+        }
+
+        return self::limpiarArrayUtf8([
+            'insertados' => 0,
+            'omitidos'   => 0,
+            'errores'    => ['Error crítico: ' . $e->getMessage()],
+        ]);
+    } finally {
+        if (is_resource($fp)) {
             fclose($fp);
         }
     }
+}
 
+    private static function asegurarUtf8(?string $texto): string
+    {
+        $texto = (string)($texto ?? '');
+
+        if ($texto === '') {
+            return '';
+        }
+
+        if (mb_check_encoding($texto, 'UTF-8')) {
+            return $texto;
+        }
+
+        $convertido = @mb_convert_encoding($texto, 'UTF-8', 'UTF-8, ISO-8859-1, Windows-1252');
+        if ($convertido === false) {
+            $convertido = @iconv('Windows-1252', 'UTF-8//IGNORE', $texto);
+        }
+
+        return is_string($convertido) ? $convertido : '';
+    }
+
+    private static function limpiarArrayUtf8(array $data): array
+    {
+        foreach ($data as $k => $v) {
+            if (is_array($v)) {
+                $data[$k] = self::limpiarArrayUtf8($v);
+            } elseif (is_string($v)) {
+                $data[$k] = self::asegurarUtf8($v);
+            }
+        }
+
+        return $data;
+    }
     private static function detectarSeparadorCsv(string $tmpPath): string
     {
         $muestra = file_get_contents($tmpPath, false, null, 0, 4096);
