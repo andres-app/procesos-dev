@@ -64,24 +64,12 @@ foreach ($pacs as $row) {
     </div>
 
     <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-      <div class="relative">
-        <input
-          placeholder="Buscar por N° PAC, OBAC, descripción…"
-          class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 pr-9 text-[13px] text-slate-700 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200 sm:w-80" />
-        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">⌕</span>
-      </div>
-
       <button
+        id="btnFilters"
         type="button"
         class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-[13px] text-slate-700 transition hover:bg-slate-50">
         Filtros
       </button>
-
-      <a
-        href="<?= BASE_URL ?>/admin/pac_plantilla_csv"
-        class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-[13px] text-slate-700 transition hover:bg-slate-50">
-        Descargar plantilla CSV
-      </a>
 
       <button
         id="btnImport"
@@ -98,6 +86,38 @@ foreach ($pacs as $row) {
       </button>
     </div>
   </div>
+
+  <?php
+  $hayFiltrosActivos =
+    !empty($filtros['q']) ||
+    !empty($filtros['pn']) ||
+    !empty($filtros['estado']) ||
+    !empty($filtros['periodo']) ||
+    !empty($filtros['obac']);
+  ?>
+
+  <?php if ($hayFiltrosActivos): ?>
+    <div class="rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <span class="font-semibold">Filtros activos</span>
+          <span class="text-blue-700">
+            <?= !empty($filtros['q']) ? ' | Búsqueda: ' . h($filtros['q']) : '' ?>
+            <?= !empty($filtros['pn']) ? ' | P/NP: ' . h($filtros['pn']) : '' ?>
+            <?= !empty($filtros['estado']) ? ' | Estado aplicado' : '' ?>
+            <?= !empty($filtros['periodo']) ? ' | Periodo aplicado' : '' ?>
+            <?= !empty($filtros['obac']) ? ' | OBAC aplicado' : '' ?>
+          </span>
+        </div>
+
+        <a
+          href="<?= BASE_URL ?>/admin/pac"
+          class="inline-flex items-center justify-center rounded-xl border border-blue-200 bg-white px-3 py-2 text-[13px] text-blue-700 transition hover:bg-blue-100">
+          Limpiar
+        </a>
+      </div>
+    </div>
+  <?php endif; ?>
 
   <!-- KPIs -->
   <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -136,134 +156,243 @@ foreach ($pacs as $row) {
       <div class="font-semibold">PAC registrados</div>
     </div>
 
-    <div class="w-full overflow-x-auto">
-      <table id="tblPac" class="display w-full thc tbc opacity-0">
-        <thead class="bg-slate-50 text-slate-600">
-          <tr>
-            <th>N° PAC</th>
-            <th>P/NP</th>
-            <th>Descripción</th>
-            <th>OBAC</th>
-            <th>Fuente</th>
-            <th>Estado</th>
-            <th>Estimado</th>
-            <th class="text-right">Acciones</th>
-          </tr>
-        </thead>
+    <div class="datatable-shell">
+      <div class="w-full overflow-x-auto">
+        <table id="tblPac" class="display w-full opacity-0">
+          <thead>
+            <tr>
+              <th>N° PAC</th>
+              <th>P/NP</th>
+              <th>Descripción</th>
+              <th>OBAC</th>
+              <th>Fuente</th>
+              <th>Estado</th>
+              <th>Estimado</th>
+              <th class="text-right">Acciones</th>
+            </tr>
+          </thead>
 
-        <tbody class="divide-y divide-slate-100">
-          <?php foreach ($pacs as $r): ?>
-            <tr class="hover:bg-slate-50">
-              <td class="px-4 py-3 font-semibold text-slate-900">
-                <?= h($r['nopac']) ?>
-              </td>
+          <tbody>
+            <?php foreach ($pacs as $r): ?>
+              <tr>
+                <td class="px-4 py-3 font-semibold text-slate-900">
+                  <?= h($r['nopac']) ?>
+                </td>
 
-              <td class="px-4 py-3">
-                <?= pill(h($r['pn'] ?? 'NP'), ($r['pn'] ?? 'NP') === 'P' ? 'blue' : 'slate') ?>
-              </td>
+                <td class="px-4 py-3">
+                  <?= pill(h($r['pn'] ?? 'NP'), ($r['pn'] ?? 'NP') === 'P' ? 'blue' : 'slate') ?>
+                </td>
 
-              <td class="w-full px-4 py-3">
-                <div class="line-clamp-2 text-slate-900" title="<?= h($r['descripcion']) ?>">
-                  <?= h($r['descripcion']) ?>
-                </div>
-              </td>
+                <td class="w-full px-4 py-3">
+                  <div class="line-clamp-2 text-slate-900" title="<?= h($r['descripcion']) ?>">
+                    <?= h($r['descripcion']) ?>
+                  </div>
+                </td>
 
-              <td class="px-4 py-3">
-                <?= pill(h($r['obac_nombre'] ?? '-'), 'blue') ?>
-              </td>
+                <td class="px-4 py-3">
+                  <?= pill(h($r['obac_nombre'] ?? '-'), 'blue') ?>
+                </td>
 
-              <td class="px-4 py-3">
-                <?= pill(h($r['fuente_nombre'] ?? '-'), 'amber') ?>
-              </td>
+                <td class="px-4 py-3">
+                  <?= pill(h($r['fuente_nombre'] ?? '-'), 'amber') ?>
+                </td>
 
-              <td class="px-4 py-3">
-                <?= pill(h($r['estado_nombre'] ?? '-'), toneEstado($r['estado_nombre'] ?? '')) ?>
-              </td>
+                <td class="px-4 py-3">
+                  <?= pill(h($r['estado_nombre'] ?? '-'), toneEstado($r['estado_nombre'] ?? '')) ?>
+                </td>
 
-              <td class="whitespace-nowrap px-4 py-3">
-                S/ <?= number_format((float)$r['estimado'], 2) ?>
-              </td>
+                <td class="whitespace-nowrap px-4 py-3">
+                  S/ <?= number_format((float)$r['estimado'], 2) ?>
+                </td>
 
-              <td class="px-4 py-3">
-                <div class="flex items-center justify-end gap-1.5">
+                <td class="px-4 py-3">
+                  <div class="flex items-center justify-end gap-1.5">
 
-                  <a
-                    href="<?= BASE_URL ?>/admin/pac_detalle?id=<?= (int)$r['id'] ?>"
-                    class="inline-flex h-[34px] w-[34px] items-center justify-center rounded-xl border border-slate-300/60 bg-white text-slate-600 transition hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200 active:scale-[.98]"
-                    title="Ver detalle"
-                    aria-label="Ver detalle PAC <?= h($r['nopac']) ?>">
-                    <svg viewBox="0 0 24 24" class="h-4 w-4" aria-hidden="true">
-                      <path fill="currentColor"
-                        d="M12 5c-5.5 0-9.5 4.5-10.8 6.2a1.3 1.3 0 0 0 0 1.6C2.5 14.5 6.5 19 12 19s9.5-4.5 10.8-6.2a1.3 1.3 0 0 0 0-1.6C21.5 9.5 17.5 5 12 5zm0 12c-4.4 0-7.7-3.4-9-5 1.3-1.6 4.6-5 9-5s7.7 3.4 9 5c-1.3 1.6-4.6 5-9 5zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm0 4.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
-                    </svg>
-                  </a>
-
-                  <div class="relative">
-                    <button
-                      type="button"
+                    <a
+                      href="<?= BASE_URL ?>/admin/pac_detalle?id=<?= (int)$r['id'] ?>"
                       class="inline-flex h-[34px] w-[34px] items-center justify-center rounded-xl border border-slate-300/60 bg-white text-slate-600 transition hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200 active:scale-[.98]"
-                      data-menu-btn
-                      title="Más acciones"
-                      aria-label="Más acciones PAC <?= h($r['nopac']) ?>">
+                      title="Ver detalle"
+                      aria-label="Ver detalle PAC <?= h($r['nopac']) ?>">
                       <svg viewBox="0 0 24 24" class="h-4 w-4" aria-hidden="true">
                         <path fill="currentColor"
-                          d="M6 10.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm6 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm6 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z" />
+                          d="M12 5c-5.5 0-9.5 4.5-10.8 6.2a1.3 1.3 0 0 0 0 1.6C2.5 14.5 6.5 19 12 19s9.5-4.5 10.8-6.2a1.3 1.3 0 0 0 0-1.6C21.5 9.5 17.5 5 12 5zm0 12c-4.4 0-7.7-3.4-9-5 1.3-1.6 4.6-5 9-5s7.7 3.4 9 5c-1.3 1.6-4.6 5-9 5zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm0 4.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
                       </svg>
-                    </button>
+                    </a>
 
-                    <div
-                      class="absolute right-0 top-[42px] z-30 hidden min-w-[170px] rounded-2xl border border-slate-200 bg-white p-1.5 shadow-[0_20px_45px_rgba(15,23,42,.12)]"
-                      data-menu>
+                    <div class="relative">
                       <button
                         type="button"
-                        class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13px] font-semibold text-slate-900 transition hover:bg-slate-100"
-                        onclick="openEdit(
-                          <?= (int)$r['id'] ?>,
-                          '<?= h($r['nopac']) ?>',
-                          '<?= h($r['pn'] ?? 'NP') ?>',
-                          '<?= h($r['estado']) ?>',
-                          '<?= h($r['obac'] ?? '') ?>',
-                          '<?= h($r['seleccion'] ?? '') ?>',
-                          '<?= h($r['fuente'] ?? '') ?>',
-                          '<?= h($r['descripcion']) ?>',
-                          '<?= h($r['estimado']) ?>',
-                          '<?= h($r['periodo'] ?? '') ?>',
-                          '<?= h($r['lista'] ?? '') ?>',
-                          '<?= h($r['ejecucion'] ?? '') ?>',
-                          '<?= h($r['modalidad'] ?? '') ?>',
-                          '<?= h($r['dependencia'] ?? '') ?>',
-                          '<?= h($r['mesconvoca'] ?? '') ?>',
-                          '<?= h($r['certificado'] ?? '') ?>',
-                          '<?= h($r['tipo_mercado'] ?? '') ?>',
-                          '<?= h($r['cantidad'] ?? '') ?>',
-                          '<?= h($r['rubro'] ?? '') ?>',
-                          '<?= h($r['inversiones'] ?? '') ?>'
-                        )">
-                        ✏️ Editar
+                        class="inline-flex h-[34px] w-[34px] items-center justify-center rounded-xl border border-slate-300/60 bg-white text-slate-600 transition hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200 active:scale-[.98]"
+                        data-menu-btn
+                        title="Más acciones"
+                        aria-label="Más acciones PAC <?= h($r['nopac']) ?>">
+                        <svg viewBox="0 0 24 24" class="h-4 w-4" aria-hidden="true">
+                          <path fill="currentColor"
+                            d="M6 10.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm6 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm6 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z" />
+                        </svg>
                       </button>
 
-                      <button
-                        type="button"
-                        class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13px] font-semibold text-rose-600 transition hover:bg-rose-50"
-                        onclick="openDelete(<?= (int)$r['id'] ?>, '<?= h($r['nopac']) ?>')">
-                        🗑️ Eliminar
-                      </button>
+                      <div
+                        class="absolute right-0 top-[42px] z-30 hidden min-w-[170px] rounded-2xl border border-slate-200 bg-white p-1.5 shadow-[0_20px_45px_rgba(15,23,42,.12)]"
+                        data-menu>
+                        <button
+                          type="button"
+                          class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13px] font-semibold text-slate-900 transition hover:bg-slate-100"
+                          onclick="openEdit(
+                            <?= (int)$r['id'] ?>,
+                            '<?= h($r['nopac']) ?>',
+                            '<?= h($r['pn'] ?? 'NP') ?>',
+                            '<?= h($r['estado']) ?>',
+                            '<?= h($r['obac'] ?? '') ?>',
+                            '<?= h($r['seleccion'] ?? '') ?>',
+                            '<?= h($r['fuente'] ?? '') ?>',
+                            '<?= h($r['descripcion']) ?>',
+                            '<?= h($r['estimado']) ?>',
+                            '<?= h($r['periodo'] ?? '') ?>',
+                            '<?= h($r['lista'] ?? '') ?>',
+                            '<?= h($r['ejecucion'] ?? '') ?>',
+                            '<?= h($r['modalidad'] ?? '') ?>',
+                            '<?= h($r['dependencia'] ?? '') ?>',
+                            '<?= h($r['mesconvoca'] ?? '') ?>',
+                            '<?= h($r['certificado'] ?? '') ?>',
+                            '<?= h($r['tipo_mercado'] ?? '') ?>',
+                            '<?= h($r['cantidad'] ?? '') ?>',
+                            '<?= h($r['rubro'] ?? '') ?>',
+                            '<?= h($r['inversiones'] ?? '') ?>'
+                          )">
+                          ✏️ Editar
+                        </button>
+
+                        <button
+                          type="button"
+                          class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13px] font-semibold text-rose-600 transition hover:bg-rose-50"
+                          onclick="openDelete(<?= (int)$r['id'] ?>, '<?= h($r['nopac']) ?>')">
+                          🗑️ Eliminar
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </td>
-            </tr>
-          <?php endforeach; ?>
+                </td>
+              </tr>
+            <?php endforeach; ?>
 
-          <?php if (count($pacs) === 0): ?>
-            <tr>
-              <td colspan="8" class="px-4 py-10 text-center text-slate-500">
-                No hay registros.
-              </td>
-            </tr>
-          <?php endif; ?>
-        </tbody>
-      </table>
+            <?php if (count($pacs) === 0): ?>
+              <tr>
+                <td colspan="8" class="px-4 py-10 text-center text-slate-500">
+                  No hay registros.
+                </td>
+              </tr>
+            <?php endif; ?>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal filtros -->
+  <div id="modalFilters" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-900/30" onclick="closeModal('modalFilters')"></div>
+
+    <div class="relative flex w-full max-w-2xl flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-soft">
+      <div class="border-b border-slate-200 px-5 py-4">
+        <div class="text-xs uppercase tracking-wide text-slate-400">PAC</div>
+        <div class="mt-1 text-2xl font-semibold text-slate-900">Filtros</div>
+        <div class="mt-1 text-sm text-slate-500">Aplica filtros para la tabla de PAC.</div>
+      </div>
+
+      <form method="GET" action="<?= BASE_URL ?>/admin/pac" class="space-y-5 px-5 py-5">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div class="md:col-span-2">
+            <label class="mb-1.5 block text-xs text-slate-500">Buscar</label>
+            <input
+              type="text"
+              name="q"
+              value="<?= h($filtros['q'] ?? '') ?>"
+              class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200"
+              placeholder="N° PAC, descripción, OBAC o estado">
+          </div>
+
+          <div>
+            <label class="mb-1.5 block text-xs text-slate-500">P/NP</label>
+            <select
+              name="pn"
+              class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
+              <option value="">Todos</option>
+              <option value="P" <?= (($filtros['pn'] ?? '') === 'P') ? 'selected' : '' ?>>P</option>
+              <option value="NP" <?= (($filtros['pn'] ?? '') === 'NP') ? 'selected' : '' ?>>NP</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="mb-1.5 block text-xs text-slate-500">Estado</label>
+            <select
+              name="estado"
+              class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
+              <option value="">Todos</option>
+              <?php foreach ($estados as $es): ?>
+                <option
+                  value="<?= (int)$es['id'] ?>"
+                  <?= ((string)($filtros['estado'] ?? '') === (string)$es['id']) ? 'selected' : '' ?>>
+                  <?= h($es['nombre']) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <div>
+            <label class="mb-1.5 block text-xs text-slate-500">Periodo</label>
+            <select
+              name="periodo"
+              class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
+              <option value="">Todos</option>
+              <?php foreach ($periodos as $p): ?>
+                <option
+                  value="<?= (int)$p['id'] ?>"
+                  <?= ((string)($filtros['periodo'] ?? '') === (string)$p['id']) ? 'selected' : '' ?>>
+                  <?= h($p['nombre']) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <div>
+            <label class="mb-1.5 block text-xs text-slate-500">OBAC</label>
+            <select
+              name="obac"
+              class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
+              <option value="">Todos</option>
+              <?php foreach ($obacs as $o): ?>
+                <option
+                  value="<?= (int)$o['id'] ?>"
+                  <?= ((string)($filtros['obac'] ?? '') === (string)$o['id']) ? 'selected' : '' ?>>
+                  <?= h($o['nombre']) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex flex-col-reverse gap-2 border-t border-slate-200 pt-4 sm:flex-row sm:justify-end">
+          <a
+            href="<?= BASE_URL ?>/admin/pac"
+            class="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm text-slate-700 transition hover:bg-slate-50">
+            Limpiar filtros
+          </a>
+
+          <button
+            type="button"
+            class="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm text-slate-700 transition hover:bg-slate-50"
+            onclick="closeModal('modalFilters')">
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            class="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800">
+            Aplicar filtros
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -932,24 +1061,159 @@ foreach ($pacs as $row) {
 
   .pac-page .dt-ready {
     opacity: 1 !important;
-    transition: opacity .15s ease;
+    transition: opacity .18s ease;
   }
 
+  /* ===== DataTable shell ===== */
+  .pac-page .datatable-shell {
+    border-top: 1px solid rgb(226 232 240);
+    background:
+      linear-gradient(to bottom, rgba(248, 250, 252, .95), rgba(255, 255, 255, 1) 56px);
+  }
+
+  .pac-page .dataTables_wrapper {
+    padding: 14px 16px 16px;
+  }
+
+  .pac-page .dataTables_wrapper .top,
+  .pac-page .dataTables_wrapper .bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .pac-page .dataTables_wrapper .top {
+    margin-bottom: 14px;
+  }
+
+  .pac-page .dataTables_wrapper .bottom {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid rgb(241 245 249);
+  }
+
+  /* ===== Length + search ===== */
+  .pac-page .dataTables_wrapper .dataTables_length,
+  .pac-page .dataTables_wrapper .dataTables_filter,
+  .pac-page .dataTables_wrapper .dataTables_info,
+  .pac-page .dataTables_wrapper .dataTables_paginate {
+    float: none !important;
+    margin: 0 !important;
+  }
+
+  .pac-page .dataTables_wrapper .dataTables_length label,
+  .pac-page .dataTables_wrapper .dataTables_filter label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgb(100 116 139);
+  }
+
+  .pac-page .dataTables_wrapper .dataTables_length select {
+    appearance: none;
+    min-width: 86px;
+    height: 38px;
+    border-radius: 14px;
+    border: 1px solid rgb(226 232 240);
+    background: #fff;
+    padding: 0 34px 0 12px;
+    font-size: 13px;
+    color: rgb(15 23 42);
+    outline: none;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .03);
+  }
+
+  .pac-page .dataTables_wrapper .dataTables_filter input {
+    width: 280px !important;
+    max-width: 100%;
+    height: 40px;
+    border-radius: 14px;
+    border: 1px solid rgb(226 232 240);
+    background: #fff;
+    margin-left: 0 !important;
+    padding: 0 14px;
+    font-size: 13px;
+    color: rgb(15 23 42);
+    outline: none;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .03);
+    transition: all .18s ease;
+  }
+
+  .pac-page .dataTables_wrapper .dataTables_filter input:focus,
+  .pac-page .dataTables_wrapper .dataTables_length select:focus {
+    border-color: rgb(148 163 184);
+    box-shadow: 0 0 0 4px rgba(148, 163, 184, .14);
+  }
+
+  /* ===== Table ===== */
   .pac-page table.dataTable {
     width: 100% !important;
     border-collapse: separate !important;
     border-spacing: 0;
+    margin: 0 !important;
   }
 
-  .pac-page table.dataTable thead th,
+  .pac-page table.dataTable.no-footer {
+    border-bottom: 0 !important;
+  }
+
+  .pac-page table.dataTable thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: rgb(248 250 252) !important;
+    color: rgb(71 85 105) !important;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    border-bottom: 1px solid rgb(226 232 240) !important;
+    padding: 14px 16px !important;
+    white-space: nowrap;
+  }
+
   .pac-page table.dataTable tbody td {
     vertical-align: middle;
+    padding: 14px 16px !important;
+    border-bottom: 1px solid rgb(241 245 249) !important;
+    font-size: 13px;
+    color: rgb(15 23 42);
     white-space: nowrap;
+    background: #fff;
+  }
+
+  .pac-page table.dataTable tbody tr {
+    transition: background-color .15s ease, transform .12s ease;
+  }
+
+  .pac-page table.dataTable tbody tr:hover td {
+    background: rgb(248 250 252);
+  }
+
+  .pac-page table.dataTable tbody tr:last-child td {
+    border-bottom: 0 !important;
+  }
+
+  .pac-page table.dataTable tbody td:nth-child(1) {
+    font-weight: 700;
+    color: rgb(15 23 42);
   }
 
   .pac-page table.dataTable tbody td:nth-child(3) {
     white-space: normal;
-    min-width: 320px;
+    min-width: 360px;
+    max-width: 560px;
+  }
+
+  .pac-page table.dataTable tbody td:nth-child(7) {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    color: rgb(15 23 42);
   }
 
   .pac-page .dataTables_scrollHead,
@@ -957,45 +1221,115 @@ foreach ($pacs as $row) {
     border: 0 !important;
   }
 
-  .pac-page .dataTables_wrapper .dataTables_filter input,
-  .pac-page .dataTables_wrapper .dataTables_length select {
-    max-width: 100%;
+  /* ===== Empty / processing ===== */
+  .pac-page .dataTables_empty {
+    padding: 36px 16px !important;
+    text-align: center !important;
+    color: rgb(100 116 139) !important;
+    font-size: 13px;
   }
 
-  .pac-page .dataTables_wrapper .dataTables_filter,
-  .pac-page .dataTables_wrapper .dataTables_length {
-    width: 100%;
+  .pac-page .dataTables_processing {
+    border: 0 !important;
+    border-radius: 18px !important;
+    background: rgba(255, 255, 255, .92) !important;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, .08) !important;
+    color: rgb(15 23 42) !important;
   }
 
-  .pac-page .dataTables_wrapper .dataTables_filter label,
-  .pac-page .dataTables_wrapper .dataTables_length label {
+  /* ===== Info ===== */
+  .pac-page .dataTables_wrapper .dataTables_info {
+    font-size: 12px;
+    color: rgb(100 116 139);
+    padding-top: 0 !important;
+  }
+
+  /* ===== Pagination ===== */
+  .pac-page .dataTables_wrapper .dataTables_paginate {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
     align-items: center;
-    width: 100%;
+    gap: 6px;
+    padding-top: 0 !important;
+  }
+
+  .pac-page .dataTables_wrapper .paginate_button {
+    min-width: 38px;
+    height: 38px;
+    border-radius: 12px !important;
+    border: 1px solid transparent !important;
+    background: #fff !important;
+    color: rgb(51 65 85) !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    margin: 0 !important;
+    padding: 0 12px !important;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all .15s ease;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .03);
+  }
+
+  .pac-page .dataTables_wrapper .paginate_button:hover {
+    border-color: rgb(226 232 240) !important;
+    background: rgb(248 250 252) !important;
+    color: rgb(15 23 42) !important;
+  }
+
+  .pac-page .dataTables_wrapper .paginate_button.current,
+  .pac-page .dataTables_wrapper .paginate_button.current:hover {
+    border-color: rgb(15 23 42) !important;
+    background: rgb(15 23 42) !important;
+    color: #fff !important;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, .16);
+  }
+
+  .pac-page .dataTables_wrapper .paginate_button.disabled,
+  .pac-page .dataTables_wrapper .paginate_button.disabled:hover {
+    opacity: .45;
+    cursor: not-allowed !important;
+    background: #fff !important;
+    border-color: transparent !important;
+    color: rgb(148 163 184) !important;
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 1024px) {
+    .pac-page table.dataTable tbody td:nth-child(3) {
+      min-width: 300px;
+      max-width: 420px;
+    }
   }
 
   @media (max-width: 640px) {
     .pac-page .dataTables_wrapper {
-      padding: 10px;
+      padding: 12px;
     }
 
-    .pac-page .dataTables_wrapper .dataTables_filter input {
+    .pac-page .dataTables_wrapper .top,
+    .pac-page .dataTables_wrapper .bottom {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .pac-page .dataTables_wrapper .dataTables_filter input,
+    .pac-page .dataTables_wrapper .dataTables_length select {
       width: 100% !important;
-      margin-left: 0 !important;
-    }
-
-    .pac-page .dataTables_wrapper .dataTables_length,
-    .pac-page .dataTables_wrapper .dataTables_filter,
-    .pac-page .dataTables_wrapper .dataTables_info,
-    .pac-page .dataTables_wrapper .dataTables_paginate {
-      text-align: left !important;
-      float: none !important;
     }
 
     .pac-page .dataTables_wrapper .dataTables_paginate {
       justify-content: flex-start !important;
+      flex-wrap: wrap;
+    }
+
+    .pac-page table.dataTable thead th,
+    .pac-page table.dataTable tbody td {
+      padding: 12px 12px !important;
+    }
+
+    .pac-page table.dataTable tbody td:nth-child(3) {
+      min-width: 260px;
+      max-width: 320px;
     }
   }
 </style>
@@ -1103,6 +1437,10 @@ foreach ($pacs as $row) {
     $('importResult').className = 'hidden rounded-2xl border px-4 py-3 text-sm';
     $('importResult').innerHTML = '';
     openModal('modalImport');
+  });
+
+  $('btnFilters')?.addEventListener('click', () => {
+    openModal('modalFilters');
   });
 
   $('csv_file')?.addEventListener('change', (e) => {
@@ -1436,6 +1774,76 @@ foreach ($pacs as $row) {
 
     if (menu) return;
     closeAllMenus();
+  });
+
+  function initPacDataTable() {
+    if (typeof jQuery === 'undefined' || !jQuery.fn.DataTable) return;
+
+    const $table = jQuery('#tblPac');
+    if (!$table.length) return;
+
+    if (jQuery.fn.DataTable.isDataTable('#tblPac')) {
+      $table.DataTable().destroy();
+    }
+
+    const dt = $table.DataTable({
+      autoWidth: false,
+      responsive: false,
+      pageLength: 10,
+      lengthMenu: [
+        [10, 25, 50, 100],
+        [10, 25, 50, 100]
+      ],
+      order: [
+        [0, 'asc']
+      ],
+      language: {
+        lengthMenu: 'Mostrar _MENU_',
+        search: 'Buscar:',
+        searchPlaceholder: 'N° PAC, descripción, OBAC...',
+        info: 'Mostrando _START_ a _END_ de _TOTAL_ registros',
+        infoEmpty: 'Mostrando 0 a 0 de 0 registros',
+        infoFiltered: '(filtrado de _MAX_ registros)',
+        zeroRecords: 'No se encontraron coincidencias',
+        emptyTable: 'No hay registros disponibles',
+        paginate: {
+          first: '«',
+          last: '»',
+          next: '›',
+          previous: '‹'
+        },
+        processing: 'Procesando...'
+      },
+      columnDefs: [{
+          targets: 2,
+          orderable: true
+        },
+        {
+          targets: 7,
+          orderable: false,
+          searchable: false,
+          className: 'text-right'
+        }
+      ],
+      dom: "<'top'<'dataTables_length'l><'dataTables_filter'f>>" +
+        "rt" +
+        "<'bottom'<'dataTables_info'i><'dataTables_paginate'p>>",
+      initComplete: function() {
+        const wrapper = $table.closest('.dataTables_wrapper');
+
+        wrapper.find('.dataTables_filter input')
+          .attr('placeholder', 'Buscar por N° PAC, descripción, OBAC...')
+          .attr('autocomplete', 'off');
+
+        $table.addClass('dt-ready').removeClass('opacity-0');
+      }
+    });
+
+    return dt;
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    initPacDataTable();
   });
 </script>
 
