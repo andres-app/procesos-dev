@@ -93,7 +93,8 @@ foreach ($pacs as $row) {
     !empty($filtros['pn']) ||
     !empty($filtros['estado']) ||
     !empty($filtros['periodo']) ||
-    !empty($filtros['obac']);
+    !empty($filtros['obac']) ||
+    !empty($filtros['ejecucion']);
   ?>
 
   <?php if ($hayFiltrosActivos): ?>
@@ -107,6 +108,7 @@ foreach ($pacs as $row) {
             <?= !empty($filtros['estado']) ? ' | Estado aplicado' : '' ?>
             <?= !empty($filtros['periodo']) ? ' | Periodo aplicado' : '' ?>
             <?= !empty($filtros['obac']) ? ' | OBAC aplicado' : '' ?>
+            <?= !empty($filtros['ejecucion']) ? ' | Ejecución aplicada' : '' ?>
           </span>
         </div>
 
@@ -148,6 +150,47 @@ foreach ($pacs as $row) {
       </div>
       <div class="mt-2 text-xs text-slate-500">Suma de estimados (NP)</div>
     </div>
+  </div>
+
+  <?php
+  $ejecucionActual = (string)($filtros['ejecucion'] ?? '');
+
+  function buildFilterUrl(array $changes = []): string
+  {
+    $query = $_GET;
+
+    foreach ($changes as $k => $v) {
+      if ($v === null || $v === '') {
+        unset($query[$k]);
+      } else {
+        $query[$k] = $v;
+      }
+    }
+
+    return '?' . http_build_query($query);
+  }
+  ?>
+
+  <div class="mb-3 flex flex-wrap items-center gap-2">
+    <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+      Filtros rápidos:
+    </span>
+
+    <a
+      href="<?= h(buildFilterUrl(['ejecucion' => 4])) ?>"
+      class="inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition <?= $ejecucionActual === '4'
+                                                                                                          ? 'border-rose-300 bg-rose-600 text-white'
+                                                                                                          : 'border-slate-200 bg-white text-slate-700 hover:border-rose-200 hover:text-rose-700' ?>">
+      ACFFAA
+    </a>
+
+    <a
+      href="<?= h(buildFilterUrl(['ejecucion' => 0])) ?>"
+      class="inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition <?= $ejecucionActual === '0'
+                                                                                                          ? 'border-slate-300 bg-slate-900 text-white'
+                                                                                                          : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900' ?>">
+      Todos
+    </a>
   </div>
 
   <!-- Tabla -->
@@ -301,6 +344,9 @@ foreach ($pacs as $row) {
       </div>
 
       <form method="GET" action="<?= BASE_URL ?>/admin/pac" class="space-y-5 px-5 py-5">
+        <?php if (!empty($filtros['ejecucion'])): ?>
+          <input type="hidden" name="ejecucion" value="<?= h($filtros['ejecucion']) ?>">
+        <?php endif; ?>
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div class="md:col-span-2">
             <label class="mb-1.5 block text-xs text-slate-500">Buscar</label>

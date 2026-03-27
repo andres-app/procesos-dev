@@ -7,12 +7,15 @@ class CtrPacAdmin
 {
     public static function index(): void
     {
+        $tieneParametros = !empty($_GET);
+
         $filtros = [
-            'q'       => $_GET['q'] ?? '',
-            'pn'      => $_GET['pn'] ?? '',
-            'estado'  => $_GET['estado'] ?? '',
-            'periodo' => $_GET['periodo'] ?? '',
-            'obac'    => $_GET['obac'] ?? '',
+            'q'         => $_GET['q'] ?? '',
+            'pn'        => $_GET['pn'] ?? '',
+            'estado'    => $_GET['estado'] ?? '',
+            'periodo'   => $_GET['periodo'] ?? '',
+            'obac'      => $_GET['obac'] ?? '',
+            'ejecucion' => isset($_GET['ejecucion']) ? ($_GET['ejecucion'] === '0' ? '0' : $_GET['ejecucion']) : '4',
         ];
 
         $pacs = MdPacAdmin::listar($filtros);

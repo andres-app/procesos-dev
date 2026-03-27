@@ -9,53 +9,53 @@ class MdPacAdmin
         $db = db();
 
         $sql = "
-        SELECT
-            p.id,
-            p.nopac,
-            p.pn,
-            p.estado,
-            p.descripcion,
-            p.obac,
-            p.seleccion,
-            p.fuente,
-            p.estimado,
-            p.periodo,
-            p.lista,
-            p.ejecucion,
-            p.modalidad,
-            p.dependencia,
-            p.mesconvoca,
-            p.certificado,
-            p.tipo_mercado,
-            p.cantidad,
-            p.rubro,
-            p.inversiones,
-            p.created_at,
+    SELECT
+        p.id,
+        p.nopac,
+        p.pn,
+        p.estado,
+        p.descripcion,
+        p.obac,
+        p.seleccion,
+        p.fuente,
+        p.estimado,
+        p.periodo,
+        p.lista,
+        p.ejecucion,
+        p.modalidad,
+        p.dependencia,
+        p.mesconvoca,
+        p.certificado,
+        p.tipo_mercado,
+        p.cantidad,
+        p.rubro,
+        p.inversiones,
+        p.created_at,
 
-            COALESCE(est.nombre, '') AS estado_nombre,
-            COALESCE(e.nombre, '')   AS obac_nombre,
-            COALESCE(f.nombre, '')   AS fuente_nombre,
-            COALESCE(s.nombre, '')   AS seleccion_nombre,
-            COALESCE(pe.nombre, '')  AS periodo_nombre,
-            COALESCE(li.nombre, '')  AS lista_nombre,
-            COALESCE(ej.nombre, '')  AS ejecucion_nombre,
-            COALESCE(m.nombre, '')   AS modalidad_nombre,
-            COALESCE(d.nombre, '')   AS dependencia_nombre,
-            COALESCE(tm.nombre, '')  AS tipo_mercado_nombre,
-            COALESCE(r.nombre, '')   AS rubro_nombre
-        FROM pac p
-        LEFT JOIN estado est       ON est.id = p.estado
-        LEFT JOIN entidad e        ON e.id = p.obac
-        LEFT JOIN fuente f         ON f.id = p.fuente
-        LEFT JOIN seleccion s      ON s.id = p.seleccion
-        LEFT JOIN periodo pe       ON pe.id = p.periodo
-        LEFT JOIN listas li        ON li.id = p.lista
-        LEFT JOIN entidad ej       ON ej.id = p.ejecucion
-        LEFT JOIN modalidad m      ON m.id = p.modalidad
-        LEFT JOIN dependencia d    ON d.id = p.dependencia
-        LEFT JOIN tipo_mercado tm  ON tm.id = p.tipo_mercado
-        LEFT JOIN rubro r          ON r.id = p.rubro
-        WHERE 1=1
+        COALESCE(est.nombre, '') AS estado_nombre,
+        COALESCE(e.nombre, '')   AS obac_nombre,
+        COALESCE(f.nombre, '')   AS fuente_nombre,
+        COALESCE(s.nombre, '')   AS seleccion_nombre,
+        COALESCE(pe.nombre, '')  AS periodo_nombre,
+        COALESCE(li.nombre, '')  AS lista_nombre,
+        COALESCE(ej.nombre, '')  AS ejecucion_nombre,
+        COALESCE(m.nombre, '')   AS modalidad_nombre,
+        COALESCE(d.nombre, '')   AS dependencia_nombre,
+        COALESCE(tm.nombre, '')  AS tipo_mercado_nombre,
+        COALESCE(r.nombre, '')   AS rubro_nombre
+    FROM pac p
+    LEFT JOIN estado est       ON est.id = p.estado
+    LEFT JOIN entidad e        ON e.id = p.obac
+    LEFT JOIN fuente f         ON f.id = p.fuente
+    LEFT JOIN seleccion s      ON s.id = p.seleccion
+    LEFT JOIN periodo pe       ON pe.id = p.periodo
+    LEFT JOIN listas li        ON li.id = p.lista
+    LEFT JOIN entidad ej       ON ej.id = p.ejecucion
+    LEFT JOIN modalidad m      ON m.id = p.modalidad
+    LEFT JOIN dependencia d    ON d.id = p.dependencia
+    LEFT JOIN tipo_mercado tm  ON tm.id = p.tipo_mercado
+    LEFT JOIN rubro r          ON r.id = p.rubro
+    WHERE 1=1
     ";
 
         $params = [];
@@ -83,12 +83,25 @@ class MdPacAdmin
         if (!empty($filtros['q'])) {
             $q = trim((string)$filtros['q']);
             $sql .= " AND (
-                p.nopac LIKE :q OR
-                p.descripcion LIKE :q OR
-                e.nombre LIKE :q OR
-                est.nombre LIKE :q
-            )";
+            p.nopac LIKE :q OR
+            p.descripcion LIKE :q OR
+            e.nombre LIKE :q OR
+            est.nombre LIKE :q
+        )";
             $params[':q'] = "%{$q}%";
+        }
+
+        // ✅ FILTRO NUEVO: EJECUCION
+        if (isset($filtros['ejecucion']) && $filtros['ejecucion'] !== '' && $filtros['ejecucion'] !== '0') {
+            $ej = $filtros['ejecucion'];
+
+            if (ctype_digit((string)$ej)) {
+                $sql .= " AND p.ejecucion = :ejecucion_id";
+                $params[':ejecucion_id'] = (int)$ej;
+            } else {
+                $sql .= " AND UPPER(ej.nombre) = :ejecucion_nombre";
+                $params[':ejecucion_nombre'] = mb_strtoupper(trim((string)$ej), 'UTF-8');
+            }
         }
 
         $sql .= " ORDER BY p.created_at DESC, p.id DESC";
@@ -665,131 +678,131 @@ class MdPacAdmin
         return null;
     }
 
-public static function importarDesdeCsv(string $tmpPath): array
-{
-    $db = db();
+    public static function importarDesdeCsv(string $tmpPath): array
+    {
+        $db = db();
 
-    $fp = fopen($tmpPath, 'r');
-    if (!$fp) {
-        return [
-            'insertados' => 0,
-            'omitidos'   => 0,
-            'errores'    => ['No se pudo abrir el archivo CSV.'],
-        ];
-    }
-
-    $insertados = 0;
-    $omitidos   = 0;
-    $errores    = [];
-    $filaNumero = 0;
-
-    try {
-        $delimiter = self::detectarSeparadorCsv($tmpPath);
-
-        if (!$db->inTransaction()) {
-            $db->beginTransaction();
+        $fp = fopen($tmpPath, 'r');
+        if (!$fp) {
+            return [
+                'insertados' => 0,
+                'omitidos'   => 0,
+                'errores'    => ['No se pudo abrir el archivo CSV.'],
+            ];
         }
 
-        while (($row = fgetcsv($fp, 0, $delimiter)) !== false) {
-            $filaNumero++;
+        $insertados = 0;
+        $omitidos   = 0;
+        $errores    = [];
+        $filaNumero = 0;
 
-            if ($filaNumero === 1 && isset($row[0])) {
-                $row[0] = preg_replace('/^\xEF\xBB\xBF/', '', (string)$row[0]);
+        try {
+            $delimiter = self::detectarSeparadorCsv($tmpPath);
+
+            if (!$db->inTransaction()) {
+                $db->beginTransaction();
             }
 
-            if ($filaNumero === 1) {
-                continue;
-            }
+            while (($row = fgetcsv($fp, 0, $delimiter)) !== false) {
+                $filaNumero++;
 
-            $row = array_map(static function ($v) {
-                return trim((string)$v);
-            }, $row);
+                if ($filaNumero === 1 && isset($row[0])) {
+                    $row[0] = preg_replace('/^\xEF\xBB\xBF/', '', (string)$row[0]);
+                }
 
-            if (count(array_filter($row, static fn($v) => $v !== '')) === 0) {
-                $omitidos++;
-                continue;
-            }
+                if ($filaNumero === 1) {
+                    continue;
+                }
 
-            $row = array_pad($row, 19, '');
+                $row = array_map(static function ($v) {
+                    return trim((string)$v);
+                }, $row);
 
-            [
-                $nopac,
-                $pn,
-                $descripcion,
-                $obacTexto,
-                $fuenteTexto,
-                $estadoTexto,
-                $estimado,
-                $seleccionTexto,
-                $listaTexto,
-                $modalidadTexto,
-                $tipoMercadoTexto,
-                $rubroTexto,
-                $ejecucionTexto,
-                $dependenciaTexto,
-                $mesconvoca,
-                $periodoTexto,
-                $cantidad,
-                $certificado,
-                $inversiones
-            ] = $row;
+                if (count(array_filter($row, static fn($v) => $v !== '')) === 0) {
+                    $omitidos++;
+                    continue;
+                }
 
-            $nopac       = trim($nopac);
-            $descripcion = self::asegurarUtf8(trim($descripcion));
-            $obacTexto   = self::asegurarUtf8(trim($obacTexto));
-            $fuenteTexto = self::asegurarUtf8(trim($fuenteTexto));
-            $estadoTexto = self::asegurarUtf8(trim($estadoTexto));
-            $seleccionTexto = self::asegurarUtf8(trim($seleccionTexto));
-            $listaTexto = self::asegurarUtf8(trim($listaTexto));
-            $modalidadTexto = self::asegurarUtf8(trim($modalidadTexto));
-            $tipoMercadoTexto = self::asegurarUtf8(trim($tipoMercadoTexto));
-            $rubroTexto = self::asegurarUtf8(trim($rubroTexto));
-            $ejecucionTexto = self::asegurarUtf8(trim($ejecucionTexto));
-            $dependenciaTexto = self::asegurarUtf8(trim($dependenciaTexto));
-            $periodoTexto = self::asegurarUtf8(trim($periodoTexto));
-            $pn = strtoupper(trim($pn ?: 'NP'));
-            $inversiones = self::asegurarUtf8(trim($inversiones));
+                $row = array_pad($row, 19, '');
 
-            if ($nopac === '' || $descripcion === '') {
-                $errores[] = self::asegurarUtf8("Fila {$filaNumero}: nopac y descripción son obligatorios.");
-                $omitidos++;
-                continue;
-            }
+                [
+                    $nopac,
+                    $pn,
+                    $descripcion,
+                    $obacTexto,
+                    $fuenteTexto,
+                    $estadoTexto,
+                    $estimado,
+                    $seleccionTexto,
+                    $listaTexto,
+                    $modalidadTexto,
+                    $tipoMercadoTexto,
+                    $rubroTexto,
+                    $ejecucionTexto,
+                    $dependenciaTexto,
+                    $mesconvoca,
+                    $periodoTexto,
+                    $cantidad,
+                    $certificado,
+                    $inversiones
+                ] = $row;
 
-            if (!in_array($pn, ['P', 'NP'], true)) {
-                $pn = 'NP';
-            }
+                $nopac       = trim($nopac);
+                $descripcion = self::asegurarUtf8(trim($descripcion));
+                $obacTexto   = self::asegurarUtf8(trim($obacTexto));
+                $fuenteTexto = self::asegurarUtf8(trim($fuenteTexto));
+                $estadoTexto = self::asegurarUtf8(trim($estadoTexto));
+                $seleccionTexto = self::asegurarUtf8(trim($seleccionTexto));
+                $listaTexto = self::asegurarUtf8(trim($listaTexto));
+                $modalidadTexto = self::asegurarUtf8(trim($modalidadTexto));
+                $tipoMercadoTexto = self::asegurarUtf8(trim($tipoMercadoTexto));
+                $rubroTexto = self::asegurarUtf8(trim($rubroTexto));
+                $ejecucionTexto = self::asegurarUtf8(trim($ejecucionTexto));
+                $dependenciaTexto = self::asegurarUtf8(trim($dependenciaTexto));
+                $periodoTexto = self::asegurarUtf8(trim($periodoTexto));
+                $pn = strtoupper(trim($pn ?: 'NP'));
+                $inversiones = self::asegurarUtf8(trim($inversiones));
 
-            $estimado    = self::normalizarDecimal($estimado);
-            $certificado = self::normalizarDecimal($certificado);
-            $cantidad    = self::normalizarEntero($cantidad);
-            $mesconvoca  = self::normalizarMesConvocatoria($mesconvoca);
+                if ($nopac === '' || $descripcion === '') {
+                    $errores[] = self::asegurarUtf8("Fila {$filaNumero}: nopac y descripción son obligatorios.");
+                    $omitidos++;
+                    continue;
+                }
 
-            try {
-                $estadoId      = self::buscarIdPorNombre('estado', $estadoTexto);
-                $obacId        = self::buscarIdPorNombre('obac', $obacTexto);
-                $fuenteId      = self::buscarIdPorNombre('fuente', $fuenteTexto);
-                $seleccionId   = self::buscarIdPorNombre('seleccion', $seleccionTexto);
-                $listaId       = self::buscarIdPorNombre('lista', $listaTexto);
-                $modalidadId   = self::buscarIdPorNombre('modalidad', $modalidadTexto);
-                $tipoMercadoId = self::buscarIdPorNombre('tipo_mercado', $tipoMercadoTexto);
-                $rubroId       = self::buscarIdPorNombre('rubro', $rubroTexto);
-                $ejecucionId   = self::buscarIdPorNombre('entidad', $ejecucionTexto);
-                $dependenciaId = self::buscarIdPorNombre('dependencia', $dependenciaTexto);
-                $periodoId     = self::buscarIdPorNombre('periodo', $periodoTexto);
-            } catch (Throwable $e) {
-                $errores[] = self::asegurarUtf8("Fila {$filaNumero}: " . $e->getMessage());
-                $omitidos++;
-                continue;
-            }
+                if (!in_array($pn, ['P', 'NP'], true)) {
+                    $pn = 'NP';
+                }
 
-            if (self::existePac($nopac, $obacId, $pn)) {
-                $errores[] = self::asegurarUtf8("Fila {$filaNumero}: ya existe un PAC con N° PAC '{$nopac}', OBAC '{$obacTexto}' y P/NP '{$pn}'.");
-                $omitidos++;
-                continue;
-            }
+                $estimado    = self::normalizarDecimal($estimado);
+                $certificado = self::normalizarDecimal($certificado);
+                $cantidad    = self::normalizarEntero($cantidad);
+                $mesconvoca  = self::normalizarMesConvocatoria($mesconvoca);
 
-            $sql = "INSERT INTO pac (
+                try {
+                    $estadoId      = self::buscarIdPorNombre('estado', $estadoTexto);
+                    $obacId        = self::buscarIdPorNombre('obac', $obacTexto);
+                    $fuenteId      = self::buscarIdPorNombre('fuente', $fuenteTexto);
+                    $seleccionId   = self::buscarIdPorNombre('seleccion', $seleccionTexto);
+                    $listaId       = self::buscarIdPorNombre('lista', $listaTexto);
+                    $modalidadId   = self::buscarIdPorNombre('modalidad', $modalidadTexto);
+                    $tipoMercadoId = self::buscarIdPorNombre('tipo_mercado', $tipoMercadoTexto);
+                    $rubroId       = self::buscarIdPorNombre('rubro', $rubroTexto);
+                    $ejecucionId   = self::buscarIdPorNombre('entidad', $ejecucionTexto);
+                    $dependenciaId = self::buscarIdPorNombre('dependencia', $dependenciaTexto);
+                    $periodoId     = self::buscarIdPorNombre('periodo', $periodoTexto);
+                } catch (Throwable $e) {
+                    $errores[] = self::asegurarUtf8("Fila {$filaNumero}: " . $e->getMessage());
+                    $omitidos++;
+                    continue;
+                }
+
+                if (self::existePac($nopac, $obacId, $pn)) {
+                    $errores[] = self::asegurarUtf8("Fila {$filaNumero}: ya existe un PAC con N° PAC '{$nopac}', OBAC '{$obacTexto}' y P/NP '{$pn}'.");
+                    $omitidos++;
+                    continue;
+                }
+
+                $sql = "INSERT INTO pac (
                         nopac,
                         pn,
                         descripcion,
@@ -831,62 +844,62 @@ public static function importarDesdeCsv(string $tmpPath): array
                         :inversiones
                     )";
 
-            try {
-                $st = $db->prepare($sql);
-                $st->bindValue(':nopac', $nopac, PDO::PARAM_STR);
-                $st->bindValue(':pn', $pn, PDO::PARAM_STR);
-                $st->bindValue(':descripcion', $descripcion, PDO::PARAM_STR);
-                $st->bindValue(':obac', $obacId, $obacId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
-                $st->bindValue(':fuente', $fuenteId, $fuenteId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
-                $st->bindValue(':estado', $estadoId, $estadoId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
-                $st->bindValue(':estimado', $estimado);
-                $st->bindValue(':seleccion', $seleccionId, $seleccionId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
-                $st->bindValue(':lista', $listaId, $listaId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
-                $st->bindValue(':modalidad', $modalidadId, $modalidadId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
-                $st->bindValue(':tipo_mercado', $tipoMercadoId, $tipoMercadoId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
-                $st->bindValue(':rubro', $rubroId, $rubroId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
-                $st->bindValue(':ejecucion', $ejecucionId, $ejecucionId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
-                $st->bindValue(':dependencia', $dependenciaId, $dependenciaId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
-                $st->bindValue(':mesconvoca', $mesconvoca, $mesconvoca === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
-                $st->bindValue(':periodo', $periodoId, $periodoId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
-                $st->bindValue(':cantidad', $cantidad, PDO::PARAM_INT);
-                $st->bindValue(':certificado', $certificado);
-                $st->bindValue(':inversiones', $inversiones, $inversiones === '' ? PDO::PARAM_NULL : PDO::PARAM_STR);
+                try {
+                    $st = $db->prepare($sql);
+                    $st->bindValue(':nopac', $nopac, PDO::PARAM_STR);
+                    $st->bindValue(':pn', $pn, PDO::PARAM_STR);
+                    $st->bindValue(':descripcion', $descripcion, PDO::PARAM_STR);
+                    $st->bindValue(':obac', $obacId, $obacId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+                    $st->bindValue(':fuente', $fuenteId, $fuenteId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+                    $st->bindValue(':estado', $estadoId, $estadoId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+                    $st->bindValue(':estimado', $estimado);
+                    $st->bindValue(':seleccion', $seleccionId, $seleccionId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+                    $st->bindValue(':lista', $listaId, $listaId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+                    $st->bindValue(':modalidad', $modalidadId, $modalidadId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+                    $st->bindValue(':tipo_mercado', $tipoMercadoId, $tipoMercadoId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+                    $st->bindValue(':rubro', $rubroId, $rubroId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+                    $st->bindValue(':ejecucion', $ejecucionId, $ejecucionId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+                    $st->bindValue(':dependencia', $dependenciaId, $dependenciaId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+                    $st->bindValue(':mesconvoca', $mesconvoca, $mesconvoca === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
+                    $st->bindValue(':periodo', $periodoId, $periodoId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+                    $st->bindValue(':cantidad', $cantidad, PDO::PARAM_INT);
+                    $st->bindValue(':certificado', $certificado);
+                    $st->bindValue(':inversiones', $inversiones, $inversiones === '' ? PDO::PARAM_NULL : PDO::PARAM_STR);
 
-                $st->execute();
-                $insertados++;
-            } catch (Throwable $e) {
-                $errores[] = self::asegurarUtf8("Fila {$filaNumero}: error al insertar. " . $e->getMessage());
-                $omitidos++;
-                continue;
+                    $st->execute();
+                    $insertados++;
+                } catch (Throwable $e) {
+                    $errores[] = self::asegurarUtf8("Fila {$filaNumero}: error al insertar. " . $e->getMessage());
+                    $omitidos++;
+                    continue;
+                }
+            }
+
+            if ($db->inTransaction()) {
+                $db->commit();
+            }
+
+            return self::limpiarArrayUtf8([
+                'insertados' => $insertados,
+                'omitidos'   => $omitidos,
+                'errores'    => $errores,
+            ]);
+        } catch (Throwable $e) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+
+            return self::limpiarArrayUtf8([
+                'insertados' => 0,
+                'omitidos'   => 0,
+                'errores'    => ['Error crítico: ' . $e->getMessage()],
+            ]);
+        } finally {
+            if (is_resource($fp)) {
+                fclose($fp);
             }
         }
-
-        if ($db->inTransaction()) {
-            $db->commit();
-        }
-
-        return self::limpiarArrayUtf8([
-            'insertados' => $insertados,
-            'omitidos'   => $omitidos,
-            'errores'    => $errores,
-        ]);
-    } catch (Throwable $e) {
-        if ($db->inTransaction()) {
-            $db->rollBack();
-        }
-
-        return self::limpiarArrayUtf8([
-            'insertados' => 0,
-            'omitidos'   => 0,
-            'errores'    => ['Error crítico: ' . $e->getMessage()],
-        ]);
-    } finally {
-        if (is_resource($fp)) {
-            fclose($fp);
-        }
     }
-}
 
     private static function asegurarUtf8(?string $texto): string
     {
