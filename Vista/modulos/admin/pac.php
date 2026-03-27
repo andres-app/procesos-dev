@@ -236,7 +236,8 @@ foreach ($pacs as $row) {
                           '<?= h($r['certificado'] ?? '') ?>',
                           '<?= h($r['tipo_mercado'] ?? '') ?>',
                           '<?= h($r['cantidad'] ?? '') ?>',
-                          '<?= h($r['rubro'] ?? '') ?>'
+                          '<?= h($r['rubro'] ?? '') ?>',
+                          '<?= h($r['inversiones'] ?? '') ?>'
                         )">
                         ✏️ Editar
                       </button>
@@ -848,6 +849,16 @@ foreach ($pacs as $row) {
               placeholder="Ej: 45000.00"
               autocomplete="off">
           </div>
+          <div class="md:col-span-6">
+            <label class="mb-1.5 block text-xs text-slate-500">Inversiones</label>
+            <input
+              id="pac_inversiones"
+              type="text"
+              maxlength="100"
+              class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200"
+              placeholder="Ej: CUI 123456"
+              autocomplete="off">
+          </div>
         </form>
       </div>
 
@@ -1054,7 +1065,8 @@ foreach ($pacs as $row) {
     'pac_certificado',
     'pac_tipo_mercado',
     'pac_cantidad',
-    'pac_rubro'
+    'pac_rubro',
+    'pac_inversiones'
   ].forEach((id) => {
     $(id)?.addEventListener('input', refreshSummary);
     $(id)?.addEventListener('change', refreshSummary);
@@ -1081,6 +1093,7 @@ foreach ($pacs as $row) {
     $('pac_cantidad').value = '';
     $('pac_estimado').value = '';
     $('pac_certificado').value = '';
+    $('pac_inversiones').value = '';
     openModal('modalForm');
   });
 
@@ -1116,7 +1129,8 @@ foreach ($pacs as $row) {
     certificado,
     tipo_mercado,
     cantidad,
-    rubro
+    rubro,
+    inversiones
   ) {
     $('modalTitle').textContent = 'Editar PAC';
 
@@ -1139,6 +1153,7 @@ foreach ($pacs as $row) {
     $('pac_tipo_mercado').value = tipo_mercado ?? '';
     $('pac_cantidad').value = cantidad ?? '';
     $('pac_rubro').value = rubro ?? '';
+    $('pac_inversiones').value = inversiones ?? '';
 
     openModal('modalForm');
   }
@@ -1180,6 +1195,7 @@ foreach ($pacs as $row) {
     fd.append('tipo_mercado', $('pac_tipo_mercado').value);
     fd.append('cantidad', $('pac_cantidad').value);
     fd.append('rubro', $('pac_rubro').value);
+    fd.append('inversiones', $('pac_inversiones').value);
 
     try {
       const resp = await fetch('<?= BASE_URL ?>/admin/pac_guardar', {

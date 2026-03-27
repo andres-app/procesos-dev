@@ -73,6 +73,7 @@ class CtrPacAdmin
                 'tipo_mercado' => $_POST['tipo_mercado'] ?? null,
                 'cantidad'     => $_POST['cantidad'] ?? 0,
                 'rubro'        => $_POST['rubro'] ?? null,
+                'inversiones' => $_POST['inversiones'] ?? '',
             ];
 
             $id = !empty($data['id']) ? (int)$data['id'] : null;
@@ -173,7 +174,8 @@ class CtrPacAdmin
             'mesconvoca',
             'periodo',
             'cantidad',
-            'certificado'
+            'certificado',
+            'inversiones'
         ], ';');
 
         // Ejemplo 1
@@ -195,7 +197,8 @@ class CtrPacAdmin
             'MARZO',
             '2026',
             '1',
-            '316800.00'
+            '316800.00',
+            'CUI 123456'
         ], ';');
 
         // Ejemplo 2
@@ -217,7 +220,8 @@ class CtrPacAdmin
             'ABRIL',
             '2026',
             '1',
-            '0.00'
+            '0.00',
+            'CUI 123456'
         ], ';');
 
         // Ejemplo 3
@@ -239,7 +243,8 @@ class CtrPacAdmin
             'MAYO',
             '2026',
             '2',
-            '50000.00'
+            '50000.00',
+            'CUI 123456'
         ], ';');
 
         // Ejemplo 4
@@ -261,7 +266,8 @@ class CtrPacAdmin
             'JUNIO',
             '2026',
             '3',
-            '20000.00'
+            '20000.00',
+            'CUI 123456'
         ], ';');
 
         // Ejemplo 5
@@ -283,93 +289,94 @@ class CtrPacAdmin
             'JULIO',
             '2026',
             '1',
-            '0.00'
+            '0.00',
+            'CUI 123456'
         ], ';');
 
         fclose($out);
         exit;
     }
 
-public static function importarCsv(): void
-{
-    while (ob_get_level() > 0) {
-        ob_end_clean();
+    public static function importarCsv(): void
+    {
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
+        header('Content-Type: application/json; charset=UTF-8');
+
+        try {
+            if (!isset($_FILES['csv_file'])) {
+                echo json_encode([
+                    'ok'      => false,
+                    'msg'     => 'No se recibió ningún archivo CSV.',
+                    'errores' => []
+                ], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+                exit;
+            }
+
+            $archivo = $_FILES['csv_file'];
+
+            if (($archivo['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+                echo json_encode([
+                    'ok'      => false,
+                    'msg'     => 'Error al subir el archivo CSV.',
+                    'errores' => []
+                ], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+                exit;
+            }
+
+            if (empty($archivo['tmp_name']) || !is_uploaded_file($archivo['tmp_name'])) {
+                echo json_encode([
+                    'ok'      => false,
+                    'msg'     => 'Archivo CSV inválido.',
+                    'errores' => []
+                ], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+                exit;
+            }
+
+            $ext = strtolower(pathinfo((string)($archivo['name'] ?? ''), PATHINFO_EXTENSION));
+            if ($ext !== 'csv') {
+                echo json_encode([
+                    'ok'      => false,
+                    'msg'     => 'El archivo debe tener extensión .csv',
+                    'errores' => []
+                ], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+                exit;
+            }
+
+            $resultado = MdPacAdmin::importarDesdeCsv($archivo['tmp_name']);
+
+            $insertados = (int)($resultado['insertados'] ?? 0);
+            $omitidos   = (int)($resultado['omitidos'] ?? 0);
+            $errores    = $resultado['errores'] ?? [];
+
+            $msg = 'Importación realizada correctamente.';
+            if ($insertados > 0 && $omitidos > 0) {
+                $msg = 'Importación parcial completada.';
+            } elseif ($insertados === 0 && $omitidos > 0) {
+                $msg = 'No se importaron registros válidos.';
+            } elseif ($insertados === 0 && $omitidos === 0 && !empty($errores)) {
+                $msg = 'La importación no pudo procesarse.';
+            }
+
+            $ok = $insertados > 0;
+
+            echo json_encode([
+                'ok'         => $ok,
+                'msg'        => $msg,
+                'insertados' => $insertados,
+                'omitidos'   => $omitidos,
+                'errores'    => $errores
+            ], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+            exit;
+        } catch (Throwable $e) {
+            echo json_encode([
+                'ok'      => false,
+                'msg'     => 'Error al importar CSV.',
+                'errores' => [$e->getMessage()]
+            ], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+            exit;
+        }
     }
-
-    header('Content-Type: application/json; charset=UTF-8');
-
-    try {
-        if (!isset($_FILES['csv_file'])) {
-            echo json_encode([
-                'ok'      => false,
-                'msg'     => 'No se recibió ningún archivo CSV.',
-                'errores' => []
-            ], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
-            exit;
-        }
-
-        $archivo = $_FILES['csv_file'];
-
-        if (($archivo['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
-            echo json_encode([
-                'ok'      => false,
-                'msg'     => 'Error al subir el archivo CSV.',
-                'errores' => []
-            ], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
-            exit;
-        }
-
-        if (empty($archivo['tmp_name']) || !is_uploaded_file($archivo['tmp_name'])) {
-            echo json_encode([
-                'ok'      => false,
-                'msg'     => 'Archivo CSV inválido.',
-                'errores' => []
-            ], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
-            exit;
-        }
-
-        $ext = strtolower(pathinfo((string)($archivo['name'] ?? ''), PATHINFO_EXTENSION));
-        if ($ext !== 'csv') {
-            echo json_encode([
-                'ok'      => false,
-                'msg'     => 'El archivo debe tener extensión .csv',
-                'errores' => []
-            ], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
-            exit;
-        }
-
-        $resultado = MdPacAdmin::importarDesdeCsv($archivo['tmp_name']);
-
-        $insertados = (int)($resultado['insertados'] ?? 0);
-        $omitidos   = (int)($resultado['omitidos'] ?? 0);
-        $errores    = $resultado['errores'] ?? [];
-
-        $msg = 'Importación realizada correctamente.';
-        if ($insertados > 0 && $omitidos > 0) {
-            $msg = 'Importación parcial completada.';
-        } elseif ($insertados === 0 && $omitidos > 0) {
-            $msg = 'No se importaron registros válidos.';
-        } elseif ($insertados === 0 && $omitidos === 0 && !empty($errores)) {
-            $msg = 'La importación no pudo procesarse.';
-        }
-
-        $ok = $insertados > 0;
-
-        echo json_encode([
-            'ok'         => $ok,
-            'msg'        => $msg,
-            'insertados' => $insertados,
-            'omitidos'   => $omitidos,
-            'errores'    => $errores
-        ], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
-        exit;
-    } catch (Throwable $e) {
-        echo json_encode([
-            'ok'      => false,
-            'msg'     => 'Error al importar CSV.',
-            'errores' => [$e->getMessage()]
-        ], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
-        exit;
-    }
-}
 }

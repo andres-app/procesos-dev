@@ -29,6 +29,7 @@ class MdPacAdmin
             p.tipo_mercado,
             p.cantidad,
             p.rubro,
+            p.inversiones,
             p.created_at,
 
             COALESCE(est.nombre, '') AS estado_nombre,
@@ -122,7 +123,8 @@ class MdPacAdmin
                 p.certificado,
                 p.tipo_mercado,
                 p.cantidad,
-                p.rubro
+                p.rubro,
+                p.inversiones
             FROM pac p
             WHERE p.id = :id
             LIMIT 1
@@ -159,7 +161,8 @@ class MdPacAdmin
                 certificado,
                 tipo_mercado,
                 cantidad,
-                rubro
+                rubro,
+                inversiones
             ) VALUES (
                 :nopac,
                 :pn,
@@ -178,7 +181,8 @@ class MdPacAdmin
                 :certificado,
                 :tipo_mercado,
                 :cantidad,
-                :rubro
+                :rubro,
+                :inversiones
             )
         ";
 
@@ -210,7 +214,8 @@ class MdPacAdmin
                 certificado = :certificado,
                 tipo_mercado = :tipo_mercado,
                 cantidad = :cantidad,
-                rubro = :rubro
+                rubro = :rubro,
+                inversiones = :inversiones
             WHERE id = :id
         ";
 
@@ -243,6 +248,7 @@ class MdPacAdmin
             ':tipo_mercado' => !empty($data['tipo_mercado']) ? (int)$data['tipo_mercado'] : null,
             ':cantidad'     => ($data['cantidad'] !== '' && $data['cantidad'] !== null) ? (int)$data['cantidad'] : 0,
             ':rubro'        => !empty($data['rubro']) ? (int)$data['rubro'] : null,
+            ':inversiones'  => trim((string)($data['inversiones'] ?? '')),
         ];
     }
 
@@ -370,6 +376,7 @@ class MdPacAdmin
             p.tipo_mercado,
             p.cantidad,
             p.rubro,
+            p.inversiones,
             p.created_at,
 
             COALESCE(est.nombre, '') AS estado_nombre,
@@ -703,7 +710,7 @@ public static function importarDesdeCsv(string $tmpPath): array
                 continue;
             }
 
-            $row = array_pad($row, 18, '');
+            $row = array_pad($row, 19, '');
 
             [
                 $nopac,
@@ -723,7 +730,8 @@ public static function importarDesdeCsv(string $tmpPath): array
                 $mesconvoca,
                 $periodoTexto,
                 $cantidad,
-                $certificado
+                $certificado,
+                $inversiones
             ] = $row;
 
             $nopac       = trim($nopac);
@@ -740,6 +748,7 @@ public static function importarDesdeCsv(string $tmpPath): array
             $dependenciaTexto = self::asegurarUtf8(trim($dependenciaTexto));
             $periodoTexto = self::asegurarUtf8(trim($periodoTexto));
             $pn = strtoupper(trim($pn ?: 'NP'));
+            $inversiones = self::asegurarUtf8(trim($inversiones));
 
             if ($nopac === '' || $descripcion === '') {
                 $errores[] = self::asegurarUtf8("Fila {$filaNumero}: nopac y descripción son obligatorios.");
@@ -798,7 +807,8 @@ public static function importarDesdeCsv(string $tmpPath): array
                         mesconvoca,
                         periodo,
                         cantidad,
-                        certificado
+                        certificado,
+                        inversiones
                     ) VALUES (
                         :nopac,
                         :pn,
@@ -817,7 +827,8 @@ public static function importarDesdeCsv(string $tmpPath): array
                         :mesconvoca,
                         :periodo,
                         :cantidad,
-                        :certificado
+                        :certificado,
+                        :inversiones
                     )";
 
             try {
@@ -840,6 +851,7 @@ public static function importarDesdeCsv(string $tmpPath): array
                 $st->bindValue(':periodo', $periodoId, $periodoId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
                 $st->bindValue(':cantidad', $cantidad, PDO::PARAM_INT);
                 $st->bindValue(':certificado', $certificado);
+                $st->bindValue(':inversiones', $inversiones, $inversiones === '' ? PDO::PARAM_NULL : PDO::PARAM_STR);
 
                 $st->execute();
                 $insertados++;
