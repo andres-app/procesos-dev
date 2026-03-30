@@ -109,6 +109,12 @@ if ($module === 'admin') {
     | RUTAS ESPECIALES ADMIN (con controlador)
     |--------------------------------------------------------------------------
     */
+    if ($subRoute === 'dashboard') {
+        require_once __DIR__ . '/../Controlador/CtrDashboardAdmin.php';
+        CtrDashboardAdmin::index();
+        exit;
+    }
+
     if ($subRoute === 'actividades') {
         require_once __DIR__ . '/../Controlador/CtrProcesoAdmin.php';
         CtrProcesoAdmin::actividades();
@@ -164,7 +170,6 @@ if ($module === 'admin') {
     |--------------------------------------------------------------------------
     */
     $adminViews = [
-        'dashboard'   => __DIR__ . '/../Vista/modulos/admin/dashboard.php',
         'procesos'    => __DIR__ . '/../Vista/modulos/admin/procesos.php',
         'presupuesto' => __DIR__ . '/../Vista/modulos/admin/presupuesto.php',
         'reportes'    => __DIR__ . '/../Vista/modulos/admin/reportes.php',
