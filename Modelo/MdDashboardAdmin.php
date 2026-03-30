@@ -148,6 +148,176 @@ class MdDashboardAdmin
         return $st->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public static function obtenerTendenciaMensual(array $filtros = []): array
+    {
+        $db = db();
+
+        $sql = "
+            SELECT
+                UPPER(COALESCE(NULLIF(TRIM(p.mesconvoca), ''), 'SIN MES')) AS nombre,
+                COUNT(*) AS total,
+                COALESCE(SUM(p.estimado), 0) AS monto
+            FROM pac p
+            WHERE 1=1
+        ";
+
+        $params = self::buildWhere($sql, $filtros);
+
+        $sql .= "
+            GROUP BY UPPER(COALESCE(NULLIF(TRIM(p.mesconvoca), ''), 'SIN MES'))
+        ";
+
+        $st = $db->prepare($sql);
+        $st->execute($params);
+        $rows = $st->fetchAll(PDO::FETCH_ASSOC);
+
+        $ordenMeses = [
+            'ENERO' => 1,
+            'FEBRERO' => 2,
+            'MARZO' => 3,
+            'ABRIL' => 4,
+            'MAYO' => 5,
+            'JUNIO' => 6,
+            'JULIO' => 7,
+            'AGOSTO' => 8,
+            'SEPTIEMBRE' => 9,
+            'OCTUBRE' => 10,
+            'NOVIEMBRE' => 11,
+            'DICIEMBRE' => 12,
+            'SIN MES' => 99,
+        ];
+
+        usort($rows, static function ($a, $b) use ($ordenMeses) {
+            $oa = $ordenMeses[$a['nombre']] ?? 98;
+            $ob = $ordenMeses[$b['nombre']] ?? 98;
+            return $oa <=> $ob;
+        });
+
+        return $rows;
+    }
+
+    public static function obtenerTopDependencias(array $filtros = [], int $limit = 5): array
+    {
+        $db = db();
+
+        $sql = "
+            SELECT
+                COALESCE(d.nombre, 'SIN DEPENDENCIA') AS nombre,
+                COUNT(*) AS total,
+                COALESCE(SUM(p.estimado), 0) AS monto
+            FROM pac p
+            LEFT JOIN dependencia d ON d.id = p.dependencia
+            WHERE 1=1
+        ";
+
+        $params = self::buildWhere($sql, $filtros);
+
+        $sql .= "
+            GROUP BY d.nombre
+            ORDER BY monto DESC, total DESC, nombre ASC
+            LIMIT " . (int)$limit;
+
+        $st = $db->prepare($sql);
+        $st->execute($params);
+
+        return $st->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public static function obtenerTopObac(array $filtros = [], int $limit = 5): array
+    {
+        $db = db();
+
+        $sql = "
+            SELECT
+                COALESCE(e.nombre, 'SIN OBAC') AS nombre,
+                COUNT(*) AS total,
+                COALESCE(SUM(p.estimado), 0) AS monto
+            FROM pac p
+            LEFT JOIN entidad e ON e.id = p.obac
+            WHERE 1=1
+        ";
+
+        $params = self::buildWhere($sql, $filtros);
+
+        $sql .= "
+            GROUP BY e.nombre
+            ORDER BY monto DESC, total DESC, nombre ASC
+            LIMIT " . (int)$limit;
+
+        $st = $db->prepare($sql);
+        $st->execute($params);
+
+        return $st->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public static function obtenerAlertasGerenciales(array $filtros = []): array
+    {
+        $db = db();
+
+        $baseSql = " FROM pac p WHERE 1=1 ";
+        $params = self::buildWhere($baseSql, $filtros);
+
+        $alertas = [];
+
+        $sqlSinCertificado = "
+            SELECT COUNT(*)
+            {$baseSql}
+            AND (p.certificado IS NULL OR p.certificado <= 0)
+        ";
+        $st = $db->prepare($sqlSinCertificado);
+        $st->execute($params);
+        $alertas[] = [
+            'titulo' => 'PAC sin certificado',
+            'valor'  => (int)$st->fetchColumn(),
+            'tono'   => 'amber',
+        ];
+
+        $sqlObservados = "
+            SELECT COUNT(*)
+            FROM pac p
+            LEFT JOIN estado e ON e.id = p.estado
+            WHERE 1=1
+        ";
+        $paramsObs = self::buildWhere($sqlObservados, $filtros);
+        $sqlObservados .= " AND UPPER(COALESCE(e.nombre, '')) LIKE '%OBSERV%' ";
+        $st = $db->prepare($sqlObservados);
+        $st->execute($paramsObs);
+        $alertas[] = [
+            'titulo' => 'PAC observados',
+            'valor'  => (int)$st->fetchColumn(),
+            'tono'   => 'rose',
+        ];
+
+        $sqlSinDependencia = "
+            SELECT COUNT(*)
+            {$baseSql}
+            AND p.dependencia IS NULL
+        ";
+        $st = $db->prepare($sqlSinDependencia);
+        $st->execute($params);
+        $alertas[] = [
+            'titulo' => 'PAC sin dependencia',
+            'valor'  => (int)$st->fetchColumn(),
+            'tono'   => 'slate',
+        ];
+
+        $sqlConInversion = "
+            SELECT COUNT(*)
+            {$baseSql}
+            AND p.inversiones IS NOT NULL
+            AND TRIM(p.inversiones) <> ''
+        ";
+        $st = $db->prepare($sqlConInversion);
+        $st->execute($params);
+        $alertas[] = [
+            'titulo' => 'PAC con inversión',
+            'valor'  => (int)$st->fetchColumn(),
+            'tono'   => 'emerald',
+        ];
+
+        return $alertas;
+    }
+
     private static function buildWhere(string &$sql, array $filtros = []): array
     {
         $params = [];

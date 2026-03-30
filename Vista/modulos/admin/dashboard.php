@@ -17,8 +17,33 @@ function pct_dashboard($parte, $total)
   return round(((float)$parte / (float)$total) * 100, 1);
 }
 
-$totalPacGeneral = (int)($kpis['total_pac'] ?? 0);
+function tono_alerta_dashboard($tono)
+{
+  $map = [
+    'amber'   => 'border-amber-200 bg-amber-50 text-amber-800',
+    'rose'    => 'border-rose-200 bg-rose-50 text-rose-800',
+    'slate'   => 'border-slate-200 bg-slate-50 text-slate-800',
+    'emerald' => 'border-emerald-200 bg-emerald-50 text-emerald-800',
+  ];
+
+  return $map[$tono] ?? $map['slate'];
+}
+
+$totalPacGeneral   = (int)($kpis['total_pac'] ?? 0);
 $totalMontoGeneral = (float)($kpis['total_estimado'] ?? 0);
+$maxMontoMes       = 0;
+$maxMontoDep       = 0;
+$maxMontoObac      = 0;
+
+foreach ($tendenciaMes as $item) {
+  $maxMontoMes = max($maxMontoMes, (float)($item['monto'] ?? 0));
+}
+foreach ($topDependencias as $item) {
+  $maxMontoDep = max($maxMontoDep, (float)($item['monto'] ?? 0));
+}
+foreach ($topObac as $item) {
+  $maxMontoObac = max($maxMontoObac, (float)($item['monto'] ?? 0));
+}
 ?>
 
 <div class="space-y-6">
@@ -121,10 +146,9 @@ $totalMontoGeneral = (float)($kpis['total_estimado'] ?? 0);
     </div>
   </div>
 
-  <!-- Segunda fila analítica -->
+  <!-- Segunda fila -->
   <div class="grid grid-cols-1 gap-4 xl:grid-cols-2 2xl:grid-cols-4">
 
-    <!-- Estado -->
     <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.06)]">
       <div class="flex items-start justify-between gap-3">
         <div>
@@ -169,7 +193,6 @@ $totalMontoGeneral = (float)($kpis['total_estimado'] ?? 0);
       </div>
     </section>
 
-    <!-- OBAC -->
     <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.06)]">
       <div class="flex items-start justify-between gap-3">
         <div>
@@ -214,7 +237,6 @@ $totalMontoGeneral = (float)($kpis['total_estimado'] ?? 0);
       </div>
     </section>
 
-    <!-- Mercado -->
     <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.06)]">
       <div class="flex items-start justify-between gap-3">
         <div>
@@ -259,7 +281,6 @@ $totalMontoGeneral = (float)($kpis['total_estimado'] ?? 0);
       </div>
     </section>
 
-    <!-- Modalidad -->
     <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.06)]">
       <div class="flex items-start justify-between gap-3">
         <div>
@@ -306,13 +327,151 @@ $totalMontoGeneral = (float)($kpis['total_estimado'] ?? 0);
 
   </div>
 
-  <div class="rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-5 py-6">
-    <div class="text-sm font-semibold text-slate-700">Siguiente paso</div>
-    <div class="mt-1 text-sm text-slate-500">
-      Después de validar esta segunda fila, armamos la tercera:
-      tendencia mensual, top OBAC/dependencias y alertas gerenciales.
-    </div>
+  <!-- Tercera fila -->
+  <div class="grid grid-cols-1 gap-4 xl:grid-cols-2 2xl:grid-cols-4">
+
+    <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.06)] 2xl:col-span-2">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Tendencia</div>
+          <h2 class="mt-1 text-lg font-semibold tracking-tight text-slate-900">Programación mensual</h2>
+        </div>
+        <div class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+          Mes convocatoria
+        </div>
+      </div>
+
+      <div class="mt-5 space-y-4">
+        <?php if (!empty($tendenciaMes)): ?>
+          <?php foreach ($tendenciaMes as $item): ?>
+            <?php
+              $nombre = (string)($item['nombre'] ?? '-');
+              $total  = (int)($item['total'] ?? 0);
+              $monto  = (float)($item['monto'] ?? 0);
+              $width  = $maxMontoMes > 0 ? round(($monto / $maxMontoMes) * 100, 1) : 0;
+            ?>
+            <div>
+              <div class="mb-1.5 flex items-center justify-between gap-3">
+                <div class="text-sm font-semibold text-slate-800"><?= htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8') ?></div>
+                <div class="text-xs text-slate-500"><?= $total ?> PAC · <?= fmt_money_dashboard($monto) ?></div>
+              </div>
+              <div class="h-3 overflow-hidden rounded-full bg-slate-200">
+                <div class="h-full rounded-full bg-slate-900" style="width: <?= min($width, 100) ?>%;"></div>
+              </div>
+            </div>
+          <?php endforeach; ?>
+        <?php else: ?>
+          <div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm text-slate-500">
+            Sin datos para mostrar.
+          </div>
+        <?php endif; ?>
+      </div>
+    </section>
+
+    <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.06)]">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Ranking</div>
+          <h2 class="mt-1 text-lg font-semibold tracking-tight text-slate-900">Top dependencias</h2>
+        </div>
+        <div class="rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">
+          Top 5
+        </div>
+      </div>
+
+      <div class="mt-5 space-y-3">
+        <?php if (!empty($topDependencias)): ?>
+          <?php foreach ($topDependencias as $i => $item): ?>
+            <?php
+              $nombre = (string)($item['nombre'] ?? '-');
+              $total  = (int)($item['total'] ?? 0);
+              $monto  = (float)($item['monto'] ?? 0);
+              $width  = $maxMontoDep > 0 ? round(($monto / $maxMontoDep) * 100, 1) : 0;
+            ?>
+            <div class="rounded-2xl border border-slate-100 bg-slate-50/70 p-3">
+              <div class="flex items-center gap-3">
+                <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-bold text-amber-700">
+                  <?= $i + 1 ?>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="truncate text-sm font-semibold text-slate-800"><?= htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8') ?></div>
+                  <div class="mt-1 text-xs text-slate-500"><?= $total ?> PAC · <?= fmt_money_dashboard($monto) ?></div>
+                </div>
+              </div>
+              <div class="mt-3 h-2 overflow-hidden rounded-full bg-amber-100">
+                <div class="h-full rounded-full bg-amber-500" style="width: <?= min($width, 100) ?>%;"></div>
+              </div>
+            </div>
+          <?php endforeach; ?>
+        <?php else: ?>
+          <div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm text-slate-500">
+            Sin datos para mostrar.
+          </div>
+        <?php endif; ?>
+      </div>
+    </section>
+
+    <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.06)]">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Control</div>
+          <h2 class="mt-1 text-lg font-semibold tracking-tight text-slate-900">Alertas gerenciales</h2>
+        </div>
+        <div class="rounded-full bg-rose-50 px-3 py-1 text-xs font-medium text-rose-700">
+          Atención
+        </div>
+      </div>
+
+      <div class="mt-5 space-y-3">
+        <?php if (!empty($alertas)): ?>
+          <?php foreach ($alertas as $alerta): ?>
+            <div class="rounded-2xl border px-4 py-3 <?= tono_alerta_dashboard($alerta['tono'] ?? 'slate') ?>">
+              <div class="flex items-center justify-between gap-3">
+                <div class="text-sm font-semibold">
+                  <?= htmlspecialchars((string)($alerta['titulo'] ?? '-'), ENT_QUOTES, 'UTF-8') ?>
+                </div>
+                <div class="text-xl font-bold">
+                  <?= (int)($alerta['valor'] ?? 0) ?>
+                </div>
+              </div>
+            </div>
+          <?php endforeach; ?>
+        <?php else: ?>
+          <div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm text-slate-500">
+            Sin alertas.
+          </div>
+        <?php endif; ?>
+      </div>
+
+      <div class="mt-5 border-t border-slate-100 pt-4">
+        <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Top OBAC</div>
+        <div class="mt-3 space-y-3">
+          <?php if (!empty($topObac)): ?>
+            <?php foreach ($topObac as $i => $item): ?>
+              <?php
+                $nombre = (string)($item['nombre'] ?? '-');
+                $monto  = (float)($item['monto'] ?? 0);
+                $width  = $maxMontoObac > 0 ? round(($monto / $maxMontoObac) * 100, 1) : 0;
+              ?>
+              <div>
+                <div class="mb-1 flex items-center justify-between gap-3">
+                  <div class="truncate text-sm font-medium text-slate-700"><?= ($i + 1) . '. ' . htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8') ?></div>
+                  <div class="text-xs text-slate-500"><?= fmt_money_dashboard($monto) ?></div>
+                </div>
+                <div class="h-2 overflow-hidden rounded-full bg-blue-100">
+                  <div class="h-full rounded-full bg-blue-600" style="width: <?= min($width, 100) ?>%;"></div>
+                </div>
+              </div>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <div class="text-sm text-slate-500">Sin datos.</div>
+          <?php endif; ?>
+        </div>
+      </div>
+    </section>
+
   </div>
+
 </div>
 
 <?php require __DIR__ . '/../../layout/admin_footer.php'; ?>

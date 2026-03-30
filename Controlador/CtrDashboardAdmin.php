@@ -14,11 +14,15 @@ class CtrDashboardAdmin
             'estado'    => $_GET['estado'] ?? '',
         ];
 
-        $kpis          = MdDashboardAdmin::obtenerKpisGenerales($filtros);
-        $porEstado     = MdDashboardAdmin::obtenerResumenPorEstado($filtros);
-        $porObac       = MdDashboardAdmin::obtenerResumenPorObac($filtros);
-        $porMercado    = MdDashboardAdmin::obtenerResumenPorMercado($filtros);
-        $porModalidad  = MdDashboardAdmin::obtenerResumenPorModalidad($filtros);
+        $kpis            = MdDashboardAdmin::obtenerKpisGenerales($filtros);
+        $porEstado       = MdDashboardAdmin::obtenerResumenPorEstado($filtros);
+        $porObac         = MdDashboardAdmin::obtenerResumenPorObac($filtros);
+        $porMercado      = MdDashboardAdmin::obtenerResumenPorMercado($filtros);
+        $porModalidad    = MdDashboardAdmin::obtenerResumenPorModalidad($filtros);
+        $tendenciaMes    = MdDashboardAdmin::obtenerTendenciaMensual($filtros);
+        $topDependencias = MdDashboardAdmin::obtenerTopDependencias($filtros, 5);
+        $topObac         = MdDashboardAdmin::obtenerTopObac($filtros, 5);
+        $alertas         = MdDashboardAdmin::obtenerAlertasGerenciales($filtros);
 
         $periodos = MdPacAdmin::listarPeriodo();
         $obacs    = MdPacAdmin::listarObac();
