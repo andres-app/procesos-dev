@@ -25,6 +25,131 @@ class MdDashboardAdmin
             WHERE 1=1
         ";
 
+        $params = self::buildWhere($sql, $filtros);
+
+        $st = $db->prepare($sql);
+        $st->execute($params);
+
+        $row = $st->fetch(PDO::FETCH_ASSOC);
+
+        return [
+            'total_pac'           => (int)($row['total_pac'] ?? 0),
+            'total_estimado'      => (float)($row['total_estimado'] ?? 0),
+            'total_certificado'   => (float)($row['total_certificado'] ?? 0),
+            'total_con_inversion' => (int)($row['total_con_inversion'] ?? 0),
+        ];
+    }
+
+    public static function obtenerResumenPorEstado(array $filtros = []): array
+    {
+        $db = db();
+
+        $sql = "
+            SELECT
+                COALESCE(e.nombre, 'SIN ESTADO') AS nombre,
+                COUNT(*) AS total,
+                COALESCE(SUM(p.estimado), 0) AS monto
+            FROM pac p
+            LEFT JOIN estado e ON e.id = p.estado
+            WHERE 1=1
+        ";
+
+        $params = self::buildWhere($sql, $filtros);
+
+        $sql .= "
+            GROUP BY e.nombre
+            ORDER BY total DESC, monto DESC, nombre ASC
+        ";
+
+        $st = $db->prepare($sql);
+        $st->execute($params);
+
+        return $st->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public static function obtenerResumenPorObac(array $filtros = []): array
+    {
+        $db = db();
+
+        $sql = "
+            SELECT
+                COALESCE(e.nombre, 'SIN OBAC') AS nombre,
+                COUNT(*) AS total,
+                COALESCE(SUM(p.estimado), 0) AS monto
+            FROM pac p
+            LEFT JOIN entidad e ON e.id = p.obac
+            WHERE 1=1
+        ";
+
+        $params = self::buildWhere($sql, $filtros);
+
+        $sql .= "
+            GROUP BY e.nombre
+            ORDER BY monto DESC, total DESC, nombre ASC
+        ";
+
+        $st = $db->prepare($sql);
+        $st->execute($params);
+
+        return $st->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public static function obtenerResumenPorMercado(array $filtros = []): array
+    {
+        $db = db();
+
+        $sql = "
+            SELECT
+                COALESCE(tm.nombre, 'SIN MERCADO') AS nombre,
+                COUNT(*) AS total,
+                COALESCE(SUM(p.estimado), 0) AS monto
+            FROM pac p
+            LEFT JOIN tipo_mercado tm ON tm.id = p.tipo_mercado
+            WHERE 1=1
+        ";
+
+        $params = self::buildWhere($sql, $filtros);
+
+        $sql .= "
+            GROUP BY tm.nombre
+            ORDER BY monto DESC, total DESC, nombre ASC
+        ";
+
+        $st = $db->prepare($sql);
+        $st->execute($params);
+
+        return $st->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public static function obtenerResumenPorModalidad(array $filtros = []): array
+    {
+        $db = db();
+
+        $sql = "
+            SELECT
+                COALESCE(m.nombre, 'SIN MODALIDAD') AS nombre,
+                COUNT(*) AS total,
+                COALESCE(SUM(p.estimado), 0) AS monto
+            FROM pac p
+            LEFT JOIN modalidad m ON m.id = p.modalidad
+            WHERE 1=1
+        ";
+
+        $params = self::buildWhere($sql, $filtros);
+
+        $sql .= "
+            GROUP BY m.nombre
+            ORDER BY monto DESC, total DESC, nombre ASC
+        ";
+
+        $st = $db->prepare($sql);
+        $st->execute($params);
+
+        return $st->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    private static function buildWhere(string &$sql, array $filtros = []): array
+    {
         $params = [];
 
         if (!empty($filtros['periodo'])) {
@@ -47,16 +172,6 @@ class MdDashboardAdmin
             $params[':estado'] = (int)$filtros['estado'];
         }
 
-        $st = $db->prepare($sql);
-        $st->execute($params);
-
-        $row = $st->fetch(PDO::FETCH_ASSOC);
-
-        return [
-            'total_pac'           => (int)($row['total_pac'] ?? 0),
-            'total_estimado'      => (float)($row['total_estimado'] ?? 0),
-            'total_certificado'   => (float)($row['total_certificado'] ?? 0),
-            'total_con_inversion' => (int)($row['total_con_inversion'] ?? 0),
-        ];
+        return $params;
     }
 }

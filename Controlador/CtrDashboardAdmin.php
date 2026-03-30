@@ -14,7 +14,11 @@ class CtrDashboardAdmin
             'estado'    => $_GET['estado'] ?? '',
         ];
 
-        $kpis = MdDashboardAdmin::obtenerKpisGenerales($filtros);
+        $kpis          = MdDashboardAdmin::obtenerKpisGenerales($filtros);
+        $porEstado     = MdDashboardAdmin::obtenerResumenPorEstado($filtros);
+        $porObac       = MdDashboardAdmin::obtenerResumenPorObac($filtros);
+        $porMercado    = MdDashboardAdmin::obtenerResumenPorMercado($filtros);
+        $porModalidad  = MdDashboardAdmin::obtenerResumenPorModalidad($filtros);
 
         $periodos = MdPacAdmin::listarPeriodo();
         $obacs    = MdPacAdmin::listarObac();
