@@ -318,6 +318,86 @@ class MdDashboardAdmin
         return $alertas;
     }
 
+    public static function obtenerComparativoFinanciero(array $filtros = []): array
+    {
+        $db = db();
+
+        $sql = "
+            SELECT
+                COALESCE(SUM(p.estimado), 0) AS total_estimado,
+                COALESCE(SUM(p.certificado), 0) AS total_certificado,
+                SUM(CASE WHEN COALESCE(p.certificado, 0) > 0 THEN 1 ELSE 0 END) AS pac_con_certificado,
+                SUM(CASE WHEN COALESCE(p.certificado, 0) <= 0 THEN 1 ELSE 0 END) AS pac_sin_certificado
+            FROM pac p
+            WHERE 1=1
+        ";
+
+        $params = self::buildWhere($sql, $filtros);
+
+        $st = $db->prepare($sql);
+        $st->execute($params);
+        $row = $st->fetch(PDO::FETCH_ASSOC);
+
+        $estimado = (float)($row['total_estimado'] ?? 0);
+        $certificado = (float)($row['total_certificado'] ?? 0);
+
+        return [
+            'total_estimado'       => $estimado,
+            'total_certificado'    => $certificado,
+            'brecha'               => max($estimado - $certificado, 0),
+            'cobertura_pct'        => $estimado > 0 ? round(($certificado / $estimado) * 100, 1) : 0,
+            'pac_con_certificado'  => (int)($row['pac_con_certificado'] ?? 0),
+            'pac_sin_certificado'  => (int)($row['pac_sin_certificado'] ?? 0),
+        ];
+    }
+
+    public static function obtenerPacCriticos(array $filtros = [], int $limit = 8): array
+    {
+        $db = db();
+
+        $sql = "
+            SELECT
+                p.id,
+                p.nopac,
+                p.descripcion,
+                p.estimado,
+                p.certificado,
+                p.mesconvoca,
+                COALESCE(e.nombre, '')  AS obac_nombre,
+                COALESCE(es.nombre, '') AS estado_nombre,
+                COALESCE(d.nombre, '')  AS dependencia_nombre
+            FROM pac p
+            LEFT JOIN entidad e ON e.id = p.obac
+            LEFT JOIN estado es ON es.id = p.estado
+            LEFT JOIN dependencia d ON d.id = p.dependencia
+            WHERE 1=1
+        ";
+
+        $params = self::buildWhere($sql, $filtros);
+
+        $sql .= "
+            AND (
+                COALESCE(p.certificado, 0) <= 0
+                OR p.dependencia IS NULL
+                OR UPPER(COALESCE(es.nombre, '')) LIKE '%OBSERV%'
+            )
+            ORDER BY
+                CASE
+                    WHEN UPPER(COALESCE(es.nombre, '')) LIKE '%OBSERV%' THEN 1
+                    WHEN COALESCE(p.certificado, 0) <= 0 THEN 2
+                    WHEN p.dependencia IS NULL THEN 3
+                    ELSE 4
+                END,
+                p.estimado DESC,
+                p.id DESC
+            LIMIT " . (int)$limit;
+
+        $st = $db->prepare($sql);
+        $st->execute($params);
+
+        return $st->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     private static function buildWhere(string &$sql, array $filtros = []): array
     {
         $params = [];

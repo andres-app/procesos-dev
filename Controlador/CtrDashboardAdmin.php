@@ -23,6 +23,8 @@ class CtrDashboardAdmin
         $topDependencias = MdDashboardAdmin::obtenerTopDependencias($filtros, 5);
         $topObac         = MdDashboardAdmin::obtenerTopObac($filtros, 5);
         $alertas         = MdDashboardAdmin::obtenerAlertasGerenciales($filtros);
+        $comparativo     = MdDashboardAdmin::obtenerComparativoFinanciero($filtros);
+        $pacCriticos     = MdDashboardAdmin::obtenerPacCriticos($filtros, 8);
 
         $periodos = MdPacAdmin::listarPeriodo();
         $obacs    = MdPacAdmin::listarObac();
