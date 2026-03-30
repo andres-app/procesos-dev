@@ -94,59 +94,63 @@ class MdDashboardAdmin
         return $st->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public static function obtenerResumenPorMercado(array $filtros = []): array
-    {
-        $db = db();
+public static function obtenerResumenPorMercado(array $filtros = []): array
+{
+    $db = db();
 
-        $sql = "
-            SELECT
-                COALESCE(tm.nombre, 'SIN MERCADO') AS nombre,
-                COUNT(*) AS total,
-                COALESCE(SUM(p.estimado), 0) AS monto
-            FROM pac p
-            LEFT JOIN tipo_mercado tm ON tm.id = p.tipo_mercado
-            WHERE 1=1
-        ";
+    $sql = "
+        SELECT
+            tm.nombre AS nombre,
+            COUNT(*) AS total,
+            COALESCE(SUM(p.estimado), 0) AS monto
+        FROM pac p
+        INNER JOIN tipo_mercado tm ON tm.id = p.tipo_mercado
+        WHERE 1=1
+    ";
 
-        $params = self::buildWhere($sql, $filtros);
+    $params = self::buildWhere($sql, $filtros);
 
-        $sql .= "
-            GROUP BY tm.nombre
-            ORDER BY monto DESC, total DESC, nombre ASC
-        ";
+    $sql .= "
+        AND tm.nombre IS NOT NULL
+        AND TRIM(tm.nombre) <> ''
+        GROUP BY tm.nombre
+        ORDER BY monto DESC, total DESC, nombre ASC
+    ";
 
-        $st = $db->prepare($sql);
-        $st->execute($params);
+    $st = $db->prepare($sql);
+    $st->execute($params);
 
-        return $st->fetchAll(PDO::FETCH_ASSOC);
-    }
+    return $st->fetchAll(PDO::FETCH_ASSOC);
+}
 
-    public static function obtenerResumenPorModalidad(array $filtros = []): array
-    {
-        $db = db();
+public static function obtenerResumenPorModalidad(array $filtros = []): array
+{
+    $db = db();
 
-        $sql = "
-            SELECT
-                COALESCE(m.nombre, 'SIN MODALIDAD') AS nombre,
-                COUNT(*) AS total,
-                COALESCE(SUM(p.estimado), 0) AS monto
-            FROM pac p
-            LEFT JOIN modalidad m ON m.id = p.modalidad
-            WHERE 1=1
-        ";
+    $sql = "
+        SELECT
+            m.nombre AS nombre,
+            COUNT(*) AS total,
+            COALESCE(SUM(p.estimado), 0) AS monto
+        FROM pac p
+        INNER JOIN modalidad m ON m.id = p.modalidad
+        WHERE 1=1
+    ";
 
-        $params = self::buildWhere($sql, $filtros);
+    $params = self::buildWhere($sql, $filtros);
 
-        $sql .= "
-            GROUP BY m.nombre
-            ORDER BY monto DESC, total DESC, nombre ASC
-        ";
+    $sql .= "
+        AND m.nombre IS NOT NULL
+        AND TRIM(m.nombre) <> ''
+        GROUP BY m.nombre
+        ORDER BY monto DESC, total DESC, nombre ASC
+    ";
 
-        $st = $db->prepare($sql);
-        $st->execute($params);
+    $st = $db->prepare($sql);
+    $st->execute($params);
 
-        return $st->fetchAll(PDO::FETCH_ASSOC);
-    }
+    return $st->fetchAll(PDO::FETCH_ASSOC);
+}
 
     public static function obtenerTendenciaMensual(array $filtros = []): array
     {
@@ -423,5 +427,104 @@ class MdDashboardAdmin
         }
 
         return $params;
+    }
+
+    public static function obtenerParticipacionSectorDefensa(array $filtros = []): array
+    {
+        $db = db();
+
+        $sql = "
+        SELECT
+            CASE
+                WHEN p.ejecucion = 4 THEN 'ACFFAA'
+                ELSE 'RESTO'
+            END AS grupo,
+            COUNT(*) AS total_pac,
+            COALESCE(SUM(p.estimado), 0) AS total_monto
+        FROM pac p
+        WHERE 1=1
+    ";
+
+        $params = self::buildWhere($sql, $filtros);
+
+        $sql .= "
+        GROUP BY
+            CASE
+                WHEN p.ejecucion = 4 THEN 'ACFFAA'
+                ELSE 'RESTO'
+            END
+    ";
+
+        $st = $db->prepare($sql);
+        $st->execute($params);
+        $rows = $st->fetchAll(PDO::FETCH_ASSOC);
+
+        $acffaaPac   = 0;
+        $acffaaMonto = 0.0;
+        $restoPac    = 0;
+        $restoMonto  = 0.0;
+
+        foreach ($rows as $row) {
+            $grupo = strtoupper(trim((string)($row['grupo'] ?? '')));
+
+            if ($grupo === 'ACFFAA') {
+                $acffaaPac   = (int)($row['total_pac'] ?? 0);
+                $acffaaMonto = (float)($row['total_monto'] ?? 0);
+            } else {
+                $restoPac    = (int)($row['total_pac'] ?? 0);
+                $restoMonto  = (float)($row['total_monto'] ?? 0);
+            }
+        }
+
+        $totalPac   = $acffaaPac + $restoPac;
+        $totalMonto = $acffaaMonto + $restoMonto;
+
+        return [
+            'acffaa_pac'       => $acffaaPac,
+            'acffaa_monto'     => $acffaaMonto,
+            'acffaa_pct_pac'   => $totalPac > 0 ? round(($acffaaPac / $totalPac) * 100, 1) : 0,
+            'acffaa_pct_monto' => $totalMonto > 0 ? round(($acffaaMonto / $totalMonto) * 100, 1) : 0,
+
+            'resto_pac'        => $restoPac,
+            'resto_monto'      => $restoMonto,
+            'resto_pct_pac'    => $totalPac > 0 ? round(($restoPac / $totalPac) * 100, 1) : 0,
+            'resto_pct_monto'  => $totalMonto > 0 ? round(($restoMonto / $totalMonto) * 100, 1) : 0,
+
+            'total_pac'        => $totalPac,
+            'total_monto'      => $totalMonto,
+        ];
+    }
+
+    public static function obtenerParticipacionPie(array $filtros = []): array
+    {
+        $db = db();
+
+        $sql = "
+        SELECT
+            CASE
+                WHEN p.ejecucion = 4 THEN 'ACFFAA'
+                ELSE 'OBAC'
+            END AS nombre,
+            COUNT(*) AS total,
+            COALESCE(SUM(p.estimado), 0) AS monto
+        FROM pac p
+        WHERE 1=1
+    ";
+
+        $params = self::buildWhere($sql, $filtros);
+
+        $sql .= "
+        GROUP BY
+            CASE
+                WHEN p.ejecucion = 4 THEN 'ACFFAA'
+                ELSE 'OBAC' 
+            END
+        ORDER BY monto DESC, total DESC, nombre ASC
+    ";
+
+        $st = $db->prepare($sql);
+        $st->execute($params);
+
+        return $st->fetchAll(PDO::FETCH_ASSOC);
     }
 }

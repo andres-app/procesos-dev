@@ -1,4 +1,5 @@
 <?php
+// Vista/modulos/admin/dashboard.php
 $titulo = 'Dashboard';
 $active = 'dashboard';
 require __DIR__ . '/../../layout/admin_layout.php';
@@ -70,6 +71,16 @@ $totalMontoGeneral = (float)($kpis['total_estimado'] ?? 0);
 $ejecucionActual   = isset($_GET['ejecucion']) ? (string)$_GET['ejecucion'] : '4';
 $coberturaPct      = (float)($comparativo['cobertura_pct'] ?? 0);
 
+$partAcffaaPac       = (int)($participacion['acffaa_pac'] ?? 0);
+$partAcffaaMonto     = (float)($participacion['acffaa_monto'] ?? 0);
+$partAcffaaPctPac    = (float)($participacion['acffaa_pct_pac'] ?? 0);
+$partAcffaaPctMonto  = (float)($participacion['acffaa_pct_monto'] ?? 0);
+
+$partRestoPac        = (int)($participacion['resto_pac'] ?? 0);
+$partRestoMonto      = (float)($participacion['resto_monto'] ?? 0);
+$partRestoPctPac     = (float)($participacion['resto_pct_pac'] ?? 0);
+$partRestoPctMonto   = (float)($participacion['resto_pct_monto'] ?? 0);
+
 $maxMontoDep  = 0;
 $maxMontoObac = 0;
 
@@ -81,8 +92,23 @@ foreach ($topObac as $item) {
 }
 
 /* ===== datasets para charts ===== */
-$chartEstadoLabels   = [];
-$chartEstadoTotals   = [];
+$chartParticipacionLabels  = [];
+$chartParticipacionMontos  = [];
+$chartParticipacionTotales = [];
+
+foreach (($participacionPie ?? []) as $item) {
+  $nombre = strtoupper(trim((string)($item['nombre'] ?? 'SIN DATO')));
+  if ($nombre === '') {
+    $nombre = 'SIN DATO';
+  }
+
+  $chartParticipacionLabels[]  = $nombre;
+  $chartParticipacionMontos[]  = (float)($item['monto'] ?? 0);
+  $chartParticipacionTotales[] = (int)($item['total'] ?? 0);
+}
+
+$chartEstadoLabels = [];
+$chartEstadoTotals = [];
 
 foreach ($porEstado as $item) {
   $chartEstadoLabels[] = (string)($item['nombre'] ?? '-');
@@ -99,19 +125,29 @@ foreach ($porObac as $item) {
 $chartMercadoLabels = [];
 $chartMercadoTotals = [];
 foreach ($porMercado as $item) {
-  $chartMercadoLabels[] = (string)($item['nombre'] ?? '-');
+  $nombre = trim((string)($item['nombre'] ?? ''));
+  if ($nombre === '') {
+    continue;
+  }
+
+  $chartMercadoLabels[] = $nombre;
   $chartMercadoTotals[] = (int)($item['total'] ?? 0);
 }
 
 $chartModalidadLabels = [];
 $chartModalidadTotals = [];
 foreach ($porModalidad as $item) {
-  $chartModalidadLabels[] = (string)($item['nombre'] ?? '-');
+  $nombre = trim((string)($item['nombre'] ?? ''));
+  if ($nombre === '') {
+    continue;
+  }
+
+  $chartModalidadLabels[] = $nombre;
   $chartModalidadTotals[] = (int)($item['total'] ?? 0);
 }
 
-$chartMesLabels = [];
-$chartMesMontos = [];
+$chartMesLabels  = [];
+$chartMesMontos  = [];
 $chartMesTotales = [];
 foreach ($tendenciaMes as $item) {
   $chartMesLabels[]  = (string)($item['nombre'] ?? '-');
@@ -193,21 +229,20 @@ foreach ($tendenciaMes as $item) {
     <a
       href="<?= htmlspecialchars(buildDashboardFilterUrl(['ejecucion' => 4]), ENT_QUOTES, 'UTF-8') ?>"
       class="inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition <?= $ejecucionActual === '4'
-        ? 'border-rose-300 bg-rose-600 text-white'
-        : 'border-slate-200 bg-white text-slate-700 hover:border-rose-200 hover:text-rose-700' ?>">
+                                                                                                          ? 'border-rose-300 bg-rose-600 text-white'
+                                                                                                          : 'border-slate-200 bg-white text-slate-700 hover:border-rose-200 hover:text-rose-700' ?>">
       ACFFAA
     </a>
 
     <a
       href="<?= htmlspecialchars(buildDashboardFilterUrl(['ejecucion' => 0]), ENT_QUOTES, 'UTF-8') ?>"
       class="inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition <?= $ejecucionActual === '0'
-        ? 'border-slate-300 bg-slate-900 text-white'
-        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900' ?>">
+                                                                                                          ? 'border-slate-300 bg-slate-900 text-white'
+                                                                                                          : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900' ?>">
       Todos
     </a>
   </div>
 
-  <!-- KPIs -->
   <div class="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-4">
     <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.06)]">
       <div class="text-xs font-medium uppercase tracking-wide text-slate-400">Total PAC</div>
@@ -242,7 +277,6 @@ foreach ($tendenciaMes as $item) {
     </div>
   </div>
 
-  <!-- Comparativo financiero -->
   <div class="grid grid-cols-1 gap-4 xl:grid-cols-3">
     <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.06)] xl:col-span-2">
       <div class="flex items-start justify-between gap-3">
@@ -311,50 +345,122 @@ foreach ($tendenciaMes as $item) {
     </section>
   </div>
 
-  <!-- Bloque charts -->
-  <div class="grid grid-cols-1 gap-4 xl:grid-cols-2 2xl:grid-cols-3">
+  <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
     <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.06)]">
-      <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Visual</div>
-      <h2 class="mt-1 text-lg font-semibold tracking-tight text-slate-900">Estados</h2>
-      <div class="mt-5 h-[340px]">
-        <canvas id="chartEstado"></canvas>
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Participación ejecutiva</div>
+          <h2 class="mt-1 text-lg font-semibold tracking-tight text-slate-900">ACFFAA</h2>
+          <p class="mt-1 text-sm text-slate-500">Peso relativo dentro del universo filtrado del dashboard.</p>
+        </div>
+        <div class="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+          <?= number_format($partAcffaaPctPac, 1) ?>% PAC
+        </div>
+      </div>
+
+      <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+          <div class="text-xs uppercase tracking-wide text-slate-400">PAC registrados</div>
+          <div class="mt-2 text-3xl font-semibold tracking-tight text-slate-900">
+            <?= $partAcffaaPac ?>
+          </div>
+          <div class="mt-2 text-sm text-slate-500">
+            Participación en cantidad: <span class="font-semibold text-slate-700"><?= number_format($partAcffaaPctPac, 1) ?>%</span>
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-blue-100 bg-blue-50 p-4">
+          <div class="text-xs uppercase tracking-wide text-blue-600">Monto estimado</div>
+          <div class="mt-2 text-2xl font-semibold tracking-tight text-blue-900">
+            <?= fmt_money_dashboard($partAcffaaMonto) ?>
+          </div>
+          <div class="mt-2 text-sm text-blue-700/80">
+            Participación en monto: <span class="font-semibold"><?= number_format($partAcffaaPctMonto, 1) ?>%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-5 space-y-3">
+        <div>
+          <div class="mb-2 flex items-center justify-between gap-3">
+            <div class="text-sm font-medium text-slate-700">Participación por PAC</div>
+            <div class="text-sm font-semibold text-slate-900"><?= number_format($partAcffaaPctPac, 1) ?>%</div>
+          </div>
+          <div class="h-3 overflow-hidden rounded-full bg-slate-200">
+            <div class="h-full rounded-full bg-blue-600" style="width: <?= min($partAcffaaPctPac, 100) ?>%;"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="mb-2 flex items-center justify-between gap-3">
+            <div class="text-sm font-medium text-slate-700">Participación por monto</div>
+            <div class="text-sm font-semibold text-slate-900"><?= number_format($partAcffaaPctMonto, 1) ?>%</div>
+          </div>
+          <div class="h-3 overflow-hidden rounded-full bg-slate-200">
+            <div class="h-full rounded-full bg-cyan-500" style="width: <?= min($partAcffaaPctMonto, 100) ?>%;"></div>
+          </div>
+        </div>
       </div>
     </section>
 
     <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.06)]">
-      <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Visual</div>
-      <h2 class="mt-1 text-lg font-semibold tracking-tight text-slate-900">Tipo de mercado</h2>
-      <div class="mt-5 h-[340px]">
-        <canvas id="chartMercado"></canvas>
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Participación ejecutiva</div>
+          <h2 class="mt-1 text-lg font-semibold tracking-tight text-slate-900">Resto del sector</h2>
+          <p class="mt-1 text-sm text-slate-500">Comparativo del conjunto no ACFFAA dentro del mismo filtro.</p>
+        </div>
+        <div class="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+          <?= number_format($partRestoPctPac, 1) ?>% PAC
+        </div>
       </div>
-    </section>
 
-    <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.06)]">
-      <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Visual</div>
-      <h2 class="mt-1 text-lg font-semibold tracking-tight text-slate-900">Modalidad</h2>
-      <div class="mt-5 h-[340px]">
-        <canvas id="chartModalidad"></canvas>
+      <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+          <div class="text-xs uppercase tracking-wide text-slate-400">PAC registrados</div>
+          <div class="mt-2 text-3xl font-semibold tracking-tight text-slate-900">
+            <?= $partRestoPac ?>
+          </div>
+          <div class="mt-2 text-sm text-slate-500">
+            Participación en cantidad: <span class="font-semibold text-slate-700"><?= number_format($partRestoPctPac, 1) ?>%</span>
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-amber-100 bg-amber-50 p-4">
+          <div class="text-xs uppercase tracking-wide text-amber-600">Monto estimado</div>
+          <div class="mt-2 text-2xl font-semibold tracking-tight text-amber-900">
+            <?= fmt_money_dashboard($partRestoMonto) ?>
+          </div>
+          <div class="mt-2 text-sm text-amber-700/80">
+            Participación en monto: <span class="font-semibold"><?= number_format($partRestoPctMonto, 1) ?>%</span>
+          </div>
+        </div>
       </div>
-    </section>
 
-    <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.06)] xl:col-span-2">
-      <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Visual</div>
-      <h2 class="mt-1 text-lg font-semibold tracking-tight text-slate-900">Tendencia mensual</h2>
-      <div class="mt-5 h-[320px]">
-        <canvas id="chartMeses"></canvas>
-      </div>
-    </section>
+      <div class="mt-5 space-y-3">
+        <div>
+          <div class="mb-2 flex items-center justify-between gap-3">
+            <div class="text-sm font-medium text-slate-700">Participación por PAC</div>
+            <div class="text-sm font-semibold text-slate-900"><?= number_format($partRestoPctPac, 1) ?>%</div>
+          </div>
+          <div class="h-3 overflow-hidden rounded-full bg-slate-200">
+            <div class="h-full rounded-full bg-amber-500" style="width: <?= min($partRestoPctPac, 100) ?>%;"></div>
+          </div>
+        </div>
 
-    <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.06)]">
-      <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Visual</div>
-      <h2 class="mt-1 text-lg font-semibold tracking-tight text-slate-900">OBAC por monto</h2>
-      <div class="mt-5 h-[320px]">
-        <canvas id="chartObac"></canvas>
+        <div>
+          <div class="mb-2 flex items-center justify-between gap-3">
+            <div class="text-sm font-medium text-slate-700">Participación por monto</div>
+            <div class="text-sm font-semibold text-slate-900"><?= number_format($partRestoPctMonto, 1) ?>%</div>
+          </div>
+          <div class="h-3 overflow-hidden rounded-full bg-slate-200">
+            <div class="h-full rounded-full bg-orange-500" style="width: <?= min($partRestoPctMonto, 100) ?>%;"></div>
+          </div>
+        </div>
       </div>
     </section>
   </div>
 
-  <!-- Tercera fila -->
   <div class="grid grid-cols-1 gap-4 xl:grid-cols-2 2xl:grid-cols-4">
 
     <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.06)]">
@@ -372,10 +478,10 @@ foreach ($tendenciaMes as $item) {
         <?php if (!empty($topDependencias)): ?>
           <?php foreach ($topDependencias as $i => $item): ?>
             <?php
-              $nombre = (string)($item['nombre'] ?? '-');
-              $total  = (int)($item['total'] ?? 0);
-              $monto  = (float)($item['monto'] ?? 0);
-              $width  = $maxMontoDep > 0 ? round(($monto / $maxMontoDep) * 100, 1) : 0;
+            $nombre = (string)($item['nombre'] ?? '-');
+            $total  = (int)($item['total'] ?? 0);
+            $monto  = (float)($item['monto'] ?? 0);
+            $width  = $maxMontoDep > 0 ? round(($monto / $maxMontoDep) * 100, 1) : 0;
             ?>
             <div class="rounded-2xl border border-slate-100 bg-slate-50/70 p-3">
               <div class="flex items-center gap-3">
@@ -445,9 +551,9 @@ foreach ($tendenciaMes as $item) {
         <?php if (!empty($topObac)): ?>
           <?php foreach ($topObac as $i => $item): ?>
             <?php
-              $nombre = (string)($item['nombre'] ?? '-');
-              $monto  = (float)($item['monto'] ?? 0);
-              $width  = $maxMontoObac > 0 ? round(($monto / $maxMontoObac) * 100, 1) : 0;
+            $nombre = (string)($item['nombre'] ?? '-');
+            $monto  = (float)($item['monto'] ?? 0);
+            $width  = $maxMontoObac > 0 ? round(($monto / $maxMontoObac) * 100, 1) : 0;
             ?>
             <div class="rounded-2xl border border-slate-100 bg-slate-50/70 p-3">
               <div class="mb-1 flex items-center justify-between gap-3">
@@ -469,23 +575,224 @@ foreach ($tendenciaMes as $item) {
 
 </div>
 
+<style>
+  .premium-chart-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 28px;
+    border: 1px solid rgba(148, 163, 184, .18);
+    background:
+      radial-gradient(circle at top right, rgba(255, 255, 255, .95), rgba(248, 250, 252, .92) 45%, rgba(241, 245, 249, .96) 100%);
+    box-shadow:
+      0 16px 40px rgba(15, 23, 42, .06),
+      inset 0 1px 0 rgba(255, 255, 255, .75);
+    padding: 22px 22px 18px;
+  }
+
+  .premium-chart-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(255, 255, 255, .34), rgba(255, 255, 255, 0));
+  }
+
+  .premium-chart-head {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+
+  .premium-kicker {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: rgb(148 163 184);
+  }
+
+  .premium-title {
+    margin-top: 6px;
+    font-size: 22px;
+    line-height: 1.05;
+    font-weight: 700;
+    letter-spacing: -.02em;
+    color: rgb(15 23 42);
+  }
+
+  .premium-subtitle {
+    margin-top: 7px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: rgb(100 116 139);
+  }
+
+  .premium-chip {
+    flex-shrink: 0;
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+  }
+
+  .premium-chip-slate {
+    background: rgba(15, 23, 42, .06);
+    color: rgb(15 23 42);
+    border-color: rgba(15, 23, 42, .08);
+  }
+
+  .premium-chip-blue {
+    background: rgba(37, 99, 235, .08);
+    color: rgb(29 78 216);
+    border-color: rgba(37, 99, 235, .12);
+  }
+
+  .premium-chip-emerald {
+    background: rgba(5, 150, 105, .08);
+    color: rgb(5 150 105);
+    border-color: rgba(5, 150, 105, .12);
+  }
+
+  .premium-chip-violet {
+    background: rgba(124, 58, 237, .08);
+    color: rgb(109 40 217);
+    border-color: rgba(124, 58, 237, .12);
+  }
+
+  .premium-chart-wrap {
+    position: relative;
+    z-index: 1;
+    border-radius: 24px;
+    border: 1px solid rgba(226, 232, 240, .9);
+    background: linear-gradient(180deg, rgba(255, 255, 255, .92), rgba(248, 250, 252, .96));
+  }
+
+  .premium-chart-wrap-donut {
+    height: 380px;
+    padding: 18px 14px 10px;
+  }
+
+  .premium-chart-wrap-bar {
+    height: 360px;
+    padding: 18px 14px 12px;
+  }
+
+  .premium-chart-wrap-pie {
+    height: 400px;
+    padding: 20px 16px 14px;
+    border-radius: 24px;
+    border: 1px solid rgba(226, 232, 240, .95);
+    background:
+      radial-gradient(circle at top, rgba(255, 255, 255, .98), rgba(248, 250, 252, .96) 58%, rgba(241, 245, 249, .98));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, .8),
+      0 10px 24px rgba(15, 23, 42, .04);
+  }
+
+  @media (max-width: 768px) {
+    .premium-chart-card {
+      padding: 18px 16px 14px;
+      border-radius: 24px;
+    }
+
+    .premium-title {
+      font-size: 18px;
+    }
+
+    .premium-subtitle {
+      font-size: 12px;
+    }
+
+    .premium-chart-wrap-donut,
+    .premium-chart-wrap-bar {
+      height: 320px;
+      padding: 14px 10px 10px;
+    }
+
+    .premium-chart-wrap-pie {
+      height: 340px;
+      padding: 14px 10px 10px;
+    }
+
+    .premium-chart-head {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 <script>
   Chart.register(ChartDataLabels);
 
+  const centerTextPlugin = {
+    id: 'centerTextPlugin',
+    afterDraw(chart, args, pluginOptions) {
+      if (chart.config.type !== 'doughnut') return;
+
+      const meta = chart.getDatasetMeta(0);
+      if (!meta || !meta.data || !meta.data.length) return;
+
+      const { ctx } = chart;
+      const x = meta.data[0].x;
+      const y = meta.data[0].y;
+
+      const line1 = pluginOptions?.line1 || '';
+      const line2 = pluginOptions?.line2 || '';
+
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      ctx.fillStyle = '#0f172a';
+      ctx.font = '700 30px Inter, system-ui, sans-serif';
+      ctx.fillText(line1, x, y - 8);
+
+      ctx.fillStyle = '#64748b';
+      ctx.font = '600 12px Inter, system-ui, sans-serif';
+      ctx.fillText(line2, x, y + 18);
+      ctx.restore();
+    }
+  };
+
+  Chart.register(centerTextPlugin);
+
   const chartColors = {
-    slate: ['#0f172a', '#334155', '#64748b', '#94a3b8', '#cbd5e1', '#e2e8f0'],
+    slate: ['#0b1736', '#1e3a8a', '#334155', '#64748b', '#94a3b8', '#cbd5e1'],
     blue: ['#1d4ed8', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe'],
     emerald: ['#047857', '#059669', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0'],
-    violet: ['#6d28d9', '#7c3aed', '#8b5cf6', '#a78bfa', '#c4b5fd', '#ddd6fe'],
-    mixed: ['#0f172a', '#2563eb', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444', '#14b8a6', '#ec4899']
+    violet: ['#5b21b6', '#6d28d9', '#7c3aed', '#8b5cf6', '#a78bfa', '#c4b5fd'],
+    mixed: ['#0b1736', '#1d4ed8', '#059669', '#7c3aed', '#f59e0b', '#ef4444', '#0891b2', '#ec4899']
   };
 
   const moneyFormatter = (value) => {
     return 'S/ ' + Number(value || 0).toLocaleString('es-PE', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
+    });
+  };
+
+  const shortMoneyFormatter = (value) => {
+    const n = Number(value || 0);
+
+    if (Math.abs(n) >= 1000000) {
+      return 'S/ ' + (n / 1000000).toFixed(1) + 'M';
+    }
+
+    if (Math.abs(n) >= 1000) {
+      return 'S/ ' + (n / 1000).toFixed(0) + 'K';
+    }
+
+    return 'S/ ' + n.toLocaleString('es-PE', {
+      maximumFractionDigits: 0
     });
   };
 
@@ -497,38 +804,6 @@ foreach ($tendenciaMes as $item) {
   };
 
   const sumArray = (arr) => arr.reduce((acc, n) => acc + Number(n || 0), 0);
-
-  const basePlugins = {
-    legend: {
-      position: 'bottom',
-      labels: {
-        usePointStyle: true,
-        boxWidth: 10,
-        padding: 16,
-        color: '#475569',
-        font: {
-          size: 11,
-          weight: '600'
-        }
-      }
-    },
-    tooltip: {
-      backgroundColor: 'rgba(15,23,42,.96)',
-      titleColor: '#fff',
-      bodyColor: '#e2e8f0',
-      padding: 12,
-      cornerRadius: 12
-    },
-    datalabels: {
-      color: '#0f172a',
-      font: {
-        size: 11,
-        weight: '700'
-      },
-      formatter: (value) => value,
-      clamp: true
-    }
-  };
 
   const estadoLabels = <?= json_encode($chartEstadoLabels, JSON_UNESCAPED_UNICODE) ?>;
   const estadoTotals = <?= json_encode($chartEstadoTotals, JSON_UNESCAPED_UNICODE) ?>;
@@ -546,201 +821,145 @@ foreach ($tendenciaMes as $item) {
   const mesMontos = <?= json_encode($chartMesMontos, JSON_UNESCAPED_UNICODE) ?>;
   const mesTotales = <?= json_encode($chartMesTotales, JSON_UNESCAPED_UNICODE) ?>;
 
+  const participacionLabels = <?= json_encode($chartParticipacionLabels, JSON_UNESCAPED_UNICODE) ?>;
+  const participacionMontos = <?= json_encode($chartParticipacionMontos, JSON_UNESCAPED_UNICODE) ?>;
+  const participacionTotales = <?= json_encode($chartParticipacionTotales, JSON_UNESCAPED_UNICODE) ?>;
+
   const totalEstado = sumArray(estadoTotals);
   const totalMercado = sumArray(mercadoTotals);
   const totalModalidad = sumArray(modalidadTotals);
+  const totalParticipacionMonto = sumArray(participacionMontos);
 
-if (document.getElementById('chartEstado') && estadoLabels.length) {
-  new Chart(document.getElementById('chartEstado'), {
-    type: 'doughnut',
-    data: {
-      labels: estadoLabels,
-      datasets: [{
-        data: estadoTotals,
-        backgroundColor: chartColors.mixed,
-        borderWidth: 0,
-        hoverOffset: 4
-      }]
-    },
-    options: {
-      maintainAspectRatio: false,
-      layout: {
-        padding: {
-          top: 28,
-          right: 40,
-          bottom: 28,
-          left: 40
-        }
-      },
-      cutout: '60%',
-      plugins: {
-        ...basePlugins,
-        legend: {
-          position: 'bottom',
-          labels: {
-            usePointStyle: true,
-            boxWidth: 10,
-            padding: 14,
-            color: '#475569',
-            font: {
-              size: 11,
-              weight: '600'
-            }
-          }
-        },
-        tooltip: {
-          ...basePlugins.tooltip,
-          callbacks: {
-            label: (ctx) => `${ctx.label}: ${ctx.raw} PAC (${percentFormatter(ctx.raw, totalEstado)})`
-          }
-        },
-        datalabels: {
-          color: '#0f172a',
-          font: {
-            size: 11,
-            weight: '700'
-          },
-          formatter: (value) => {
-            const pct = parseFloat(percentFormatter(value, totalEstado));
-            return pct >= 5 ? pct.toFixed(1) + '%' : '';
-          },
-          anchor: 'end',
-          align: 'end',
-          offset: 10,
-          clamp: true
-        }
+  const maxEstadoIndex = estadoTotals.length ? estadoTotals.indexOf(Math.max(...estadoTotals)) : -1;
+  const maxMercadoIndex = mercadoTotals.length ? mercadoTotals.indexOf(Math.max(...mercadoTotals)) : -1;
+  const maxModalidadIndex = modalidadTotals.length ? modalidadTotals.indexOf(Math.max(...modalidadTotals)) : -1;
+
+  const premiumLegend = {
+    position: 'bottom',
+    labels: {
+      usePointStyle: true,
+      pointStyle: 'circle',
+      boxWidth: 8,
+      boxHeight: 8,
+      padding: 18,
+      color: '#475569',
+      font: {
+        size: 11,
+        weight: '600'
       }
     }
-  });
-}
+  };
 
-if (document.getElementById('chartMercado') && mercadoLabels.length) {
-  new Chart(document.getElementById('chartMercado'), {
-    type: 'doughnut',
-    data: {
-      labels: mercadoLabels,
-      datasets: [{
-        data: mercadoTotals,
-        backgroundColor: chartColors.emerald,
-        borderWidth: 0,
-        hoverOffset: 4
-      }]
-    },
-    options: {
-      maintainAspectRatio: false,
-      layout: {
-        padding: {
-          top: 28,
-          right: 40,
-          bottom: 28,
-          left: 40
-        }
+  const premiumTooltip = {
+    backgroundColor: 'rgba(15,23,42,.96)',
+    titleColor: '#fff',
+    bodyColor: '#e2e8f0',
+    padding: 14,
+    cornerRadius: 14,
+    displayColors: true
+  };
+
+  if (document.getElementById('chartMercado') && mercadoLabels.length) {
+    new Chart(document.getElementById('chartMercado'), {
+      type: 'doughnut',
+      data: {
+        labels: mercadoLabels,
+        datasets: [{
+          data: mercadoTotals,
+          backgroundColor: chartColors.emerald,
+          borderColor: '#ffffff',
+          borderWidth: 2,
+          hoverOffset: 6
+        }]
       },
-      cutout: '60%',
-      plugins: {
-        ...basePlugins,
-        legend: {
-          position: 'bottom',
-          labels: {
-            usePointStyle: true,
-            boxWidth: 10,
-            padding: 14,
-            color: '#475569',
+      options: {
+        maintainAspectRatio: false,
+        layout: {
+          padding: { top: 24, right: 34, bottom: 10, left: 34 }
+        },
+        cutout: '66%',
+        plugins: {
+          legend: premiumLegend,
+          tooltip: {
+            ...premiumTooltip,
+            callbacks: {
+              label: (ctx) => `${ctx.label}: ${ctx.raw} PAC (${percentFormatter(ctx.raw, totalMercado)})`
+            }
+          },
+          datalabels: {
+            color: '#065f46',
             font: {
               size: 11,
-              weight: '600'
-            }
-          }
-        },
-        tooltip: {
-          ...basePlugins.tooltip,
-          callbacks: {
-            label: (ctx) => `${ctx.label}: ${ctx.raw} PAC (${percentFormatter(ctx.raw, totalMercado)})`
-          }
-        },
-        datalabels: {
-          color: '#065f46',
-          font: {
-            size: 11,
-            weight: '700'
+              weight: '700'
+            },
+            formatter: (value) => {
+              const pct = parseFloat(percentFormatter(value, totalMercado));
+              return pct >= 7 ? pct.toFixed(1) + '%' : '';
+            },
+            anchor: 'end',
+            align: 'end',
+            offset: 10,
+            clamp: true
           },
-          formatter: (value) => {
-            const pct = parseFloat(percentFormatter(value, totalMercado));
-            return pct >= 5 ? pct.toFixed(1) + '%' : '';
-          },
-          anchor: 'end',
-          align: 'end',
-          offset: 10,
-          clamp: true
+          centerTextPlugin: {
+            line1: totalMercado > 0 ? percentFormatter(mercadoTotals[maxMercadoIndex] || 0, totalMercado) : '0%',
+            line2: maxMercadoIndex >= 0 ? mercadoLabels[maxMercadoIndex] : 'SIN DATOS'
+          }
         }
       }
-    }
-  });
-}
+    });
+  }
 
-if (document.getElementById('chartModalidad') && modalidadLabels.length) {
-  new Chart(document.getElementById('chartModalidad'), {
-    type: 'doughnut',
-    data: {
-      labels: modalidadLabels,
-      datasets: [{
-        data: modalidadTotals,
-        backgroundColor: chartColors.violet,
-        borderWidth: 0,
-        hoverOffset: 4
-      }]
-    },
-    options: {
-      maintainAspectRatio: false,
-      layout: {
-        padding: {
-          top: 30,
-          right: 48,
-          bottom: 30,
-          left: 48
-        }
+  if (document.getElementById('chartModalidad') && modalidadLabels.length) {
+    new Chart(document.getElementById('chartModalidad'), {
+      type: 'doughnut',
+      data: {
+        labels: modalidadLabels,
+        datasets: [{
+          data: modalidadTotals,
+          backgroundColor: chartColors.violet,
+          borderColor: '#ffffff',
+          borderWidth: 2,
+          hoverOffset: 6
+        }]
       },
-      cutout: '60%',
-      plugins: {
-        ...basePlugins,
-        legend: {
-          position: 'bottom',
-          labels: {
-            usePointStyle: true,
-            boxWidth: 10,
-            padding: 14,
-            color: '#475569',
+      options: {
+        maintainAspectRatio: false,
+        layout: {
+          padding: { top: 24, right: 38, bottom: 10, left: 38 }
+        },
+        cutout: '66%',
+        plugins: {
+          legend: premiumLegend,
+          tooltip: {
+            ...premiumTooltip,
+            callbacks: {
+              label: (ctx) => `${ctx.label}: ${ctx.raw} PAC (${percentFormatter(ctx.raw, totalModalidad)})`
+            }
+          },
+          datalabels: {
+            color: '#4c1d95',
             font: {
               size: 11,
-              weight: '600'
-            }
-          }
-        },
-        tooltip: {
-          ...basePlugins.tooltip,
-          callbacks: {
-            label: (ctx) => `${ctx.label}: ${ctx.raw} PAC (${percentFormatter(ctx.raw, totalModalidad)})`
-          }
-        },
-        datalabels: {
-          color: '#4c1d95',
-          font: {
-            size: 11,
-            weight: '700'
+              weight: '700'
+            },
+            formatter: (value) => {
+              const pct = parseFloat(percentFormatter(value, totalModalidad));
+              return pct >= 7 ? pct.toFixed(1) + '%' : '';
+            },
+            anchor: 'end',
+            align: 'end',
+            offset: 10,
+            clamp: true
           },
-          formatter: (value) => {
-            const pct = parseFloat(percentFormatter(value, totalModalidad));
-            return pct >= 6 ? pct.toFixed(1) + '%' : '';
-          },
-          anchor: 'end',
-          align: 'end',
-          offset: 10,
-          clamp: true
+          centerTextPlugin: {
+            line1: totalModalidad > 0 ? percentFormatter(modalidadTotals[maxModalidadIndex] || 0, totalModalidad) : '0%',
+            line2: maxModalidadIndex >= 0 ? modalidadLabels[maxModalidadIndex] : 'SIN DATOS'
+          }
         }
       }
-    }
-  });
-}
+    });
+  }
 
   if (document.getElementById('chartMeses') && mesLabels.length) {
     new Chart(document.getElementById('chartMeses'), {
@@ -750,29 +969,21 @@ if (document.getElementById('chartModalidad') && modalidadLabels.length) {
         datasets: [{
           label: 'Monto estimado',
           data: mesMontos,
-          backgroundColor: '#0f172a',
-          borderRadius: 10,
+          backgroundColor: '#0b1736',
+          borderRadius: 12,
           borderSkipped: false,
-          maxBarThickness: 46
+          maxBarThickness: 44
         }]
       },
       options: {
         maintainAspectRatio: false,
         layout: {
-          padding: {
-            top: 24,
-            right: 10,
-            left: 10,
-            bottom: 0
-          }
+          padding: { top: 28, right: 10, left: 10, bottom: 0 }
         },
         plugins: {
-          ...basePlugins,
-          legend: {
-            display: false
-          },
+          legend: { display: false },
           tooltip: {
-            ...basePlugins.tooltip,
+            ...premiumTooltip,
             callbacks: {
               label: (ctx) => moneyFormatter(ctx.raw),
               afterLabel: (ctx) => `${mesTotales[ctx.dataIndex] || 0} PAC`
@@ -782,13 +993,9 @@ if (document.getElementById('chartModalidad') && modalidadLabels.length) {
             color: '#0f172a',
             anchor: 'end',
             align: 'top',
-            offset: 4,
+            offset: 6,
             clamp: true,
-            formatter: (value, ctx) => {
-              const totalPac = mesTotales[ctx.dataIndex] || 0;
-              return `${moneyFormatter(value)}\n${totalPac} PAC`;
-            },
-            textAlign: 'center',
+            formatter: (value) => moneyFormatter(value),
             font: {
               size: 10,
               weight: '700'
@@ -797,9 +1004,7 @@ if (document.getElementById('chartModalidad') && modalidadLabels.length) {
         },
         scales: {
           x: {
-            grid: {
-              display: false
-            },
+            grid: { display: false },
             ticks: {
               color: '#64748b',
               font: {
@@ -815,11 +1020,156 @@ if (document.getElementById('chartModalidad') && modalidadLabels.length) {
               callback: (value) => moneyFormatter(value)
             },
             grid: {
-              color: 'rgba(148,163,184,.18)'
+              color: 'rgba(148,163,184,.14)'
             }
           }
         }
       }
+    });
+  }
+
+  if (document.getElementById('chartParticipacionPie') && participacionLabels.length) {
+    const pieCanvas = document.getElementById('chartParticipacionPie');
+    const pieContext = pieCanvas.getContext('2d');
+
+    const pieGradients = [
+      (() => {
+        const g = pieContext.createLinearGradient(0, 0, 0, 320);
+        g.addColorStop(0, '#60a5fa');
+        g.addColorStop(1, '#2563eb');
+        return g;
+      })(),
+      (() => {
+        const g = pieContext.createLinearGradient(0, 0, 0, 320);
+        g.addColorStop(0, '#fb923c');
+        g.addColorStop(1, '#f97316');
+        return g;
+      })()
+    ];
+
+    new Chart(pieCanvas, {
+      type: 'pie',
+      data: {
+        labels: participacionLabels,
+        datasets: [{
+          data: participacionMontos,
+          backgroundColor: pieGradients,
+          borderColor: '#ffffff',
+          borderWidth: 3,
+          hoverBorderWidth: 4,
+          hoverOffset: 10,
+          radius: '86%'
+        }]
+      },
+      options: {
+        maintainAspectRatio: false,
+        layout: {
+          padding: { top: 16, right: 20, bottom: 12, left: 20 }
+        },
+        animation: {
+          animateRotate: true,
+          duration: 900
+        },
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              usePointStyle: true,
+              pointStyle: 'circle',
+              boxWidth: 10,
+              boxHeight: 10,
+              padding: 18,
+              color: '#334155',
+              font: {
+                size: 12,
+                weight: '700'
+              },
+              generateLabels(chart) {
+                const data = chart.data;
+                return data.labels.map((label, i) => {
+                  const value = Number(data.datasets[0].data[i] || 0);
+                  const pct = totalParticipacionMonto > 0
+                    ? ((value / totalParticipacionMonto) * 100).toFixed(1)
+                    : '0.0';
+
+                  return {
+                    text: `${label} · ${pct}%`,
+                    fillStyle: data.datasets[0].backgroundColor[i],
+                    strokeStyle: '#fff',
+                    lineWidth: 2,
+                    hidden: false,
+                    index: i
+                  };
+                });
+              }
+            }
+          },
+          tooltip: {
+            ...premiumTooltip,
+            padding: 16,
+            cornerRadius: 16,
+            callbacks: {
+              title: (items) => items[0]?.label || '',
+              label: (ctx) => `Monto: ${moneyFormatter(ctx.raw)}`,
+              afterLabel: (ctx) => {
+                const totalPac = participacionTotales[ctx.dataIndex] || 0;
+                const pctMonto = percentFormatter(ctx.raw, totalParticipacionMonto);
+                return `PAC: ${totalPac} · Participación: ${pctMonto}`;
+              }
+            }
+          },
+          datalabels: {
+            color: '#0f172a',
+            textAlign: 'center',
+            textStrokeColor: 'rgba(255,255,255,.92)',
+            textStrokeWidth: 3,
+            formatter: (value, ctx) => {
+              const pct = totalParticipacionMonto > 0
+                ? ((Number(value || 0) / totalParticipacionMonto) * 100)
+                : 0;
+
+              const pac = participacionTotales[ctx.dataIndex] || 0;
+
+              return [
+                pct.toFixed(1) + '%',
+                pac + ' PAC',
+                shortMoneyFormatter(value)
+              ];
+            },
+            font: (ctx) => {
+              const value = Number(ctx.dataset.data[ctx.dataIndex] || 0);
+              const pct = totalParticipacionMonto > 0 ? (value / totalParticipacionMonto) * 100 : 0;
+
+              return {
+                size: pct < 15 ? 10 : 13,
+                weight: '800'
+              };
+            },
+            display: (ctx) => {
+              const value = Number(ctx.dataset.data[ctx.dataIndex] || 0);
+              const pct = totalParticipacionMonto > 0 ? (value / totalParticipacionMonto) * 100 : 0;
+              return pct > 6;
+            },
+            anchor: 'center',
+            align: 'center',
+            offset: 0,
+            clamp: true
+          }
+        }
+      },
+      plugins: [{
+        id: 'softShadowPie',
+        beforeDatasetDraw(chart) {
+          const { ctx } = chart;
+          ctx.save();
+          ctx.shadowColor = 'rgba(0,0,0,0.12)';
+          ctx.shadowBlur = 18;
+          ctx.shadowOffsetY = 6;
+        },
+        afterDatasetDraw(chart) {
+          chart.ctx.restore();
+        }
+      }]
     });
   }
 
@@ -832,29 +1182,21 @@ if (document.getElementById('chartModalidad') && modalidadLabels.length) {
           label: 'Monto estimado',
           data: obacMontos,
           backgroundColor: '#2563eb',
-          borderRadius: 10,
+          borderRadius: 12,
           borderSkipped: false,
-          maxBarThickness: 28
+          maxBarThickness: 26
         }]
       },
       options: {
         indexAxis: 'y',
         maintainAspectRatio: false,
         layout: {
-          padding: {
-            top: 8,
-            right: 70,
-            left: 0,
-            bottom: 0
-          }
+          padding: { top: 8, right: 78, left: 0, bottom: 0 }
         },
         plugins: {
-          ...basePlugins,
-          legend: {
-            display: false
-          },
+          legend: { display: false },
           tooltip: {
-            ...basePlugins.tooltip,
+            ...premiumTooltip,
             callbacks: {
               label: (ctx) => moneyFormatter(ctx.raw)
             }
@@ -863,7 +1205,7 @@ if (document.getElementById('chartModalidad') && modalidadLabels.length) {
             color: '#1e3a8a',
             anchor: 'end',
             align: 'right',
-            offset: 6,
+            offset: 8,
             clamp: true,
             formatter: (value) => moneyFormatter(value),
             font: {
@@ -880,7 +1222,7 @@ if (document.getElementById('chartModalidad') && modalidadLabels.length) {
               callback: (value) => moneyFormatter(value)
             },
             grid: {
-              color: 'rgba(148,163,184,.18)'
+              color: 'rgba(148,163,184,.14)'
             }
           },
           y: {
@@ -891,9 +1233,7 @@ if (document.getElementById('chartModalidad') && modalidadLabels.length) {
                 weight: '600'
               }
             },
-            grid: {
-              display: false
-            }
+            grid: { display: false }
           }
         }
       }

@@ -25,6 +25,8 @@ class CtrDashboardAdmin
         $alertas         = MdDashboardAdmin::obtenerAlertasGerenciales($filtros);
         $comparativo     = MdDashboardAdmin::obtenerComparativoFinanciero($filtros);
         $pacCriticos     = MdDashboardAdmin::obtenerPacCriticos($filtros, 8);
+        $participacion = MdDashboardAdmin::obtenerParticipacionSectorDefensa($filtros);
+        $participacionPie = MdDashboardAdmin::obtenerParticipacionPie($filtros);
 
         $periodos = MdPacAdmin::listarPeriodo();
         $obacs    = MdPacAdmin::listarObac();
