@@ -1,4 +1,5 @@
 <?php
+// Vista/modulos/admin/pac_detalle.php
 $titulo = 'Detalle | PAC';
 $active = 'pac';
 
@@ -71,7 +72,7 @@ if (!$pac || !is_array($pac)) {
   exit;
 }
 
-$estadoUp = strtoupper(trim((string)($pac['estado'] ?? '')));
+$estadoUp = strtoupper(trim((string)($pac['estado_nombre'] ?? '')));
 $last = !empty($actividades) ? $actividades[count($actividades) - 1] : null;
 ?>
 

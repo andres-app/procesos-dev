@@ -25,11 +25,16 @@ function pill($txt, $tone = 'slate')
 function toneEstado($estado)
 {
   $e = strtoupper(trim((string)$estado));
+
   if ($e === 'PUBLICADO') return 'green';
+  if ($e === 'SOLICITADO') return 'slate';
+  if ($e === 'REITERADO') return 'blue';
+  if ($e === 'RECEPCIONADO') return 'blue';
   if ($e === 'OBSERVADO') return 'amber';
   if ($e === 'SUBSANADO') return 'blue';
-  if ($e === 'SOLICITADO') return 'slate';
+  if ($e === 'APROBADO') return 'green';
   if ($e === 'ESTUDIO DE MERCADO') return 'rose';
+
   return 'slate';
 }
 
@@ -241,9 +246,13 @@ foreach ($pacs as $row) {
                 </td>
 
                 <td class="px-4 py-3">
-                  <?= pill(h($r['estado_nombre'] ?? '-'), toneEstado($r['estado_nombre'] ?? '')) ?>
+                  <span title="<?= h($r['estado_nombre'] ?? '-') ?>">
+                    <?= pill(
+                      h($r['estado_codigo'] ?? $r['estado_nombre_pac'] ?? '-'),
+                      toneEstado($r['estado_codigo'] ?? $r['estado_nombre_pac'] ?? '')
+                    ) ?>
+                  </span>
                 </td>
-
                 <td class="whitespace-nowrap px-4 py-3">
                   S/ <?= number_format((float)$r['estimado'], 2) ?>
                 </td>

@@ -9,53 +9,70 @@ class MdPacAdmin
         $db = db();
 
         $sql = "
-    SELECT
-        p.id,
-        p.nopac,
-        p.pn,
-        p.estado,
-        p.descripcion,
-        p.obac,
-        p.seleccion,
-        p.fuente,
-        p.estimado,
-        p.periodo,
-        p.lista,
-        p.ejecucion,
-        p.modalidad,
-        p.dependencia,
-        p.mesconvoca,
-        p.certificado,
-        p.tipo_mercado,
-        p.cantidad,
-        p.rubro,
-        p.inversiones,
-        p.created_at,
+        SELECT
+            p.id,
+            p.nopac,
+            p.pn,
+            p.estado,
+            p.descripcion,
+            p.obac,
+            p.seleccion,
+            p.fuente,
+            p.estimado,
+            p.periodo,
+            p.lista,
+            p.ejecucion,
+            p.modalidad,
+            p.dependencia,
+            p.mesconvoca,
+            p.certificado,
+            p.tipo_mercado,
+            p.cantidad,
+            p.rubro,
+            p.inversiones,
+            p.created_at,
 
-        COALESCE(est.nombre, '') AS estado_nombre,
-        COALESCE(e.nombre, '')   AS obac_nombre,
-        COALESCE(f.nombre, '')   AS fuente_nombre,
-        COALESCE(s.nombre, '')   AS seleccion_nombre,
-        COALESCE(pe.nombre, '')  AS periodo_nombre,
-        COALESCE(li.nombre, '')  AS lista_nombre,
-        COALESCE(ej.nombre, '')  AS ejecucion_nombre,
-        COALESCE(m.nombre, '')   AS modalidad_nombre,
-        COALESCE(d.nombre, '')   AS dependencia_nombre,
-        COALESCE(tm.nombre, '')  AS tipo_mercado_nombre,
-        COALESCE(r.nombre, '')   AS rubro_nombre
-    FROM pac p
-    LEFT JOIN estado est       ON est.id = p.estado
-    LEFT JOIN entidad e        ON e.id = p.obac
-    LEFT JOIN fuente f         ON f.id = p.fuente
-    LEFT JOIN seleccion s      ON s.id = p.seleccion
-    LEFT JOIN periodo pe       ON pe.id = p.periodo
-    LEFT JOIN listas li        ON li.id = p.lista
-    LEFT JOIN entidad ej       ON ej.id = p.ejecucion
-    LEFT JOIN modalidad m      ON m.id = p.modalidad
-    LEFT JOIN dependencia d    ON d.id = p.dependencia
-    LEFT JOIN tipo_mercado tm  ON tm.id = p.tipo_mercado
-    LEFT JOIN rubro r          ON r.id = p.rubro
-    WHERE 1=1
+            COALESCE(est.nombre, '') AS estado_nombre_pac,
+            COALESCE(e.nombre, '')   AS obac_nombre,
+            COALESCE(f.nombre, '')   AS fuente_nombre,
+            COALESCE(s.nombre, '')   AS seleccion_nombre,
+            COALESCE(pe.nombre, '')  AS periodo_nombre,
+            COALESCE(li.nombre, '')  AS lista_nombre,
+            COALESCE(ej.nombre, '')  AS ejecucion_nombre,
+            COALESCE(m.nombre, '')   AS modalidad_nombre,
+            COALESCE(d.nombre, '')   AS dependencia_nombre,
+            COALESCE(tm.nombre, '')  AS tipo_mercado_nombre,
+            COALESCE(r.nombre, '')   AS rubro_nombre,
+
+            COALESCE(ta_ult.nombre, est.nombre, '')  AS estado_nombre,
+            COALESCE(ta_ult.estado, est.nombre, '')  AS estado_codigo,
+            ap_ult.fecha AS estado_fecha
+        FROM pac p
+        LEFT JOIN estado est       ON est.id = p.estado
+        LEFT JOIN entidad e        ON e.id = p.obac
+        LEFT JOIN fuente f         ON f.id = p.fuente
+        LEFT JOIN seleccion s      ON s.id = p.seleccion
+        LEFT JOIN periodo pe       ON pe.id = p.periodo
+        LEFT JOIN listas li        ON li.id = p.lista
+        LEFT JOIN entidad ej       ON ej.id = p.ejecucion
+        LEFT JOIN modalidad m      ON m.id = p.modalidad
+        LEFT JOIN dependencia d    ON d.id = p.dependencia
+        LEFT JOIN tipo_mercado tm  ON tm.id = p.tipo_mercado
+        LEFT JOIN rubro r          ON r.id = p.rubro
+
+        LEFT JOIN actividades_pac ap_ult
+            ON ap_ult.id = (
+                SELECT ap2.id
+                FROM actividades_pac ap2
+                WHERE ap2.pac_id = p.id
+                ORDER BY ap2.fecha DESC, ap2.id DESC
+                LIMIT 1
+            )
+
+        LEFT JOIN tipos_actividad ta_ult
+            ON ta_ult.id = ap_ult.tipo_actividad_id
+
+        WHERE 1=1
     ";
 
         $params = [];
@@ -86,12 +103,13 @@ class MdPacAdmin
             p.nopac LIKE :q OR
             p.descripcion LIKE :q OR
             e.nombre LIKE :q OR
-            est.nombre LIKE :q
+            est.nombre LIKE :q OR
+            ta_ult.nombre LIKE :q OR
+            ta_ult.estado LIKE :q
         )";
             $params[':q'] = "%{$q}%";
         }
 
-        // ✅ FILTRO NUEVO: EJECUCION
         if (isset($filtros['ejecucion']) && $filtros['ejecucion'] !== '' && $filtros['ejecucion'] !== '0') {
             $ej = $filtros['ejecucion'];
 
@@ -109,7 +127,7 @@ class MdPacAdmin
         $st = $db->prepare($sql);
         $st->execute($params);
 
-        return $st->fetchAll(PDO::FETCH_ASSOC);
+        return $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 
     public static function obtener(int $id): ?array
@@ -1301,4 +1319,38 @@ class MdPacAdmin
 
         return $aliases[$tipo][$valor] ?? $valor;
     }
+
+        public static function actualizarEstado(int $pacId, int $estadoId, ?PDO $db = null): bool
+    {
+        $db = $db ?: db();
+
+        $sql = "UPDATE pac SET estado = :estado WHERE id = :id";
+        $st = $db->prepare($sql);
+
+        return $st->execute([
+            ':estado' => $estadoId,
+            ':id'     => $pacId,
+        ]);
+    }
+
+public static function actualizarEstadoDesdeTipoActividad(int $pacId, int $tipoActividadId, ?PDO $db = null): bool
+{
+    $db = $db ?: db();
+
+    $sql = "
+        UPDATE pac p
+        INNER JOIN tipos_actividad ta
+            ON ta.id = :tipo_actividad_id
+        SET p.estado = ta.estado_id
+        WHERE p.id = :pac_id
+          AND ta.estado_id IS NOT NULL
+    ";
+
+    $st = $db->prepare($sql);
+
+    return $st->execute([
+        ':pac_id'            => $pacId,
+        ':tipo_actividad_id' => $tipoActividadId,
+    ]);
+}
 }

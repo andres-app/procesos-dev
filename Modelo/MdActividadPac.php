@@ -32,33 +32,42 @@ class MdPacActividad
         return $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 
-    public static function guardar(array $data): bool
-    {
-        $db = db();
+public static function guardar(array $data, ?PDO $db = null): bool
+{
+    $db = $db ?: db();
 
-        $sql = "
-            INSERT INTO actividades_pac (
-                pac_id,
-                tipo_actividad_id,
-                fecha,
-                comentario
-            ) VALUES (
-                :pac_id,
-                :tipo_actividad_id,
-                :fecha,
-                :comentario
-            )
-        ";
+    $pacId = (int)($data['pac_id'] ?? 0);
+    $tipoActividadId = (int)($data['tipo_actividad_id'] ?? 0);
+    $fecha = trim((string)($data['fecha'] ?? ''));
+    $comentario = trim((string)($data['comentario'] ?? ''));
 
-        $st = $db->prepare($sql);
-
-        return $st->execute([
-            ':pac_id'            => (int)($data['pac_id'] ?? 0),
-            ':tipo_actividad_id' => (int)($data['tipo_actividad_id'] ?? 0),
-            ':fecha'             => trim((string)($data['fecha'] ?? '')),
-            ':comentario'        => trim((string)($data['comentario'] ?? '')) ?: null,
-        ]);
+    if ($pacId <= 0 || $tipoActividadId <= 0 || $fecha === '') {
+        return false;
     }
+
+    $sql = "
+        INSERT INTO actividades_pac (
+            pac_id,
+            tipo_actividad_id,
+            fecha,
+            comentario
+        ) VALUES (
+            :pac_id,
+            :tipo_actividad_id,
+            :fecha,
+            :comentario
+        )
+    ";
+
+    $st = $db->prepare($sql);
+
+    return $st->execute([
+        ':pac_id'            => $pacId,
+        ':tipo_actividad_id' => $tipoActividadId,
+        ':fecha'             => $fecha,
+        ':comentario'        => ($comentario !== '') ? $comentario : null,
+    ]);
+}
 
     public static function listarTiposActividad(): array
     {
