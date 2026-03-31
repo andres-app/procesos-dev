@@ -99,7 +99,9 @@ foreach ($pacs as $row) {
     !empty($filtros['estado']) ||
     !empty($filtros['periodo']) ||
     !empty($filtros['obac']) ||
-    !empty($filtros['ejecucion']);
+    (!empty($filtros['ejecucion']) && (string)$filtros['ejecucion'] !== '0') ||
+    !empty($filtros['inversiones']) ||
+    !empty($filtros['vraem']);
   ?>
 
   <?php if ($hayFiltrosActivos): ?>
@@ -113,7 +115,9 @@ foreach ($pacs as $row) {
             <?= !empty($filtros['estado']) ? ' | Estado aplicado' : '' ?>
             <?= !empty($filtros['periodo']) ? ' | Periodo aplicado' : '' ?>
             <?= !empty($filtros['obac']) ? ' | OBAC aplicado' : '' ?>
-            <?= !empty($filtros['ejecucion']) ? ' | Ejecución aplicada' : '' ?>
+            <?= (!empty($filtros['ejecucion']) && (string)$filtros['ejecucion'] !== '0') ? ' | ACFFAA aplicado' : '' ?>
+            <?= !empty($filtros['vraem']) ? ' | VRAEM aplicado' : '' ?>
+            <?= !empty($filtros['inversiones']) ? ' | Inversiones aplicado' : '' ?>
           </span>
         </div>
 
@@ -176,22 +180,71 @@ foreach ($pacs as $row) {
   }
   ?>
 
+  <?php
+  $vraemActivo       = !empty($filtros['vraem']);
+  $inversionesActivo = !empty($filtros['inversiones']);
+  $ejecucionActual   = (string)($filtros['ejecucion'] ?? '');
+
+  $acffaaActivo = $ejecucionActual === '4' && !$vraemActivo && !$inversionesActivo;
+  $todosActivo  = !$acffaaActivo && !$vraemActivo && !$inversionesActivo && ($ejecucionActual === '0' || $ejecucionActual === '');
+
+  $urlAcffaa = h(buildFilterUrl([
+    'ejecucion'   => 4,
+    'vraem'       => null,
+    'inversiones' => null,
+  ]));
+
+  $urlVraem = h(buildFilterUrl([
+    'ejecucion'   => null,
+    'vraem'       => 1,
+    'inversiones' => null,
+  ]));
+
+  $urlInversiones = h(buildFilterUrl([
+    'ejecucion'   => null,
+    'vraem'       => null,
+    'inversiones' => 1,
+  ]));
+
+  $urlTodos = h(buildFilterUrl([
+    'ejecucion'   => 0,
+    'vraem'       => null,
+    'inversiones' => null,
+  ]));
+  ?>
+
   <div class="mb-3 flex flex-wrap items-center gap-2">
     <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">
       Filtros rápidos:
     </span>
 
     <a
-      href="<?= h(buildFilterUrl(['ejecucion' => 4])) ?>"
-      class="inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition <?= $ejecucionActual === '4'
+      href="<?= $urlAcffaa ?>"
+      class="inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition <?= $acffaaActivo
                                                                                                           ? 'border-rose-300 bg-rose-600 text-white'
                                                                                                           : 'border-slate-200 bg-white text-slate-700 hover:border-rose-200 hover:text-rose-700' ?>">
       ACFFAA
     </a>
 
     <a
-      href="<?= h(buildFilterUrl(['ejecucion' => 0])) ?>"
-      class="inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition <?= $ejecucionActual === '0'
+      href="<?= $urlVraem ?>"
+      class="inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition <?= $vraemActivo
+                                                                                                          ? 'border-amber-300 bg-amber-500 text-white'
+                                                                                                          : 'border-slate-200 bg-white text-slate-700 hover:border-amber-200 hover:text-amber-700' ?>">
+      VRAEM
+    </a>
+
+    <a
+      href="<?= $urlInversiones ?>"
+      class="inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition <?= $inversionesActivo
+                                                                                                          ? 'border-emerald-300 bg-emerald-600 text-white'
+                                                                                                          : 'border-slate-200 bg-white text-slate-700 hover:border-emerald-200 hover:text-emerald-700' ?>">
+      INVERSIONES
+    </a>
+
+    <a
+      href="<?= $urlTodos ?>"
+      class="inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition <?= $todosActivo
                                                                                                           ? 'border-slate-300 bg-slate-900 text-white'
                                                                                                           : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900' ?>">
       Todos
@@ -253,6 +306,7 @@ foreach ($pacs as $row) {
                     ) ?>
                   </span>
                 </td>
+
                 <td class="whitespace-nowrap px-4 py-3">
                   S/ <?= number_format((float)$r['estimado'], 2) ?>
                 </td>
@@ -291,27 +345,27 @@ foreach ($pacs as $row) {
                           type="button"
                           class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13px] font-semibold text-slate-900 transition hover:bg-slate-100"
                           onclick="openEdit(
-                            <?= (int)$r['id'] ?>,
-                            '<?= h($r['nopac']) ?>',
-                            '<?= h($r['pn'] ?? 'NP') ?>',
-                            '<?= h($r['estado']) ?>',
-                            '<?= h($r['obac'] ?? '') ?>',
-                            '<?= h($r['seleccion'] ?? '') ?>',
-                            '<?= h($r['fuente'] ?? '') ?>',
-                            '<?= h($r['descripcion']) ?>',
-                            '<?= h($r['estimado']) ?>',
-                            '<?= h($r['periodo'] ?? '') ?>',
-                            '<?= h($r['lista'] ?? '') ?>',
-                            '<?= h($r['ejecucion'] ?? '') ?>',
-                            '<?= h($r['modalidad'] ?? '') ?>',
-                            '<?= h($r['dependencia'] ?? '') ?>',
-                            '<?= h($r['mesconvoca'] ?? '') ?>',
-                            '<?= h($r['certificado'] ?? '') ?>',
-                            '<?= h($r['tipo_mercado'] ?? '') ?>',
-                            '<?= h($r['cantidad'] ?? '') ?>',
-                            '<?= h($r['rubro'] ?? '') ?>',
-                            '<?= h($r['inversiones'] ?? '') ?>'
-                          )">
+                  <?= (int)$r['id'] ?>,
+                  '<?= h($r['nopac']) ?>',
+                  '<?= h($r['pn'] ?? 'NP') ?>',
+                  '<?= h($r['estado']) ?>',
+                  '<?= h($r['obac'] ?? '') ?>',
+                  '<?= h($r['seleccion'] ?? '') ?>',
+                  '<?= h($r['fuente'] ?? '') ?>',
+                  '<?= h($r['descripcion']) ?>',
+                  '<?= h($r['estimado']) ?>',
+                  '<?= h($r['periodo'] ?? '') ?>',
+                  '<?= h($r['lista'] ?? '') ?>',
+                  '<?= h($r['ejecucion'] ?? '') ?>',
+                  '<?= h($r['modalidad'] ?? '') ?>',
+                  '<?= h($r['dependencia'] ?? '') ?>',
+                  '<?= h($r['mesconvoca'] ?? '') ?>',
+                  '<?= h($r['certificado'] ?? '') ?>',
+                  '<?= h($r['tipo_mercado'] ?? '') ?>',
+                  '<?= h($r['cantidad'] ?? '') ?>',
+                  '<?= h($r['rubro'] ?? '') ?>',
+                  '<?= h($r['inversiones'] ?? '') ?>'
+                )">
                           ✏️ Editar
                         </button>
 
@@ -327,14 +381,6 @@ foreach ($pacs as $row) {
                 </td>
               </tr>
             <?php endforeach; ?>
-
-            <?php if (count($pacs) === 0): ?>
-              <tr>
-                <td colspan="8" class="px-4 py-10 text-center text-slate-500">
-                  No hay registros.
-                </td>
-              </tr>
-            <?php endif; ?>
           </tbody>
         </table>
       </div>

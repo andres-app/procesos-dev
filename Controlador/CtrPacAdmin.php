@@ -10,12 +10,14 @@ class CtrPacAdmin
         $tieneParametros = !empty($_GET);
 
         $filtros = [
-            'q'         => $_GET['q'] ?? '',
-            'pn'        => $_GET['pn'] ?? '',
-            'estado'    => $_GET['estado'] ?? '',
-            'periodo'   => $_GET['periodo'] ?? '',
-            'obac'      => $_GET['obac'] ?? '',
-            'ejecucion' => isset($_GET['ejecucion']) ? ($_GET['ejecucion'] === '0' ? '0' : $_GET['ejecucion']) : '4',
+            'q'           => $_GET['q'] ?? '',
+            'pn'          => $_GET['pn'] ?? '',
+            'estado'      => $_GET['estado'] ?? '',
+            'periodo'     => $_GET['periodo'] ?? '',
+            'obac'        => $_GET['obac'] ?? '',
+            'ejecucion'   => isset($_GET['ejecucion']) ? ($_GET['ejecucion'] === '0' ? '0' : $_GET['ejecucion']) : '4',
+            'inversiones' => $_GET['inversiones'] ?? '',
+            'vraem'       => $_GET['vraem'] ?? '',
         ];
 
         $pacs = MdPacAdmin::listar($filtros);
@@ -35,22 +37,22 @@ class CtrPacAdmin
         require_once __DIR__ . '/../Vista/modulos/admin/pac.php';
     }
 
-public static function detalle(): void
-{
-    $id = (int)($_GET['id'] ?? 0);
+    public static function detalle(): void
+    {
+        $id = (int)($_GET['id'] ?? 0);
 
-    if ($id <= 0) {
-        http_response_code(400);
-        echo 'ID inválido';
-        exit;
+        if ($id <= 0) {
+            http_response_code(400);
+            echo 'ID inválido';
+            exit;
+        }
+
+        $pac = MdPacAdmin::obtenerDetalle($id);
+        $actividades = MdPacActividad::listarPorPac($id);
+        $tiposActividad = MdPacActividad::listarTiposActividad();
+
+        require_once __DIR__ . '/../Vista/modulos/admin/pac_detalle.php';
     }
-
-    $pac = MdPacAdmin::obtenerDetalle($id);
-    $actividades = MdPacActividad::listarPorPac($id);
-    $tiposActividad = MdPacActividad::listarTiposActividad();
-
-    require_once __DIR__ . '/../Vista/modulos/admin/pac_detalle.php';
-}
 
     public static function guardar(): void
     {
