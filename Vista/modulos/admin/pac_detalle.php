@@ -568,6 +568,31 @@ $last = !empty($actividades) ? $actividades[count($actividades) - 1] : null;
     color: #334155;
   }
 
+  .pill-blue {
+    background: #dbeafe;
+    color: #1d4ed8;
+  }
+
+  .pill-cyan {
+    background: #cffafe;
+    color: #0e7490;
+  }
+
+  .pill-orange {
+    background: #ffedd5;
+    color: #c2410c;
+  }
+
+  .pill-violet {
+    background: #ede9fe;
+    color: #6d28d9;
+  }
+
+  .pill-emerald {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
   .pill-green {
     background: #dcfce7;
     color: #166534;
