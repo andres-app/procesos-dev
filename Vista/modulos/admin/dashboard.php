@@ -345,6 +345,80 @@ foreach ($tendenciaMes as $item) {
     </section>
   </div>
 
+  <div class="grid grid-cols-1 gap-5 xl:grid-cols-3">
+
+  <section class="premium-chart-card">
+    <div class="premium-chart-head">
+      <div>
+        <div class="premium-kicker">VISUAL EJECUTIVO</div>
+        <h2 class="premium-title">Participación sectorial</h2>
+        <p class="premium-subtitle">Distribución del monto estimado entre ACFFAA y resto de OBAC</p>
+      </div>
+      <div class="premium-chip premium-chip-blue">Pie</div>
+    </div>
+    <div class="premium-chart-wrap premium-chart-wrap-pie">
+      <canvas id="chartParticipacionPie"></canvas>
+    </div>
+  </section>
+
+  <section class="premium-chart-card">
+    <div class="premium-chart-head">
+      <div>
+        <div class="premium-kicker">VISUAL EJECUTIVO</div>
+        <h2 class="premium-title">Tipo de mercado</h2>
+        <p class="premium-subtitle">Participación nacional y extranjero</p>
+      </div>
+      <div class="premium-chip premium-chip-emerald">Doughnut</div>
+    </div>
+    <div class="premium-chart-wrap premium-chart-wrap-donut">
+      <canvas id="chartMercado"></canvas>
+    </div>
+  </section>
+
+  <section class="premium-chart-card">
+    <div class="premium-chart-head">
+      <div>
+        <div class="premium-kicker">VISUAL EJECUTIVO</div>
+        <h2 class="premium-title">Modalidad</h2>
+        <p class="premium-subtitle">Peso relativo por modalidad de compra</p>
+      </div>
+      <div class="premium-chip premium-chip-violet">Doughnut</div>
+    </div>
+    <div class="premium-chart-wrap premium-chart-wrap-donut">
+      <canvas id="chartModalidad"></canvas>
+    </div>
+  </section>
+
+  <section class="premium-chart-card xl:col-span-2">
+    <div class="premium-chart-head">
+      <div>
+        <div class="premium-kicker">VISUAL EJECUTIVO</div>
+        <h2 class="premium-title">Tendencia mensual</h2>
+        <p class="premium-subtitle">Comportamiento del monto estimado por mes de convocatoria</p>
+      </div>
+      <div class="premium-chip premium-chip-slate">Barras</div>
+    </div>
+    <div class="premium-chart-wrap premium-chart-wrap-bar">
+      <canvas id="chartMeses"></canvas>
+    </div>
+  </section>
+
+  <section class="premium-chart-card">
+    <div class="premium-chart-head">
+      <div>
+        <div class="premium-kicker">VISUAL EJECUTIVO</div>
+        <h2 class="premium-title">OBAC por monto</h2>
+        <p class="premium-subtitle">Concentración presupuestal por órgano</p>
+      </div>
+      <div class="premium-chip premium-chip-blue">Ranking</div>
+    </div>
+    <div class="premium-chart-wrap premium-chart-wrap-bar">
+      <canvas id="chartObac"></canvas>
+    </div>
+  </section>
+
+</div>
+
   <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
     <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.06)]">
       <div class="flex items-start justify-between gap-3">

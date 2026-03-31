@@ -1,16 +1,5 @@
 <?php
-/**
- * Vista: Admin / Detalle del Proceso (Desktop-first)
- * Archivo REAL: Vista/modulos/admin/actividades.php
- *
- * IMPORTANTE:
- * - Esta vista NO debe consultar BD.
- * - Debe recibir desde el controlador:
- *   - $proceso (array)
- *   - $actividades (array)
- * - Usa ?id=XX en la URL.
- */
-
+// Vista/modulos/admin/pac.php
 $titulo = 'Detalle | Proceso';
 $active = 'procesos';
 
