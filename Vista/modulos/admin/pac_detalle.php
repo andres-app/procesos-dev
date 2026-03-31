@@ -160,7 +160,14 @@ $last = !empty($actividades) ? $actividades[count($actividades) - 1] : null;
           <div class="form-grid">
             <div class="field field-full">
               <label>Actividad</label>
-              <input type="text" name="titulo" placeholder="Ej. Elaboración de requerimiento" required>
+              <select name="tipo_actividad_id" required>
+                <option value="">Seleccione actividad</option>
+                <?php foreach (($tiposActividad ?? []) as $t): ?>
+                  <option value="<?= (int)$t['id'] ?>">
+                    <?= h($t['nombre']) ?>
+                  </option>
+                <?php endforeach; ?>
+              </select>
             </div>
 
             <div class="field">
@@ -194,7 +201,7 @@ $last = !empty($actividades) ? $actividades[count($actividades) - 1] : null;
 
               <article class="tcard">
                 <div class="trow">
-                  <div class="ttitle"><?= v($a['titulo'] ?? '-') ?></div>
+                  <div class="ttitle"><?= v($a['tipo_actividad_nombre'] ?? '-') ?></div>
                 </div>
 
                 <div class="tmeta">

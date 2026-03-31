@@ -10,16 +10,18 @@ class MdPacActividad
 
         $sql = "
             SELECT
-                id,
-                pac_id,
-                titulo,
-                fecha,
-                comentario,
-                created_at,
-                updated_at
-            FROM actividades_pac
-            WHERE pac_id = :pac_id
-            ORDER BY fecha ASC, id ASC
+                ap.id,
+                ap.pac_id,
+                ap.tipo_actividad_id,
+                ap.fecha,
+                ap.comentario,
+                ap.created_at,
+                ap.updated_at,
+                ta.nombre AS tipo_actividad_nombre
+            FROM actividades_pac ap
+            LEFT JOIN tipos_actividad ta ON ta.id = ap.tipo_actividad_id
+            WHERE ap.pac_id = :pac_id
+            ORDER BY ap.fecha ASC, ap.id ASC
         ";
 
         $st = $db->prepare($sql);
@@ -35,12 +37,12 @@ class MdPacActividad
         $sql = "
             INSERT INTO actividades_pac (
                 pac_id,
-                titulo,
+                tipo_actividad_id,
                 fecha,
                 comentario
             ) VALUES (
                 :pac_id,
-                :titulo,
+                :tipo_actividad_id,
                 :fecha,
                 :comentario
             )
@@ -49,10 +51,20 @@ class MdPacActividad
         $st = $db->prepare($sql);
 
         return $st->execute([
-            ':pac_id'     => (int)$data['pac_id'],
-            ':titulo'     => trim((string)($data['titulo'] ?? '')),
-            ':fecha'      => trim((string)($data['fecha'] ?? '')),
-            ':comentario' => trim((string)($data['comentario'] ?? '')) ?: null,
+            ':pac_id'            => (int)($data['pac_id'] ?? 0),
+            ':tipo_actividad_id' => (int)($data['tipo_actividad_id'] ?? 0),
+            ':fecha'             => trim((string)($data['fecha'] ?? '')),
+            ':comentario'        => trim((string)($data['comentario'] ?? '')) ?: null,
         ]);
+    }
+
+    public static function listarTiposActividad(): array
+    {
+        $db = db();
+
+        $sql = "SELECT id, nombre FROM tipos_actividad ORDER BY id ASC";
+        $st = $db->query($sql);
+
+        return $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 }
