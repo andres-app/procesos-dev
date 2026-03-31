@@ -17,9 +17,11 @@ class MdPacActividad
                 ap.comentario,
                 ap.created_at,
                 ap.updated_at,
-                ta.nombre AS tipo_actividad_nombre
+                ta.nombre AS tipo_actividad_nombre,
+                ta.estado AS tipo_actividad_estado
             FROM actividades_pac ap
-            LEFT JOIN tipos_actividad ta ON ta.id = ap.tipo_actividad_id
+            LEFT JOIN tipos_actividad ta
+                ON ta.id = ap.tipo_actividad_id
             WHERE ap.pac_id = :pac_id
             ORDER BY ap.fecha ASC, ap.id ASC
         ";
@@ -62,7 +64,7 @@ class MdPacActividad
     {
         $db = db();
 
-        $sql = "SELECT id, nombre FROM tipos_actividad ORDER BY id ASC";
+        $sql = "SELECT id, estado, nombre FROM tipos_actividad ORDER BY id ASC";
         $st = $db->query($sql);
 
         return $st->fetchAll(PDO::FETCH_ASSOC) ?: [];

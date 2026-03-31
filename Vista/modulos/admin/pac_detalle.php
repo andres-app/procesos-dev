@@ -23,6 +23,22 @@ function v($x)
   return trim((string)$x) !== '' ? h($x) : '-';
 }
 
+function pillActividadEstado(string $estado): string
+{
+  $e = strtoupper(trim($estado));
+
+  return match ($e) {
+    'PUBLICADO'    => 'pill-green',
+    'SOLICITADO'   => 'pill-blue',
+    'REITERADO'    => 'pill-violet',
+    'RECEPCIONADO' => 'pill-cyan',
+    'OBSERVADO'    => 'pill-amber',
+    'SUBSANADO'    => 'pill-orange',
+    'APROBADO'     => 'pill-emerald',
+    default        => 'pill-slate',
+  };
+}
+
 function pillEstado(string $estado): string
 {
   $e = strtoupper(trim($estado));
@@ -134,7 +150,7 @@ $last = !empty($actividades) ? $actividades[count($actividades) - 1] : null;
         </div>
         <div class="kv">
           <div class="k">Última actividad</div>
-          <div class="v"><?= $last ? v($last['titulo'] ?? '-') : '-' ?></div>
+          <div class="v"><?= $last ? v($last['tipo_actividad_nombre'] ?? '-') : '-' ?></div>
         </div>
       </div>
 
@@ -202,6 +218,10 @@ $last = !empty($actividades) ? $actividades[count($actividades) - 1] : null;
               <article class="tcard">
                 <div class="trow">
                   <div class="ttitle"><?= v($a['tipo_actividad_nombre'] ?? '-') ?></div>
+
+                  <span class="pill <?= h(pillActividadEstado($a['tipo_actividad_estado'] ?? '')) ?>">
+                    <?= h($a['tipo_actividad_estado'] ?? '-') ?>
+                  </span>
                 </div>
 
                 <div class="tmeta">
