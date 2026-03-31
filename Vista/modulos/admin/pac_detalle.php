@@ -72,6 +72,7 @@ if (!$pac || !is_array($pac)) {
   exit;
 }
 
+
 $estadoUp = strtoupper(trim((string)($pac['estado_nombre'] ?? '')));
 $last = !empty($actividades) ? $actividades[count($actividades) - 1] : null;
 ?>
@@ -91,8 +92,6 @@ $last = !empty($actividades) ? $actividades[count($actividades) - 1] : null;
 
     <div class="right">
       <span class="pill <?= h(pillEstado($estadoUp)) ?>"><?= h($estadoUp ?: '-') ?></span>
-
-      <a href="<?= BASE_URL ?>/admin/pac?edit=<?= $idPac ?>" class="btn-soft">Editar</a>
 
       <button type="button" class="btn-primary" onclick="toggleActivityForm()">
         + Actividad
@@ -154,10 +153,6 @@ $last = !empty($actividades) ? $actividades[count($actividades) - 1] : null;
           <div class="v"><?= $last ? v($last['tipo_actividad_nombre'] ?? '-') : '-' ?></div>
         </div>
       </div>
-
-      <div class="panel-actions">
-        <button type="button" class="btn-primary wfull" onclick="toggleActivityForm()">Registrar actividad</button>
-      </div>
     </aside>
 
     <!-- RIGHT -->
@@ -211,10 +206,24 @@ $last = !empty($actividades) ? $actividades[count($actividades) - 1] : null;
         </div>
       <?php else: ?>
         <ol class="timeline">
-          <?php foreach ($actividades as $a): ?>
-            <li class="titem">
+          <?php foreach ($actividades as $i => $a): ?>
+            <?php
+            $estadoDot = strtoupper(trim($a['tipo_actividad_estado'] ?? ''));
+
+            $dotClass = match ($estadoDot) {
+              'PUBLICADO', 'APROBADO'     => 'dot-green',
+              'SOLICITADO', 'REITERADO'   => 'dot-blue',
+              'RECEPCIONADO'              => 'dot-cyan',
+              'OBSERVADO'                 => 'dot-amber',
+              'SUBSANADO'                 => 'dot-orange',
+              default                     => 'dot-slate',
+            };
+
+            $isLast = $i === count($actividades) - 1;
+            ?>
+            <li class="titem <?= $isLast ? 'is-current' : '' ?>">
               <div class="tline"></div>
-              <div class="dot dot-blue"></div>
+              <div class="dot <?= $dotClass ?>"></div>
 
               <article class="tcard">
                 <div class="trow">
@@ -227,6 +236,9 @@ $last = !empty($actividades) ? $actividades[count($actividades) - 1] : null;
 
                 <div class="tmeta">
                   <span><?= fmt_date($a['fecha'] ?? null) ?></span>
+                  <?php if ($isLast): ?>
+                    <span class="tcurrent-badge">Estado actual</span>
+                  <?php endif; ?>
                 </div>
 
                 <?php if (!empty($a['comentario'])): ?>
@@ -684,44 +696,59 @@ $last = !empty($actividades) ? $actividades[count($actividades) - 1] : null;
     }
   }
 
-  /* TIMELINE */
+  /* TIMELINE INICIO */
   .timeline {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+    position: relative;
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    position: relative;
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
   }
 
   .titem {
     position: relative;
     display: grid;
-    grid-template-columns: 24px 1fr;
-    gap: 14px;
+    grid-template-columns: 28px 1fr;
+    column-gap: 14px;
+    align-items: stretch;
   }
 
+  /* línea */
   .tline {
     position: absolute;
-    left: 12px;
+    left: 13px;
     top: 0;
-    bottom: -14px;
+    bottom: -16px;
     width: 2px;
     background: #e2e8f0;
   }
 
+  .titem:last-child .tline {
+    bottom: 32px;
+  }
+
+  /* DOT centrado real */
   .dot {
     width: 14px;
     height: 14px;
     border-radius: 999px;
-    margin-top: 18px;
-    margin-left: 4px;
-    border: 2px solid #fff;
-    box-shadow: 0 6px 16px rgba(15, 23, 42, .08);
-    background: #94a3b8;
+
+    align-self: center;
+    /* 🔥 CLAVE */
+    justify-self: center;
+    /* 🔥 CLAVE */
+
+    margin: 0;
+    /* ❌ eliminar margin-top */
+
+    z-index: 2;
+    border: 3px solid #fff;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.10);
   }
 
+  /* colores */
   .dot-green {
     background: #22c55e;
   }
@@ -730,78 +757,98 @@ $last = !empty($actividades) ? $actividades[count($actividades) - 1] : null;
     background: #3b82f6;
   }
 
+  .dot-cyan {
+    background: #06b6d4;
+  }
+
   .dot-amber {
     background: #f59e0b;
   }
 
-  .dot-rose {
-    background: #e11d48;
+  .dot-orange {
+    background: #f97316;
   }
 
   .dot-slate {
     background: #94a3b8;
   }
 
+  /* CARD */
   .tcard {
-    border: 1px solid #e2e8f0;
+    border: 1px solid #dbe3ee;
     border-radius: 18px;
-    padding: 14px;
+    padding: 16px 16px 14px;
     background: #fff;
+    transition: .18s ease;
   }
 
+  .tcard:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+    transform: translateY(-1px);
+  }
+
+  /* estado actual */
+  .titem.is-current .tcard {
+    border-color: #cbd5e1;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  }
+
+  .titem.is-current .dot {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 6px rgba(148, 163, 184, 0.15);
+  }
+
+  /* header */
   .trow {
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    /* 🔥 centra el pill */
     gap: 12px;
-    align-items: flex-start;
   }
 
   .ttitle {
     font-size: 15px;
     font-weight: 600;
     color: #0f172a;
-    line-height: 1.4;
   }
 
-  .tbadge {
-    font-size: 11px;
-    font-weight: 600;
-    color: #334155;
-    background: #f1f5f9;
-    border: 1px solid #e2e8f0;
-    padding: 4px 8px;
-    border-radius: 999px;
-    white-space: nowrap;
-  }
-
+  /* meta */
   .tmeta {
     margin-top: 6px;
     font-size: 12px;
-    font-weight: 500;
     color: #64748b;
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
   }
 
-  .sep {
-    color: #94a3b8;
+  .tcurrent-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 4px 9px;
+    background: #e2e8f0;
+    color: #334155;
+    font-size: 11px;
+    font-weight: 700;
   }
 
   .tdesc {
     margin-top: 10px;
-    color: #334155;
-    line-height: 1.55;
     font-size: 13px;
+    color: #475569;
+    line-height: 1.55;
   }
 
-  .empty {
-    border: 1px dashed #cbd5e1;
-    border-radius: 16px;
-    padding: 14px;
-    color: #64748b;
-    background: #fff;
+  /* PILLS más suaves */
+  .pill {
+    padding: 5px 10px;
+    font-size: 11px;
+    border-radius: 999px;
+    font-weight: 600;
+    letter-spacing: .02em;
   }
+  /* TIMELINE FIN */
 
   /* MODAL */
   .modal-backdrop {
