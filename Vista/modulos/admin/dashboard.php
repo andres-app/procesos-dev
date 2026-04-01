@@ -347,77 +347,77 @@ foreach ($tendenciaMes as $item) {
 
   <div class="grid grid-cols-1 gap-5 xl:grid-cols-3">
 
-  <section class="premium-chart-card">
-    <div class="premium-chart-head">
-      <div>
-        <div class="premium-kicker">VISUAL EJECUTIVO</div>
-        <h2 class="premium-title">Participación sectorial</h2>
-        <p class="premium-subtitle">Distribución del monto estimado entre ACFFAA y resto de OBAC</p>
+    <section class="premium-chart-card">
+      <div class="premium-chart-head">
+        <div>
+          <div class="premium-kicker">VISUAL EJECUTIVO</div>
+          <h2 class="premium-title">Participación sectorial</h2>
+          <p class="premium-subtitle">Distribución del monto estimado entre ACFFAA y OBAC</p>
+        </div>
+        <div class="premium-chip premium-chip-blue">Pie</div>
       </div>
-      <div class="premium-chip premium-chip-blue">Pie</div>
-    </div>
-    <div class="premium-chart-wrap premium-chart-wrap-pie">
-      <canvas id="chartParticipacionPie"></canvas>
-    </div>
-  </section>
-
-  <section class="premium-chart-card">
-    <div class="premium-chart-head">
-      <div>
-        <div class="premium-kicker">VISUAL EJECUTIVO</div>
-        <h2 class="premium-title">Tipo de mercado</h2>
-        <p class="premium-subtitle">Participación nacional y extranjero</p>
+      <div class="premium-chart-wrap premium-chart-wrap-pie">
+        <canvas id="chartParticipacionPie"></canvas>
       </div>
-      <div class="premium-chip premium-chip-emerald">Doughnut</div>
-    </div>
-    <div class="premium-chart-wrap premium-chart-wrap-donut">
-      <canvas id="chartMercado"></canvas>
-    </div>
-  </section>
+    </section>
 
-  <section class="premium-chart-card">
-    <div class="premium-chart-head">
-      <div>
-        <div class="premium-kicker">VISUAL EJECUTIVO</div>
-        <h2 class="premium-title">Modalidad</h2>
-        <p class="premium-subtitle">Peso relativo por modalidad de compra</p>
+    <section class="premium-chart-card">
+      <div class="premium-chart-head">
+        <div>
+          <div class="premium-kicker">VISUAL EJECUTIVO</div>
+          <h2 class="premium-title">Tipo de mercado</h2>
+          <p class="premium-subtitle">Participación nacional y extranjero</p>
+        </div>
+        <div class="premium-chip premium-chip-emerald">Doughnut</div>
       </div>
-      <div class="premium-chip premium-chip-violet">Doughnut</div>
-    </div>
-    <div class="premium-chart-wrap premium-chart-wrap-donut">
-      <canvas id="chartModalidad"></canvas>
-    </div>
-  </section>
-
-  <section class="premium-chart-card xl:col-span-2">
-    <div class="premium-chart-head">
-      <div>
-        <div class="premium-kicker">VISUAL EJECUTIVO</div>
-        <h2 class="premium-title">Tendencia mensual</h2>
-        <p class="premium-subtitle">Comportamiento del monto estimado por mes de convocatoria</p>
+      <div class="premium-chart-wrap premium-chart-wrap-donut">
+        <canvas id="chartMercado"></canvas>
       </div>
-      <div class="premium-chip premium-chip-slate">Barras</div>
-    </div>
-    <div class="premium-chart-wrap premium-chart-wrap-bar">
-      <canvas id="chartMeses"></canvas>
-    </div>
-  </section>
+    </section>
 
-  <section class="premium-chart-card">
-    <div class="premium-chart-head">
-      <div>
-        <div class="premium-kicker">VISUAL EJECUTIVO</div>
-        <h2 class="premium-title">OBAC por monto</h2>
-        <p class="premium-subtitle">Concentración presupuestal por órgano</p>
+    <section class="premium-chart-card">
+      <div class="premium-chart-head">
+        <div>
+          <div class="premium-kicker">VISUAL EJECUTIVO</div>
+          <h2 class="premium-title">Modalidad</h2>
+          <p class="premium-subtitle">Peso relativo por modalidad de compra</p>
+        </div>
+        <div class="premium-chip premium-chip-violet">Doughnut</div>
       </div>
-      <div class="premium-chip premium-chip-blue">Ranking</div>
-    </div>
-    <div class="premium-chart-wrap premium-chart-wrap-bar">
-      <canvas id="chartObac"></canvas>
-    </div>
-  </section>
+      <div class="premium-chart-wrap premium-chart-wrap-donut">
+        <canvas id="chartModalidad"></canvas>
+      </div>
+    </section>
 
-</div>
+    <section class="premium-chart-card xl:col-span-2">
+      <div class="premium-chart-head">
+        <div>
+          <div class="premium-kicker">VISUAL EJECUTIVO</div>
+          <h2 class="premium-title">Tendencia mensual</h2>
+          <p class="premium-subtitle">Comportamiento del monto estimado por mes de convocatoria</p>
+        </div>
+        <div class="premium-chip premium-chip-slate">Barras</div>
+      </div>
+      <div class="premium-chart-wrap premium-chart-wrap-bar">
+        <canvas id="chartMeses"></canvas>
+      </div>
+    </section>
+
+    <section class="premium-chart-card">
+      <div class="premium-chart-head">
+        <div>
+          <div class="premium-kicker">VISUAL EJECUTIVO</div>
+          <h2 class="premium-title">OBAC por monto</h2>
+          <p class="premium-subtitle">Concentración presupuestal por órgano</p>
+        </div>
+        <div class="premium-chip premium-chip-blue">Ranking</div>
+      </div>
+      <div class="premium-chart-wrap premium-chart-wrap-bar">
+        <canvas id="chartObac"></canvas>
+      </div>
+    </section>
+
+  </div>
 
   <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
     <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.06)]">
@@ -815,7 +815,9 @@ foreach ($tendenciaMes as $item) {
       const meta = chart.getDatasetMeta(0);
       if (!meta || !meta.data || !meta.data.length) return;
 
-      const { ctx } = chart;
+      const {
+        ctx
+      } = chart;
       const x = meta.data[0].x;
       const y = meta.data[0].y;
 
@@ -840,11 +842,15 @@ foreach ($tendenciaMes as $item) {
   Chart.register(centerTextPlugin);
 
   const chartColors = {
-    slate: ['#0b1736', '#1e3a8a', '#334155', '#64748b', '#94a3b8', '#cbd5e1'],
-    blue: ['#1d4ed8', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe'],
-    emerald: ['#047857', '#059669', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0'],
-    violet: ['#5b21b6', '#6d28d9', '#7c3aed', '#8b5cf6', '#a78bfa', '#c4b5fd'],
-    mixed: ['#0b1736', '#1d4ed8', '#059669', '#7c3aed', '#f59e0b', '#ef4444', '#0891b2', '#ec4899']
+    slate: ['#334155', '#475569', '#64748b', '#94a3b8', '#cbd5e1', '#e2e8f0'],
+
+    blue: ['#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe', '#dbeafe', '#eff6ff'],
+
+    emerald: ['#10b981', '#34d399', '#6ee7b7', '#a7f3d0', '#d1fae5', '#ecfdf5'],
+
+    violet: ['#8b5cf6', '#a78bfa', '#c4b5fd', '#ddd6fe', '#ede9fe', '#f5f3ff'],
+
+    mixed: ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#06b6d4', '#f472b6', '#94a3b8', '#cbd5e1']
   };
 
   const moneyFormatter = (value) => {
@@ -940,16 +946,29 @@ foreach ($tendenciaMes as $item) {
         labels: mercadoLabels,
         datasets: [{
           data: mercadoTotals,
-          backgroundColor: chartColors.emerald,
+          backgroundColor: [
+            '#10B981',
+            '#3B82F6',
+            '#F59E0B',
+            '#8B5CF6',
+            '#06B6D4',
+            '#F472B6'
+          ],
           borderColor: '#ffffff',
-          borderWidth: 2,
-          hoverOffset: 6
+          borderWidth: 3,
+          hoverOffset: 8,
+          spacing: 2
         }]
       },
       options: {
         maintainAspectRatio: false,
         layout: {
-          padding: { top: 24, right: 34, bottom: 10, left: 34 }
+          padding: {
+            top: 24,
+            right: 34,
+            bottom: 10,
+            left: 34
+          }
         },
         cutout: '66%',
         plugins: {
@@ -991,16 +1010,29 @@ foreach ($tendenciaMes as $item) {
         labels: modalidadLabels,
         datasets: [{
           data: modalidadTotals,
-          backgroundColor: chartColors.violet,
+          backgroundColor: [
+            '#6366F1',
+            '#22C55E',
+            '#F97316',
+            '#0EA5E9',
+            '#A855F7',
+            '#E11D48'
+          ],
           borderColor: '#ffffff',
-          borderWidth: 2,
-          hoverOffset: 6
+          borderWidth: 3,
+          hoverOffset: 8,
+          spacing: 2
         }]
       },
       options: {
         maintainAspectRatio: false,
         layout: {
-          padding: { top: 24, right: 38, bottom: 10, left: 38 }
+          padding: {
+            top: 24,
+            right: 38,
+            bottom: 10,
+            left: 38
+          }
         },
         cutout: '66%',
         plugins: {
@@ -1052,10 +1084,17 @@ foreach ($tendenciaMes as $item) {
       options: {
         maintainAspectRatio: false,
         layout: {
-          padding: { top: 28, right: 10, left: 10, bottom: 0 }
+          padding: {
+            top: 28,
+            right: 10,
+            left: 10,
+            bottom: 0
+          }
         },
         plugins: {
-          legend: { display: false },
+          legend: {
+            display: false
+          },
           tooltip: {
             ...premiumTooltip,
             callbacks: {
@@ -1078,7 +1117,9 @@ foreach ($tendenciaMes as $item) {
         },
         scales: {
           x: {
-            grid: { display: false },
+            grid: {
+              display: false
+            },
             ticks: {
               color: '#64748b',
               font: {
@@ -1104,21 +1145,16 @@ foreach ($tendenciaMes as $item) {
 
   if (document.getElementById('chartParticipacionPie') && participacionLabels.length) {
     const pieCanvas = document.getElementById('chartParticipacionPie');
-    const pieContext = pieCanvas.getContext('2d');
 
-    const pieGradients = [
-      (() => {
-        const g = pieContext.createLinearGradient(0, 0, 0, 320);
-        g.addColorStop(0, '#60a5fa');
-        g.addColorStop(1, '#2563eb');
-        return g;
-      })(),
-      (() => {
-        const g = pieContext.createLinearGradient(0, 0, 0, 320);
-        g.addColorStop(0, '#fb923c');
-        g.addColorStop(1, '#f97316');
-        return g;
-      })()
+    const pieColors = [
+      '#7CC6FE', // azul suave
+      '#A78BFA', // violeta suave
+      '#6EE7B7', // verde mint
+      '#F9A8D4', // rosado suave
+      '#FCD34D', // amarillo suave
+      '#FDBA74', // naranja suave
+      '#67E8F9', // cyan suave
+      '#C4B5FD' // lavanda
     ];
 
     new Chart(pieCanvas, {
@@ -1127,7 +1163,7 @@ foreach ($tendenciaMes as $item) {
         labels: participacionLabels,
         datasets: [{
           data: participacionMontos,
-          backgroundColor: pieGradients,
+          backgroundColor: pieColors,
           borderColor: '#ffffff',
           borderWidth: 3,
           hoverBorderWidth: 4,
@@ -1138,7 +1174,12 @@ foreach ($tendenciaMes as $item) {
       options: {
         maintainAspectRatio: false,
         layout: {
-          padding: { top: 16, right: 20, bottom: 12, left: 20 }
+          padding: {
+            top: 16,
+            right: 20,
+            bottom: 12,
+            left: 20
+          }
         },
         animation: {
           animateRotate: true,
@@ -1162,9 +1203,9 @@ foreach ($tendenciaMes as $item) {
                 const data = chart.data;
                 return data.labels.map((label, i) => {
                   const value = Number(data.datasets[0].data[i] || 0);
-                  const pct = totalParticipacionMonto > 0
-                    ? ((value / totalParticipacionMonto) * 100).toFixed(1)
-                    : '0.0';
+                  const pct = totalParticipacionMonto > 0 ?
+                    ((value / totalParticipacionMonto) * 100).toFixed(1) :
+                    '0.0';
 
                   return {
                     text: `${label} · ${pct}%`,
@@ -1198,9 +1239,9 @@ foreach ($tendenciaMes as $item) {
             textStrokeColor: 'rgba(255,255,255,.92)',
             textStrokeWidth: 3,
             formatter: (value, ctx) => {
-              const pct = totalParticipacionMonto > 0
-                ? ((Number(value || 0) / totalParticipacionMonto) * 100)
-                : 0;
+              const pct = totalParticipacionMonto > 0 ?
+                ((Number(value || 0) / totalParticipacionMonto) * 100) :
+                0;
 
               const pac = participacionTotales[ctx.dataIndex] || 0;
 
@@ -1234,7 +1275,9 @@ foreach ($tendenciaMes as $item) {
       plugins: [{
         id: 'softShadowPie',
         beforeDatasetDraw(chart) {
-          const { ctx } = chart;
+          const {
+            ctx
+          } = chart;
           ctx.save();
           ctx.shadowColor = 'rgba(0,0,0,0.12)';
           ctx.shadowBlur = 18;
@@ -1265,10 +1308,17 @@ foreach ($tendenciaMes as $item) {
         indexAxis: 'y',
         maintainAspectRatio: false,
         layout: {
-          padding: { top: 8, right: 78, left: 0, bottom: 0 }
+          padding: {
+            top: 8,
+            right: 78,
+            left: 0,
+            bottom: 0
+          }
         },
         plugins: {
-          legend: { display: false },
+          legend: {
+            display: false
+          },
           tooltip: {
             ...premiumTooltip,
             callbacks: {
@@ -1307,7 +1357,9 @@ foreach ($tendenciaMes as $item) {
                 weight: '600'
               }
             },
-            grid: { display: false }
+            grid: {
+              display: false
+            }
           }
         }
       }
