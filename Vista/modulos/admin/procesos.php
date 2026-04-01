@@ -1,38 +1,52 @@
 <?php
-// Archivo: Vista/modulos/admin/procesos.php  (LISTA ADMIN - CORREGIDO)
+// Archivo: Vista/modulos/admin/procesos.php
 
 $titulo = 'Procesos';
 $active = 'procesos';
 
 require_once __DIR__ . '/../../../Config/config.php';
-require_once __DIR__ . '/../../../Modelo/MdProceso.php';
+require_once __DIR__ . '/../../../Modelo/MdProcesoAdmin.php';
 require __DIR__ . '/../../layout/admin_layout.php';
 
 function h($s)
 {
   return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
 }
+
 function fmt_money($n)
 {
   return 'S/ ' . number_format((float)$n, 2, '.', ',');
 }
 
+function obacTokens(string $texto): array
+{
+  $texto = trim($texto);
+  if ($texto === '') {
+    return [];
+  }
+
+  $parts = array_map('trim', explode('|', $texto));
+  $parts = array_values(array_filter(array_unique($parts), fn($v) => $v !== ''));
+
+  return $parts;
+}
+
 $filtros = [
   'periodo' => isset($_GET['periodo']) ? (int)$_GET['periodo'] : null,
+  'q' => $_GET['q'] ?? '',
+  'estado_id' => $_GET['estado_id'] ?? '',
+  'tipo_proceso' => $_GET['tipo_proceso'] ?? '',
 ];
 
-$rows = MdProceso::listar($filtros) ?? [];
+$rows = MdProcesoAdmin::listar($filtros) ?? [];
 
 $totalProcesos = count($rows);
 $sumEstimado   = array_reduce($rows, fn($a, $r) => $a + (float)($r['estimado'] ?? 0), 0);
-
-// AF: usa el filtro si existe, si no usa el periodo del primer registro, si no el año actual
 $anio = (int)($filtros['periodo'] ?? ($rows[0]['periodo'] ?? date('Y')));
 ?>
 
 <div class="space-y-6">
 
-  <!-- HEADER -->
   <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
     <div>
       <div class="text-xs text-slate-500 font-medium">Mantenimiento</div>
@@ -40,7 +54,7 @@ $anio = (int)($filtros['periodo'] ?? ($rows[0]['periodo'] ?? date('Y')));
     </div>
 
     <div class="flex flex-wrap gap-2">
-      <a href="<?= BASE_URL ?>/admin/procesos/nuevo"
+      <a href="<?= BASE_URL ?>/admin/procesos_nuevo"
         class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">
         ＋ Nuevo
       </a>
@@ -55,7 +69,6 @@ $anio = (int)($filtros['periodo'] ?? ($rows[0]['periodo'] ?? date('Y')));
     </div>
   </div>
 
-  <!-- KPIs -->
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
     <div class="rounded-2xl border border-slate-200 bg-white p-5">
       <div class="text-xs text-slate-500 font-medium">Total procesos</div>
@@ -73,7 +86,6 @@ $anio = (int)($filtros['periodo'] ?? ($rows[0]['periodo'] ?? date('Y')));
     </div>
   </div>
 
-  <!-- FILTROS (solo UI por ahora) -->
   <div class="rounded-2xl border border-slate-200 bg-white p-4">
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-3">
 
@@ -110,7 +122,6 @@ $anio = (int)($filtros['periodo'] ?? ($rows[0]['periodo'] ?? date('Y')));
     </div>
   </div>
 
-  <!-- TABLA -->
   <div class="rounded-2xl border border-slate-200 bg-white overflow-hidden">
 
     <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200">
@@ -138,13 +149,18 @@ $anio = (int)($filtros['periodo'] ?? ($rows[0]['periodo'] ?? date('Y')));
 
         <tbody class="divide-y divide-slate-100">
           <?php foreach ($rows as $r): ?>
+            <?php
+              $tipoProceso = strtoupper(trim((string)($r['tipo_proceso'] ?? '')));
+              $obacs = obacTokens((string)($r['obacs_involucrados'] ?? ''));
+              $obacSimple = trim((string)($r['obac_nombre'] ?? ''));
+            ?>
             <tr class="hover:bg-slate-50 transition">
               <td class="px-4 py-3">
                 <input type="checkbox" class="h-4 w-4">
               </td>
 
               <td class="px-4 py-3">
-                <div class="font-semibold text-slate-900"><?= h($r['proceso'] ?? '') ?></div>
+                <div class="font-semibold text-slate-900"><?= h($r['codigo_proceso'] ?? '') ?></div>
                 <div class="text-xs text-slate-500 font-normal line-clamp-1">
                   <?= h($r['descripcion'] ?? '') ?>
                 </div>
@@ -155,14 +171,26 @@ $anio = (int)($filtros['periodo'] ?? ($rows[0]['periodo'] ?? date('Y')));
               </td>
 
               <td class="px-4 py-3">
-                <span class="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700">
-                  <?= h($r['obac'] ?? '') ?>
-                </span>
+                <?php if (!empty($obacs)): ?>
+                  <div class="flex flex-wrap gap-1.5">
+                    <?php foreach ($obacs as $ob): ?>
+                      <span class="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700">
+                        <?= h($ob) ?>
+                      </span>
+                    <?php endforeach; ?>
+                  </div>
+                <?php elseif ($obacSimple !== ''): ?>
+                  <span class="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700">
+                    <?= h($obacSimple) ?>
+                  </span>
+                <?php else: ?>
+                  <span class="text-xs text-slate-400">—</span>
+                <?php endif; ?>
               </td>
 
               <td class="px-4 py-3">
                 <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                  <?= h($r['estado'] ?? '') ?>
+                  <?= h($r['estado_nombre'] ?? '') ?>
                 </span>
               </td>
 
@@ -181,7 +209,6 @@ $anio = (int)($filtros['periodo'] ?? ($rows[0]['periodo'] ?? date('Y')));
                   <div class="hidden absolute right-0 mt-2 w-40 rounded-xl bg-white shadow-xl border border-slate-200 z-50"
                     data-menu>
 
-                    <!-- ✅ CORREGIDO: Ver debe ir a DETALLE ADMIN -->
                     <a href="<?= BASE_URL ?>/admin/actividades?id=<?= (int)($r['id'] ?? 0) ?>"
                       class="block px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
                       👁 Ver
@@ -195,7 +222,7 @@ $anio = (int)($filtros['periodo'] ?? ($rows[0]['periodo'] ?? date('Y')));
                     <button type="button"
                       class="w-full text-left px-4 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50"
                       data-del="<?= (int)($r['id'] ?? 0) ?>"
-                      data-name="<?= h($r['proceso'] ?? '') ?>">
+                      data-name="<?= h($r['codigo_proceso'] ?? '') ?>">
                       🗑 Eliminar
                     </button>
 

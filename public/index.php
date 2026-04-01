@@ -164,13 +164,30 @@ if ($module === 'admin') {
         exit;
     }
 
+    if ($subRoute === 'procesos') {
+        require_once __DIR__ . '/../Controlador/CtrProcesoAdmin.php';
+        CtrProcesoAdmin::index();
+        exit;
+    }
+
+    if ($subRoute === 'procesos_nuevo') {
+        require_once __DIR__ . '/../Controlador/CtrProcesoAdmin.php';
+        CtrProcesoAdmin::nuevo();
+        exit;
+    }
+
+    if ($subRoute === 'procesos_guardar') {
+        require_once __DIR__ . '/../Controlador/CtrProcesoAdmin.php';
+        CtrProcesoAdmin::guardar();
+        exit;
+    }
+
     /*
     |--------------------------------------------------------------------------
     | VISTAS ADMIN NORMALES (directas)
     |--------------------------------------------------------------------------
     */
     $adminViews = [
-        'procesos'    => __DIR__ . '/../Vista/modulos/admin/procesos.php',
         'presupuesto' => __DIR__ . '/../Vista/modulos/admin/presupuesto.php',
         'reportes'    => __DIR__ . '/../Vista/modulos/admin/reportes.php',
     ];
