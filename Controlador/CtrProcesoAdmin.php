@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../Config/config.php';
 require_once __DIR__ . '/../Modelo/MdProcesoAdmin.php';
-require_once __DIR__ . '/../Modelo/MdActividad.php';
+require_once __DIR__ . '/../Modelo/MdActividadAdmin.php';
 
 final class CtrProcesoAdmin
 {
@@ -155,7 +155,7 @@ final class CtrProcesoAdmin
                 return;
             }
 
-            $actividades = MdActividad::listarPorProceso($id) ?? [];
+            $actividades = MdActividadAdmin::listarPorProceso($id) ?? [];
 
             require __DIR__ . '/../Vista/modulos/admin/actividades.php';
         } catch (Throwable $e) {
