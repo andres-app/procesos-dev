@@ -121,6 +121,12 @@ if ($module === 'admin') {
         exit;
     }
 
+    if ($subRoute === 'procesos_detalle') {
+        require_once __DIR__ . '/../Controlador/CtrProcesoAdmin.php';
+        CtrProcesoAdmin::actividades();
+        exit;
+    }
+
     // PAC ADMIN
     if ($subRoute === 'pac') {
         require_once __DIR__ . '/../Controlador/CtrPacAdmin.php';

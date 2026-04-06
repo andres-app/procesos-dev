@@ -1,5 +1,5 @@
 <?php
-// Vista/modulos/admin/actividades.php
+// Vista/modulos/admin/procesos_detalle.php
 $titulo = 'Detalle | Proceso';
 $active = 'procesos';
 
@@ -151,7 +151,7 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
       <div class="actions">
         <button type="button" class="btn-icon" data-menu-btn aria-label="Más acciones">⋯</button>
         <div class="menu hidden" data-menu>
-          <a class="menu-item" href="<?= BASE_URL ?>/admin/actividades?id=<?= $idProceso ?>">📌 Actividades</a>
+          <a class="menu-item" href="<?= BASE_URL ?>/admin/procesos/detalle?id=<?= $idProceso ?>">📌 Ver detalle</a>
           <a class="menu-item" href="<?= BASE_URL ?>/admin/procesos/editar?id=<?= $idProceso ?>">✏️ Editar</a>
           <button class="menu-item danger" type="button"
             data-del="<?= $idProceso ?>"
@@ -1104,7 +1104,6 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     font-size: 13px;
   }
 
-  /* ---- PAC table ---- */
   .pac-table {
     display: flex;
     flex-direction: column;
@@ -1115,7 +1114,7 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
 
   .pac-table-head {
     display: grid;
-    grid-template-columns: 70px 64px 1fr 110px 90px 120px 130px;
+    grid-template-columns: 70px 64px 1fr 110px 90px 120px;
     padding: 10px 16px;
     background: #f8fafc;
     border-bottom: 1px solid #e2e8f0;
@@ -1133,7 +1132,7 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
 
   .pac-row {
     display: grid;
-    grid-template-columns: 70px 64px 1fr 110px 90px 120px 130px;
+    grid-template-columns: 70px 64px 1fr 110px 90px 120px;
     padding: 14px 16px;
     gap: 12px;
     align-items: center;
@@ -1268,7 +1267,6 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     white-space: nowrap;
   }
 
-  /* responsive: en móvil vuelve a cards */
   @media(max-width:900px) {
     .pac-table-head {
       display: none;
@@ -1334,6 +1332,7 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
   const closeAllMenus = () => {
     document.querySelectorAll('[data-menu]').forEach(m => m.classList.add('hidden'));
   };
+
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-menu-btn]');
     if (btn) {

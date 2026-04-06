@@ -24,13 +24,14 @@ final class CtrActividadAdmin
                 return;
             }
 
-            $actividades = MdActividadAdmin::listarPorProceso($procesoId);
+            $actividades     = MdActividadAdmin::listarPorProceso($procesoId) ?? [];
+            $pacs_vinculados = MdProcesoAdmin::obtenerPacsVinculados($procesoId) ?? [];
 
-            // Normaliza claves que tu vista actual usa
+            // Normaliza claves que la vista puede usar
             $proceso['proceso'] = $proceso['codigo_proceso'] ?? '';
             $proceso['estado']  = $proceso['estado_nombre'] ?? '';
 
-            require __DIR__ . '/../Vista/modulos/admin/actividades.php';
+            require __DIR__ . '/../Vista/modulos/admin/procesos_detalle.php';
         } catch (Throwable $e) {
             http_response_code(500);
             echo "<pre style='white-space:pre-wrap'>"
@@ -94,7 +95,7 @@ final class CtrActividadAdmin
                 'ok'           => true,
                 'msg'          => 'Actividad registrada correctamente.',
                 'actividad_id' => $actividadId,
-                'redirect'     => BASE_URL . '/admin/actividades?id=' . $procesoId
+                'redirect'     => BASE_URL . '/admin/procesos/detalle?id=' . $procesoId
             ]);
             exit;
         } catch (Throwable $e) {
@@ -137,7 +138,7 @@ final class CtrActividadAdmin
             echo json_encode([
                 'ok'       => true,
                 'msg'      => 'Actividad eliminada correctamente.',
-                'redirect' => BASE_URL . '/admin/actividades?id=' . $procesoId
+                'redirect' => BASE_URL . '/admin/procesos/detalle?id=' . $procesoId
             ]);
             exit;
         } catch (Throwable $e) {

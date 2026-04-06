@@ -15,14 +15,14 @@ class MdActividadAdmin
                 a.id,
                 a.proceso_id,
                 a.tipo_id,
-                a.titulo,
                 a.fecha,
                 a.comentario,
                 a.created_at,
                 a.updated_at,
 
                 COALESCE(ta.nombre, '') AS tipo_nombre,
-                COALESCE(ta.nombre, '') AS tipo_codigo
+                COALESCE(ta.nombre, '') AS tipo_codigo,
+                COALESCE(ta.nombre, '') AS titulo
 
             FROM " . self::TABLE . " a
             LEFT JOIN tipos_actividad ta
@@ -39,21 +39,58 @@ class MdActividadAdmin
         return $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 
+    public static function obtener(int $id): ?array
+    {
+        $db = db();
+
+        $sql = "
+            SELECT
+                a.id,
+                a.proceso_id,
+                a.tipo_id,
+                a.fecha,
+                a.comentario,
+                a.created_at,
+                a.updated_at,
+
+                COALESCE(ta.nombre, '') AS tipo_nombre,
+                COALESCE(ta.nombre, '') AS tipo_codigo,
+                COALESCE(ta.nombre, '') AS titulo
+
+            FROM " . self::TABLE . " a
+            LEFT JOIN tipos_actividad ta
+                ON ta.id = a.tipo_id
+            WHERE a.id = :id
+            LIMIT 1
+        ";
+
+        $st = $db->prepare($sql);
+        $st->execute([
+            ':id' => $id
+        ]);
+
+        $row = $st->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
     public static function guardar(array $data): int
     {
         $db = db();
+
+        $tipoId = (int)($data['tipo_actividad_id'] ?? $data['tipo_id'] ?? 0);
+        $procesoId = (int)($data['proceso_id'] ?? 0);
+        $fecha = trim((string)($data['fecha'] ?? ''));
+        $comentario = trim((string)($data['comentario'] ?? ''));
 
         $sql = "
             INSERT INTO " . self::TABLE . " (
                 proceso_id,
                 tipo_id,
-                titulo,
                 fecha,
                 comentario
             ) VALUES (
                 :proceso_id,
                 :tipo_id,
-                :titulo,
                 :fecha,
                 :comentario
             )
@@ -61,11 +98,10 @@ class MdActividadAdmin
 
         $st = $db->prepare($sql);
         $st->execute([
-            ':proceso_id' => (int)$data['proceso_id'],
-            ':tipo_id'    => (int)$data['tipo_id'],
-            ':titulo'     => trim((string)$data['titulo']),
-            ':fecha'      => $data['fecha'],
-            ':comentario' => $data['comentario'] ?? null,
+            ':proceso_id' => $procesoId,
+            ':tipo_id'    => $tipoId,
+            ':fecha'      => $fecha,
+            ':comentario' => $comentario !== '' ? $comentario : null,
         ]);
 
         return (int)$db->lastInsertId();
