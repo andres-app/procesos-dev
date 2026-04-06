@@ -137,35 +137,35 @@ class MdProcesoAdmin
         return $row ?: null;
     }
 
-    public static function obtenerPacsVinculados(int $procesoId): array
-    {
-        $db = db();
+public static function obtenerPacsVinculados(int $procesoId): array
+{
+    $db = db();
 
-        $sql = "
-            SELECT
-                p.id,
-                p.nopac,
-                p.pn,
-                p.descripcion,
-                p.estimado,
-                COALESCE(e.nombre, '') AS obac_nombre,
-                COALESCE(est.nombre, '') AS estado_nombre
-            FROM proceso_pac pp
-            INNER JOIN pac p
-                ON p.id = pp.pac_id
-            LEFT JOIN entidad e
-                ON e.id = p.obac
-            LEFT JOIN estado est
-                ON est.id = p.estado
-            WHERE pp.proceso_id = :proceso_id
-            ORDER BY p.nopac ASC, p.id ASC
-        ";
+    $sql = "
+        SELECT
+            p.id,
+            p.nopac,
+            p.pn,
+            p.descripcion,
+            p.estimado,
+            COALESCE(e.nombre, '') AS obac_nombre,
+            COALESCE(est.nombre, '') AS estado_nombre
+        FROM proceso_pac pp
+        INNER JOIN pac p
+            ON p.id = pp.pac_id
+        LEFT JOIN entidad e
+            ON e.id = p.obac
+        LEFT JOIN estado est
+            ON est.id = p.estado
+        WHERE pp.proceso_id = :proceso_id
+        ORDER BY p.nopac ASC, p.id ASC
+    ";
 
-        $st = $db->prepare($sql);
-        $st->execute([':proceso_id' => $procesoId]);
+    $st = $db->prepare($sql);
+    $st->execute([':proceso_id' => $procesoId]);
 
-        return $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
-    }
+    return $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
+}
 
     public static function listarPacsDisponibles(array $filtros = []): array
     {
