@@ -170,6 +170,12 @@ if ($module === 'admin') {
         exit;
     }
 
+    if ($subRoute === 'proceso_actividad_guardar') {
+        require_once __DIR__ . '/../Controlador/CtrActividadAdmin.php';
+        CtrActividadAdmin::guardar();
+        exit;
+    }
+
     if ($subRoute === 'procesos') {
         require_once __DIR__ . '/../Controlador/CtrProcesoAdmin.php';
         CtrProcesoAdmin::index();

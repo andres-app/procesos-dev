@@ -44,71 +44,54 @@ final class CtrActividadAdmin
         }
     }
 
-    public static function guardar(): void
-    {
-        header('Content-Type: application/json; charset=utf-8');
+public static function guardar(): void
+{
+    try {
+        $data = [
+            'proceso_id' => $_POST['proceso_id'] ?? 0,
+            'tipo_id'    => $_POST['tipo_id'] ?? null,
+            'fecha'      => $_POST['fecha'] ?? '',
+            'comentario' => $_POST['comentario'] ?? '',
+        ];
 
-        try {
-            $data = [
-                'proceso_id'        => $_POST['proceso_id'] ?? 0,
-                'tipo_id' => $_POST['tipo_id'] ?? null,
-                'fecha'             => $_POST['fecha'] ?? '',
-                'comentario'        => $_POST['comentario'] ?? '',
-            ];
+        $procesoId = (int)$data['proceso_id'];
 
-            $procesoId = (int)$data['proceso_id'];
-
-            if ($procesoId <= 0) {
-                echo json_encode([
-                    'ok'  => false,
-                    'msg' => 'Proceso inválido.'
-                ]);
-                exit;
-            }
-
-            $proceso = MdProcesoAdmin::obtener($procesoId);
-            if (!$proceso) {
-                echo json_encode([
-                    'ok'  => false,
-                    'msg' => 'El proceso no existe.'
-                ]);
-                exit;
-            }
-
-            if (empty($data['tipo_actividad_id'])) {
-                echo json_encode([
-                    'ok'  => false,
-                    'msg' => 'Debe seleccionar un tipo de actividad.'
-                ]);
-                exit;
-            }
-
-            if (empty($data['fecha'])) {
-                echo json_encode([
-                    'ok'  => false,
-                    'msg' => 'Debe ingresar la fecha de la actividad.'
-                ]);
-                exit;
-            }
-
-            $actividadId = MdActividadAdmin::guardar($data);
-
-            echo json_encode([
-                'ok'           => true,
-                'msg'          => 'Actividad registrada correctamente.',
-                'actividad_id' => $actividadId,
-                'redirect'     => BASE_URL . '/admin/procesos/detalle?id=' . $procesoId
-            ]);
-            exit;
-        } catch (Throwable $e) {
-            echo json_encode([
-                'ok'  => false,
-                'msg' => $e->getMessage()
-            ]);
+        if ($procesoId <= 0) {
+            $_SESSION['flash_error'] = 'Proceso inválido.';
+            header('Location: ' . BASE_URL . '/admin/procesos');
             exit;
         }
-    }
 
+        $proceso = MdProcesoAdmin::obtener($procesoId);
+        if (!$proceso) {
+            $_SESSION['flash_error'] = 'El proceso no existe.';
+            header('Location: ' . BASE_URL . '/admin/procesos');
+            exit;
+        }
+
+        if (empty($data['tipo_id'])) {
+            $_SESSION['flash_error'] = 'Debe seleccionar un tipo de actividad.';
+            header('Location: ' . BASE_URL . '/admin/procesos_detalle?id=' . $procesoId);
+            exit;
+        }
+
+        if (empty($data['fecha'])) {
+            $_SESSION['flash_error'] = 'Debe ingresar la fecha de la actividad.';
+            header('Location: ' . BASE_URL . '/admin/procesos_detalle?id=' . $procesoId);
+            exit;
+        }
+
+        MdActividadAdmin::guardar($data);
+
+        $_SESSION['flash_ok'] = 'Actividad registrada correctamente.';
+        header('Location: ' . BASE_URL . '/admin/procesos_detalle?id=' . $procesoId);
+        exit;
+    } catch (Throwable $e) {
+        $_SESSION['flash_error'] = $e->getMessage();
+        header('Location: ' . BASE_URL . '/admin/procesos');
+        exit;
+    }
+}
     public static function eliminar(): void
     {
         header('Content-Type: application/json; charset=utf-8');
