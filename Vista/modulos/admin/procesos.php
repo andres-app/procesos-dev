@@ -354,33 +354,40 @@ foreach ($rows as $r) {
                 </td>
 
                 <td class="px-4 py-4 align-top text-right sm:px-5">
-                  <div class="relative inline-block text-left">
-                    <button type="button"
+                  <div class="flex items-center justify-end gap-2">
+
+                    <!-- 👁 VER (directo) -->
+                    <a href="<?= BASE_URL ?>/admin/procesos_detalle?id=<?= (int)($r['id'] ?? 0) ?>"
                       class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50"
-                      data-menu-btn>
-                      <span class="text-lg leading-none">⋯</span>
-                    </button>
+                      title="Ver detalle">
+                      <span class="text-base">👁</span>
+                    </a>
 
-                    <div class="hidden absolute right-0 z-50 mt-2 w-44 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
-                      data-menu>
-
-                      <a href="<?= BASE_URL ?>/admin/procesos_detalle?id=<?= (int)($r['id'] ?? 0) ?>"
-                        class="block px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
-                        👁 Ver detalle
-                      </a>
-
-                      <a href="<?= BASE_URL ?>/admin/procesos/editar?id=<?= (int)($r['id'] ?? 0) ?>"
-                        class="block px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
-                        ✏ Editar
-                      </a>
-
+                    <!-- ⋯ MENU -->
+                    <div class="relative inline-block text-left">
                       <button type="button"
-                        class="w-full px-4 py-3 text-left text-sm font-medium text-rose-600 transition hover:bg-rose-50"
-                        data-del="<?= (int)($r['id'] ?? 0) ?>"
-                        data-name="<?= h($r['codigo_proceso'] ?? '') ?>">
-                        🗑 Eliminar
+                        class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50"
+                        data-menu-btn>
+                        <span class="text-lg leading-none">⋯</span>
                       </button>
+
+                      <div class="hidden absolute right-0 z-50 mt-2 w-44 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
+                        data-menu>
+
+                        <a href="<?= BASE_URL ?>/admin/procesos/editar?id=<?= (int)($r['id'] ?? 0) ?>"
+                          class="block px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
+                          ✏ Editar
+                        </a>
+
+                        <button type="button"
+                          class="w-full px-4 py-3 text-left text-sm font-medium text-rose-600 transition hover:bg-rose-50"
+                          data-del="<?= (int)($r['id'] ?? 0) ?>"
+                          data-name="<?= h($r['codigo_proceso'] ?? '') ?>">
+                          🗑 Eliminar
+                        </button>
+                      </div>
                     </div>
+
                   </div>
                 </td>
               </tr>

@@ -311,7 +311,7 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
               <label>Fecha</label>
               <input type="date" name="fecha" value="<?= date('Y-m-d') ?>" required>
             </div>
-            
+
             <div class="field field-full">
               <label>Comentario</label>
               <textarea name="comentario" rows="4" placeholder="Detalle o seguimiento"></textarea>
@@ -354,10 +354,6 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
                       <div class="ttitle"><?= h($a['titulo'] ?? '-') ?></div>
                       <div class="tmeta">
                         <span><?= fmt_date($a['fecha'] ?? null) ?></span>
-                        <?php if (!empty($a['tipo_codigo'])): ?>
-                          <span class="sep">•</span>
-                          <span class="tcode"><?= h($a['tipo_codigo']) ?></span>
-                        <?php endif; ?>
                         <?php if ($isLast): ?>
                           <span class="tcurrent-badge">Estado actual</span>
                         <?php endif; ?>

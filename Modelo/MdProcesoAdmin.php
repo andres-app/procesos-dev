@@ -34,8 +34,7 @@ class MdProcesoAdmin
                 COUNT(DISTINCT pp.pac_id) AS total_pacs,
                 COALESCE(
                     GROUP_CONCAT(
-                        DISTINCT entPac.nombre
-                        ORDER BY entPac.nombre ASC
+                        DISTINCT CONCAT(COALESCE(entPac.nombre, ''), '-', COALESCE(pacv.nopac, ''))
                         SEPARATOR ' | '
                     ),
                     ''
