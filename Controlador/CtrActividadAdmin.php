@@ -31,6 +31,8 @@ final class CtrActividadAdmin
             $proceso['proceso'] = $proceso['codigo_proceso'] ?? '';
             $proceso['estado']  = $proceso['estado_nombre'] ?? '';
 
+            $tiposActividad = MdActividadAdmin::listarTiposActividad() ?? [];
+
             require __DIR__ . '/../Vista/modulos/admin/procesos_detalle.php';
         } catch (Throwable $e) {
             http_response_code(500);
@@ -49,7 +51,7 @@ final class CtrActividadAdmin
         try {
             $data = [
                 'proceso_id'        => $_POST['proceso_id'] ?? 0,
-                'tipo_actividad_id' => $_POST['tipo_actividad_id'] ?? null,
+                'tipo_id' => $_POST['tipo_id'] ?? null,
                 'fecha'             => $_POST['fecha'] ?? '',
                 'comentario'        => $_POST['comentario'] ?? '',
             ];

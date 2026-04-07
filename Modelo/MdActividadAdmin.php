@@ -119,16 +119,22 @@ class MdActividadAdmin
         ]);
     }
 
-    public static function listarTiposActividad(): array
+    public static function listarTiposActividad(string $modulo = 'PAC'): array
     {
         $db = db();
 
         $sql = "
-            SELECT id, nombre
-            FROM tipos_actividad
-            ORDER BY id ASC
-        ";
+        SELECT id, nombre
+        FROM tipos_actividad
+        WHERE modulo = :modulo
+        ORDER BY id ASC
+    ";
 
-        return $db->query($sql)->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        $st = $db->prepare($sql);
+        $st->execute([
+            ':modulo' => strtoupper(trim($modulo))
+        ]);
+
+        return $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 }

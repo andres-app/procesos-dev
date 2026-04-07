@@ -44,7 +44,7 @@ final class CtrProcesoAdmin
             if (!$estadoConvocadoId) {
                 echo json_encode([
                     'ok'  => false,
-                    'msg' => 'No existe el estado CONVOCADO en estados_proceso.'
+                    'msg' => 'No existe el estado CONVOCADO en estado.'
                 ]);
                 exit;
             }
@@ -138,34 +138,37 @@ final class CtrProcesoAdmin
         }
     }
 
-    public static function actividades(): void
-    {
-        try {
-            $id = (int)($_GET['id'] ?? 0);
-            if ($id <= 0) {
-                http_response_code(400);
-                echo "ID inválido";
-                return;
-            }
-
-            $proceso = MdProcesoAdmin::obtener($id);
-            if (!$proceso) {
-                http_response_code(404);
-                echo "Proceso no encontrado";
-                return;
-            }
-
-            $actividades     = MdActividadAdmin::listarPorProceso($id) ?? [];
-            $pacs_vinculados = MdProcesoAdmin::obtenerPacsVinculados($id);
-
-            require __DIR__ . '/../Vista/modulos/admin/procesos_detalle.php';
-        } catch (Throwable $e) {
-            http_response_code(500);
-            echo "<pre style='white-space:pre-wrap'>"
-                . "ERROR: " . $e->getMessage() . "\n\n"
-                . $e->getFile() . ":" . $e->getLine() . "\n\n"
-                . $e->getTraceAsString()
-                . "</pre>";
+public static function actividades(): void
+{
+    try {
+        $id = (int)($_GET['id'] ?? 0);
+        if ($id <= 0) {
+            http_response_code(400);
+            echo "ID inválido";
+            return;
         }
+
+        $proceso = MdProcesoAdmin::obtener($id);
+        if (!$proceso) {
+            http_response_code(404);
+            echo "Proceso no encontrado";
+            return;
+        }
+
+        $actividades     = MdActividadAdmin::listarPorProceso($id) ?? [];
+        $pacs_vinculados = MdProcesoAdmin::obtenerPacsVinculados($id);
+
+        // 🔴 ESTA LÍNEA ES LA QUE TE FALTABA
+        $tiposActividad = MdActividadAdmin::listarTiposActividad('PROCESO') ?? [];
+
+        require __DIR__ . '/../Vista/modulos/admin/procesos_detalle.php';
+    } catch (Throwable $e) {
+        http_response_code(500);
+        echo "<pre style='white-space:pre-wrap'>"
+            . "ERROR: " . $e->getMessage() . "\n\n"
+            . $e->getFile() . ":" . $e->getLine() . "\n\n"
+            . $e->getTraceAsString()
+            . "</pre>";
     }
+}
 }

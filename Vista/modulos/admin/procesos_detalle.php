@@ -147,7 +147,9 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     <div class="right">
       <span class="pill <?= h(statusPillClass($estadoUp)) ?>"><?= h($estadoUp ?: '-') ?></span>
       <a href="<?= BASE_URL ?>/admin/procesos/editar?id=<?= $idProceso ?>" class="btn-soft">✏ Editar</a>
-      <a href="<?= BASE_URL ?>/admin/actividades/nueva?id=<?= $idProceso ?>" class="btn-primary">+ Actividad</a>
+      <button type="button" class="btn-primary" onclick="toggleActivityForm()">
+        + Actividad
+      </button>
       <div class="actions">
         <button type="button" class="btn-icon" data-menu-btn aria-label="Más acciones">⋯</button>
         <div class="menu hidden" data-menu>
@@ -286,6 +288,41 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
           PACs vinculados
           <span class="tab-count"><?= $totalPacs ?></span>
         </button>
+      </div>
+
+      <div id="activityFormWrap" class="activity-form-wrap hidden">
+        <form action="<?= BASE_URL ?>/admin/proceso_actividad_guardar" method="POST" class="activity-form">
+          <input type="hidden" name="proceso_id" value="<?= (int)$idProceso ?>">
+
+          <div class="form-grid">
+            <div class="field field-full">
+              <label>Actividad</label>
+              <select name="tipo_id" required>
+                <option value="">Seleccione actividad</option>
+                <?php foreach (($tiposActividad ?? []) as $t): ?>
+                  <option value="<?= (int)$t['id'] ?>">
+                    <?= h($t['nombre']) ?>
+                  </option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Fecha</label>
+              <input type="date" name="fecha" value="<?= date('Y-m-d') ?>" required>
+            </div>
+            
+            <div class="field field-full">
+              <label>Comentario</label>
+              <textarea name="comentario" rows="4" placeholder="Detalle o seguimiento"></textarea>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-ghost" onclick="toggleActivityForm()">Cancelar</button>
+            <button type="submit" class="btn-primary">Guardar actividad</button>
+          </div>
+        </form>
       </div>
 
       <!-- TAB: Timeline -->
@@ -1291,6 +1328,93 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     background: #fff;
   }
 
+  /* FORM ACTIVIDAD */
+  .activity-form-wrap {
+    margin-bottom: 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 14px;
+    background: #f8fafc;
+  }
+
+  .activity-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .field-full {
+    grid-column: 1 / -1;
+  }
+
+  .field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+  }
+
+  .field input,
+  .field select,
+  .field textarea {
+    width: 100%;
+    border: 1px solid #dbe2ea;
+    border-radius: 14px;
+    background: #fff;
+    color: #0f172a;
+    padding: 11px 13px;
+    font-size: 14px;
+    outline: none;
+    transition: .18s ease;
+  }
+
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
+    border-color: #94a3b8;
+    box-shadow: 0 0 0 4px rgba(148, 163, 184, .15);
+  }
+
+  .field textarea {
+    min-height: 110px;
+    resize: vertical;
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  @media (max-width:1100px) {
+    .form-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width:640px) {
+    .form-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+
   @media(max-width:640px) {
     .detail-topbar {
       flex-direction: column;
@@ -1325,7 +1449,6 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     .section-title {
       font-size: 18px;
     }
-  }
 </style>
 
 <script>
@@ -1368,6 +1491,12 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
       document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
     });
   });
+
+  function toggleActivityForm() {
+    const wrap = document.getElementById('activityFormWrap');
+    if (!wrap) return;
+    wrap.classList.toggle('hidden');
+  }
 </script>
 
 <?php require __DIR__ . '/../../layout/admin_footer.php'; ?>

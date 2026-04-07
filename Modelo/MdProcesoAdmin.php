@@ -41,7 +41,7 @@ class MdProcesoAdmin
                     ''
                 ) AS obacs_involucrados
             FROM procesos p
-            LEFT JOIN estados_proceso ep
+            LEFT JOIN estado ep
                 ON ep.id = p.estado_id
             LEFT JOIN entidad epro
                 ON epro.id = p.obac
@@ -123,7 +123,7 @@ class MdProcesoAdmin
                 p.*,
                 COALESCE(ep.nombre, '') AS estado_nombre
             FROM procesos p
-            LEFT JOIN estados_proceso ep
+            LEFT JOIN estado ep
                 ON ep.id = p.estado_id
             WHERE p.id = :id
             LIMIT 1
@@ -137,11 +137,11 @@ class MdProcesoAdmin
         return $row ?: null;
     }
 
-public static function obtenerPacsVinculados(int $procesoId): array
-{
-    $db = db();
+    public static function obtenerPacsVinculados(int $procesoId): array
+    {
+        $db = db();
 
-    $sql = "
+        $sql = "
         SELECT
             p.id,
             p.nopac,
@@ -161,11 +161,11 @@ public static function obtenerPacsVinculados(int $procesoId): array
         ORDER BY p.nopac ASC, p.id ASC
     ";
 
-    $st = $db->prepare($sql);
-    $st->execute([':proceso_id' => $procesoId]);
+        $st = $db->prepare($sql);
+        $st->execute([':proceso_id' => $procesoId]);
 
-    return $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
-}
+        return $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
 
     public static function listarPacsDisponibles(array $filtros = []): array
     {
@@ -404,7 +404,7 @@ public static function obtenerPacsVinculados(int $procesoId): array
     public static function listarEstadosProceso(): array
     {
         $db = db();
-        $st = $db->query("SELECT id, codigo, nombre FROM estados_proceso ORDER BY id ASC");
+        $st = $db->query("SELECT id, nombre FROM estado ORDER BY id ASC");
         return $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 
@@ -467,8 +467,8 @@ public static function obtenerPacsVinculados(int $procesoId): array
 
         $sql = "
         SELECT id
-        FROM estados_proceso
-        WHERE UPPER(codigo) = UPPER(:codigo)
+        FROM estado
+        WHERE UPPER(nombre) = UPPER(:codigo)
         LIMIT 1
     ";
 

@@ -19,7 +19,7 @@ class MdProceso
         p.anio_convocatoria,
         p.periodo
       FROM procesos p
-      LEFT JOIN estados_proceso ep ON ep.id = p.estado_id
+      LEFT JOIN estado ep ON ep.id = p.estado_id
       WHERE 1=1
     ";
 
@@ -73,7 +73,7 @@ class MdProceso
       p.estimado,
       p.anio_convocatoria
     FROM procesos p
-    LEFT JOIN estados_proceso ep ON ep.id = p.estado_id
+    LEFT JOIN estado ep ON ep.id = p.estado_id
     WHERE p.id = :id
     LIMIT 1
   ";
