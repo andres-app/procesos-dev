@@ -124,17 +124,79 @@ class MdActividadAdmin
         $db = db();
 
         $sql = "
-        SELECT id, nombre
-        FROM tipos_actividad
-        WHERE modulo = :modulo
-        ORDER BY id ASC
-    ";
+            SELECT id, nombre
+            FROM tipos_actividad
+            WHERE UPPER(modulo) = UPPER(:modulo)
+            ORDER BY id ASC
+        ";
 
         $st = $db->prepare($sql);
         $st->execute([
-            ':modulo' => strtoupper(trim($modulo))
+            ':modulo' => trim($modulo)
         ]);
 
         return $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    public static function obtenerTipoIdPorNombre(string $nombre, string $modulo = 'PROCESO', ?PDO $db = null): ?int
+    {
+        $db = $db ?: db();
+
+        $sql = "
+            SELECT id
+            FROM tipos_actividad
+            WHERE UPPER(nombre) = UPPER(:nombre)
+              AND UPPER(modulo) = UPPER(:modulo)
+            LIMIT 1
+        ";
+
+        $st = $db->prepare($sql);
+        $st->execute([
+            ':nombre' => trim($nombre),
+            ':modulo' => trim($modulo),
+        ]);
+
+        $id = $st->fetchColumn();
+
+        return $id ? (int)$id : null;
+    }
+
+    public static function crearActividadInicialConvocado(
+        int $procesoId,
+        string $fecha,
+        ?string $comentario = null,
+        ?PDO $db = null
+    ): int {
+        $db = $db ?: db();
+
+        $tipoId = self::obtenerTipoIdPorNombre('CONVOCADO', 'PROCESO', $db);
+
+        if (!$tipoId) {
+            throw new Exception('No existe el tipo de actividad CONVOCADO para el módulo PROCESO.');
+        }
+
+        $sql = "
+            INSERT INTO " . self::TABLE . " (
+                proceso_id,
+                tipo_id,
+                fecha,
+                comentario
+            ) VALUES (
+                :proceso_id,
+                :tipo_id,
+                :fecha,
+                :comentario
+            )
+        ";
+
+        $st = $db->prepare($sql);
+        $st->execute([
+            ':proceso_id' => $procesoId,
+            ':tipo_id'    => $tipoId,
+            ':fecha'      => $fecha,
+            ':comentario' => $comentario !== '' ? $comentario : null,
+        ]);
+
+        return (int)$db->lastInsertId();
     }
 }

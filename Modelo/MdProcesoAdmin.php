@@ -236,42 +236,42 @@ class MdProcesoAdmin
             }
 
             $sql = "
-                INSERT INTO procesos (
-                    codigo_proceso,
-                    tipo_proceso,
-                    expediente,
-                    obac,
-                    descripcion,
-                    estimado,
-                    estado_id,
-                    anio_convocatoria,
-                    periodo,
-                    convocatoria,
-                    moneda,
-                    fecha_registro,
-                    objeto_contratacion,
-                    ganador,
-                    fecha_adjudicacion,
-                    fecha_consentido
-                ) VALUES (
-                    :codigo_proceso,
-                    :tipo_proceso,
-                    :expediente,
-                    :obac,
-                    :descripcion,
-                    :estimado,
-                    :estado_id,
-                    :anio_convocatoria,
-                    :periodo,
-                    :convocatoria,
-                    :moneda,
-                    :fecha_registro,
-                    :objeto_contratacion,
-                    :ganador,
-                    :fecha_adjudicacion,
-                    :fecha_consentido
-                )
-            ";
+            INSERT INTO procesos (
+                codigo_proceso,
+                tipo_proceso,
+                expediente,
+                obac,
+                descripcion,
+                estimado,
+                estado_id,
+                anio_convocatoria,
+                periodo,
+                convocatoria,
+                moneda,
+                fecha_registro,
+                objeto_contratacion,
+                ganador,
+                fecha_adjudicacion,
+                fecha_consentido
+            ) VALUES (
+                :codigo_proceso,
+                :tipo_proceso,
+                :expediente,
+                :obac,
+                :descripcion,
+                :estimado,
+                :estado_id,
+                :anio_convocatoria,
+                :periodo,
+                :convocatoria,
+                :moneda,
+                :fecha_registro,
+                :objeto_contratacion,
+                :ganador,
+                :fecha_adjudicacion,
+                :fecha_consentido
+            )
+        ";
 
             $st = $db->prepare($sql);
             $st->execute(self::mapData($data));
@@ -279,6 +279,19 @@ class MdProcesoAdmin
             $procesoId = (int)$db->lastInsertId();
 
             self::guardarPacsVinculados($procesoId, $pacIds, $db);
+
+            require_once __DIR__ . '/MdActividadAdmin.php';
+
+            $fechaActividad = !empty($data['convocatoria'])
+                ? (string)$data['convocatoria']
+                : date('Y-m-d');
+
+            MdActividadAdmin::crearActividadInicialConvocado(
+                $procesoId,
+                $fechaActividad,
+                'Registro inicial automático del proceso en estado CONVOCADO.',
+                $db
+            );
 
             if ($db->inTransaction()) {
                 $db->commit();
