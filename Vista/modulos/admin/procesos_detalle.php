@@ -146,14 +146,12 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     </div>
     <div class="right">
       <span class="pill <?= h(statusPillClass($estadoUp)) ?>"><?= h($estadoUp ?: '-') ?></span>
-      <a href="<?= BASE_URL ?>/admin/procesos/editar?id=<?= $idProceso ?>" class="btn-soft">✏ Editar</a>
       <button type="button" class="btn-primary" onclick="toggleActivityForm()">
         + Actividad
       </button>
       <div class="actions">
         <button type="button" class="btn-icon" data-menu-btn aria-label="Más acciones">⋯</button>
         <div class="menu hidden" data-menu>
-          <a class="menu-item" href="<?= BASE_URL ?>/admin/procesos/detalle?id=<?= $idProceso ?>">📌 Ver detalle</a>
           <a class="menu-item" href="<?= BASE_URL ?>/admin/procesos/editar?id=<?= $idProceso ?>">✏️ Editar</a>
           <button class="menu-item danger" type="button"
             data-del="<?= $idProceso ?>"
