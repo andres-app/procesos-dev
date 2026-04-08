@@ -91,9 +91,10 @@ function pacEstadoPillClass($estado)
 /* =========================
    DATA
    ========================= */
-$proceso         = $proceso         ?? null;
-$actividades     = $actividades     ?? [];
-$pacs_vinculados = $pacs_vinculados ?? [];
+$proceso             = $proceso             ?? null;
+$actividades         = $actividades         ?? [];
+$timelineActividades = $timelineActividades ?? $actividades;
+$pacs_vinculados     = $pacs_vinculados     ?? [];
 
 $idProceso = (int)(is_array($proceso) ? ($proceso['id'] ?? 0) : 0);
 if ($idProceso <= 0) $idProceso = (int)($_GET['id'] ?? 0);
@@ -112,7 +113,7 @@ if (!$proceso || !is_array($proceso)) {
   exit;
 }
 
-$last          = !empty($actividades) ? $actividades[count($actividades) - 1] : null;
+$last = !empty($timelineActividades) ? $timelineActividades[count($timelineActividades) - 1] : (!empty($actividades) ? $actividades[count($actividades) - 1] : null);
 $obacs         = parseObacs($proceso['obac'] ?? '');
 $estadoUp      = strtoupper(trim((string)($proceso['estado_nombre'] ?? $proceso['estado'] ?? '')));
 $tipoProceso   = strtoupper(trim((string)($proceso['tipo_proceso'] ?? 'INDIVIDUAL')));
@@ -280,8 +281,14 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
       <div class="tab-bar">
         <button class="tab-btn active" data-tab="timeline">
           Línea de tiempo
-          <span class="tab-count"><?= count($actividades) ?></span>
+          <span class="tab-count"><?= count($timelineActividades) ?></span>
         </button>
+
+        <button class="tab-btn" data-tab="seace">
+          Project
+          <span class="tab-count">Live</span>
+        </button>
+
         <button class="tab-btn" data-tab="pacs">
           PACs vinculados
           <span class="tab-count"><?= $totalPacs ?></span>
@@ -331,17 +338,17 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
             <div class="section-title">Línea de tiempo</div>
             <div class="section-subtitle">Historial cronológico de actuaciones del proceso</div>
           </div>
-          <div class="pill pill-slate"><?= count($actividades) ?> actividades</div>
+          <div class="pill pill-slate"><?= count($timelineActividades) ?> actividades</div>
         </div>
 
-        <?php if (empty($actividades)): ?>
+        <?php if (empty($timelineActividades)): ?>
           <div class="empty">No hay actividades registradas para este proceso.</div>
         <?php else: ?>
           <ol class="timeline">
-            <?php foreach ($actividades as $i => $a): ?>
+            <?php foreach ($timelineActividades as $i => $a): ?>
               <?php
               $dot    = dotClassFromTipo($a['tipo_codigo'] ?? '');
-              $isLast = $i === count($actividades) - 1;
+              $isLast = $i === count($timelineActividades) - 1;
               ?>
               <li class="titem <?= $isLast ? 'is-current' : '' ?>">
                 <div class="tline"></div>
@@ -361,6 +368,7 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
                       <span class="tbadge"><?= h($a['tipo_nombre']) ?></span>
                     <?php endif; ?>
                   </div>
+
                   <?php if (!empty($a['comentario'])): ?>
                     <div class="tdesc"><?= nl2br(h($a['comentario'])) ?></div>
                   <?php endif; ?>
@@ -368,6 +376,47 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
               </li>
             <?php endforeach; ?>
           </ol>
+        <?php endif; ?>
+      </div>
+      <!-- TAB: Project -->
+      <div class="tab-content hidden" id="tab-seace">
+        <div class="section-head">
+          <div>
+            <div class="kicker2">Histórico completo</div>
+            <div class="section-title">Project</div>
+            <div class="section-subtitle">Aquí se muestran todas las actividades registradas, incluyendo reprogramaciones</div>
+          </div>
+          <div class="pill pill-slate"><?= count($actividades) ?> registros</div>
+        </div>
+
+        <?php if (empty($actividades)): ?>
+          <div class="empty">No hay actividades registradas para este proceso.</div>
+        <?php else: ?>
+          <div class="pac-table">
+            <div class="pac-table-head" style="grid-template-columns: 180px 120px 1fr;">
+              <div>Actividad</div>
+              <div>Fecha</div>
+              <div>Comentario</div>
+            </div>
+
+            <?php foreach ($actividades as $a): ?>
+              <div class="pac-row" style="grid-template-columns: 180px 120px 1fr;">
+                <div>
+                  <span class="tbadge"><?= h($a['titulo'] ?? '-') ?></span>
+                </div>
+                <div>
+                  <span class="pac-money" style="font-size:13px; font-weight:700;">
+                    <?= fmt_date($a['fecha'] ?? null) ?>
+                  </span>
+                </div>
+                <div>
+                  <span class="pac-desc-text" style="-webkit-line-clamp:unset;">
+                    <?= !empty($a['comentario']) ? nl2br(h($a['comentario'])) : '-' ?>
+                  </span>
+                </div>
+              </div>
+            <?php endforeach; ?>
+          </div>
         <?php endif; ?>
       </div>
 
@@ -1443,6 +1492,85 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     .section-title {
       font-size: 18px;
     }
+
+    .seace-loading {
+      border: 1px dashed #cbd5e1;
+      border-radius: 16px;
+      padding: 16px;
+      background: #fff;
+      color: #64748b;
+    }
+
+    .seace-table {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .seace-head,
+    .seace-row {
+      display: grid;
+      grid-template-columns: 1.4fr 140px 140px;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 16px;
+    }
+
+    .seace-head {
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .seace-head>div {
+      font-size: 11px;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .seace-row {
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .seace-row:last-child {
+      border-bottom: none;
+    }
+
+    .seace-etapa {
+      font-size: 13px;
+      line-height: 1.45;
+      color: #0f172a;
+      font-weight: 600;
+    }
+
+    .seace-date {
+      font-size: 13px;
+      color: #334155;
+      font-weight: 700;
+    }
+
+    .seace-error {
+      border: 1px dashed #fecdd3;
+      border-radius: 16px;
+      padding: 14px;
+      background: #fff1f2;
+      color: #be123c;
+    }
+
+    @media (max-width: 800px) {
+      .seace-head {
+        display: none;
+      }
+
+      .seace-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+    }
 </style>
 
 <script>
@@ -1477,20 +1605,36 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     window.location.href = `<?= BASE_URL ?>/admin/procesos/eliminar?id=${id}`;
   });
 
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-      btn.classList.add('active');
-      document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
-    });
-  });
-
   function toggleActivityForm() {
     const wrap = document.getElementById('activityFormWrap');
     if (!wrap) return;
     wrap.classList.toggle('hidden');
   }
+
+  function activarTab(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+
+    document.querySelectorAll('.tab-content').forEach(tab => {
+      tab.classList.add('hidden');
+    });
+
+    const target = document.getElementById('tab-' + tabName);
+    if (target) {
+      target.classList.remove('hidden');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        activarTab(btn.dataset.tab);
+      });
+    });
+
+    activarTab('timeline');
+  });
 </script>
 
 <?php require __DIR__ . '/../../layout/admin_footer.php'; ?>

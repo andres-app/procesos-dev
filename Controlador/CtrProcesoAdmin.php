@@ -138,37 +138,86 @@ final class CtrProcesoAdmin
         }
     }
 
-public static function actividades(): void
-{
-    try {
-        $id = (int)($_GET['id'] ?? 0);
-        if ($id <= 0) {
-            http_response_code(400);
-            echo "ID inválido";
-            return;
+    public static function actividades(): void
+    {
+        try {
+            $id = (int)($_GET['id'] ?? 0);
+            if ($id <= 0) {
+                http_response_code(400);
+                echo "ID inválido";
+                return;
+            }
+
+            $proceso = MdProcesoAdmin::obtener($id);
+            if (!$proceso) {
+                http_response_code(404);
+                echo "Proceso no encontrado";
+                return;
+            }
+
+            $actividades     = MdActividadAdmin::listarPorProceso($id) ?? [];
+            $timelineActividades = self::construirTimelineActividades($actividades);
+            $pacs_vinculados = MdProcesoAdmin::obtenerPacsVinculados($id);
+            $tiposActividad  = MdActividadAdmin::listarTiposActividad('PROCESO') ?? [];
+
+            require __DIR__ . '/../Vista/modulos/admin/procesos_detalle.php';
+        } catch (Throwable $e) {
+            http_response_code(500);
+            echo "<pre style='white-space:pre-wrap'>"
+                . "ERROR: " . $e->getMessage() . "\n\n"
+                . $e->getFile() . ":" . $e->getLine() . "\n\n"
+                . $e->getTraceAsString()
+                . "</pre>";
         }
-
-        $proceso = MdProcesoAdmin::obtener($id);
-        if (!$proceso) {
-            http_response_code(404);
-            echo "Proceso no encontrado";
-            return;
-        }
-
-        $actividades     = MdActividadAdmin::listarPorProceso($id) ?? [];
-        $pacs_vinculados = MdProcesoAdmin::obtenerPacsVinculados($id);
-
-        // 🔴 ESTA LÍNEA ES LA QUE TE FALTABA
-        $tiposActividad = MdActividadAdmin::listarTiposActividad('PROCESO') ?? [];
-
-        require __DIR__ . '/../Vista/modulos/admin/procesos_detalle.php';
-    } catch (Throwable $e) {
-        http_response_code(500);
-        echo "<pre style='white-space:pre-wrap'>"
-            . "ERROR: " . $e->getMessage() . "\n\n"
-            . $e->getFile() . ":" . $e->getLine() . "\n\n"
-            . $e->getTraceAsString()
-            . "</pre>";
     }
-}
+
+    private static function construirTimelineActividades(array $actividades): array
+    {
+        if (empty($actividades)) {
+            return [];
+        }
+
+        $ultimasPorTipo = [];
+
+        foreach ($actividades as $a) {
+            $tipoId = (int)($a['tipo_id'] ?? 0);
+            $fecha  = strtotime((string)($a['fecha'] ?? '')) ?: 0;
+            $id     = (int)($a['id'] ?? 0);
+
+            if ($tipoId <= 0) {
+                // Si por alguna razón no tiene tipo_id, lo dejamos único con su propio id
+                $ultimasPorTipo['sin_tipo_' . $id] = $a;
+                continue;
+            }
+
+            if (!isset($ultimasPorTipo[$tipoId])) {
+                $ultimasPorTipo[$tipoId] = $a;
+                continue;
+            }
+
+            $actualFecha = strtotime((string)($ultimasPorTipo[$tipoId]['fecha'] ?? '')) ?: 0;
+            $actualId    = (int)($ultimasPorTipo[$tipoId]['id'] ?? 0);
+
+            // Reemplaza si la nueva actividad es más reciente
+            // Si tienen la misma fecha, gana la de mayor id
+            if ($fecha > $actualFecha || ($fecha === $actualFecha && $id > $actualId)) {
+                $ultimasPorTipo[$tipoId] = $a;
+            }
+        }
+
+        $resultado = array_values($ultimasPorTipo);
+
+        usort($resultado, function ($x, $y) {
+            $fx = strtotime((string)($x['fecha'] ?? '')) ?: 0;
+            $fy = strtotime((string)($y['fecha'] ?? '')) ?: 0;
+
+            if ($fx === $fy) {
+                return ((int)($x['id'] ?? 0)) <=> ((int)($y['id'] ?? 0));
+            }
+
+            return $fx <=> $fy;
+        });
+
+        return $resultado;
+    }
 }
