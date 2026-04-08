@@ -1,4 +1,5 @@
 <?php
+// Controlador/CtrProcesoAdmin.php
 require_once __DIR__ . '/../Config/config.php';
 require_once __DIR__ . '/../Modelo/MdProcesoAdmin.php';
 require_once __DIR__ . '/../Modelo/MdActividadAdmin.php';

@@ -1,5 +1,5 @@
 <?php
-// Archivo: Vista/modulos/admin/procesos.php
+// Vista/modulos/admin/procesos.php
 
 $titulo = 'Procesos';
 $active = 'procesos';
