@@ -378,47 +378,99 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
           </ol>
         <?php endif; ?>
       </div>
-      <!-- TAB: Project -->
+
+      <!-- TAB: Project (Roadmap) -->
       <div class="tab-content hidden" id="tab-seace">
+        <?php
+        $projectRows = [];
+
+        foreach ($actividades as $a) {
+          $label = trim((string)($a['titulo'] ?? $a['tipo_nombre'] ?? 'Actividad'));
+
+          if (!isset($projectRows[$label])) {
+            $projectRows[$label] = [];
+          }
+
+          $projectRows[$label][] = $a;
+        }
+
+        foreach ($projectRows as &$items) {
+          usort($items, function ($x, $y) {
+            return strtotime($x['fecha']) <=> strtotime($y['fecha']);
+          });
+        }
+        unset($items);
+        ?>
+
         <div class="section-head">
           <div>
-            <div class="kicker2">Histórico completo</div>
+            <div class="kicker2">Histórico visual</div>
             <div class="section-title">Project</div>
-            <div class="section-subtitle">Aquí se muestran todas las actividades registradas, incluyendo reprogramaciones</div>
+            <div class="section-subtitle">Evolución de cada actividad en el tiempo</div>
           </div>
           <div class="pill pill-slate"><?= count($actividades) ?> registros</div>
         </div>
 
-        <?php if (empty($actividades)): ?>
-          <div class="empty">No hay actividades registradas para este proceso.</div>
+        <?php if (empty($projectRows)): ?>
+          <div class="empty">No hay actividades registradas.</div>
         <?php else: ?>
-          <div class="pac-table">
-            <div class="pac-table-head" style="grid-template-columns: 180px 120px 1fr;">
-              <div>Actividad</div>
-              <div>Fecha</div>
-              <div>Comentario</div>
-            </div>
 
-            <?php foreach ($actividades as $a): ?>
-              <div class="pac-row" style="grid-template-columns: 180px 120px 1fr;">
-                <div>
-                  <span class="tbadge"><?= h($a['titulo'] ?? '-') ?></span>
+          <div class="roadmap">
+            <?php foreach ($projectRows as $label => $items): ?>
+              <?php
+              $total = count($items);
+              $last  = end($items);
+              ?>
+
+              <div class="roadmap-card">
+
+                <!-- HEADER -->
+                <div class="roadmap-head">
+                  <div>
+                    <div class="roadmap-title"><?= h($label) ?></div>
+                    <div class="roadmap-meta">
+                      <?= $total ?> registro<?= $total !== 1 ? 's' : '' ?>
+                      <?php if ($total > 1): ?>
+                        <span class="reprog-badge">
+                          Reprogramado <?= $total - 1 ?> vez<?= ($total - 1) !== 1 ? 'es' : '' ?>
+                        </span>
+                      <?php endif; ?>
+                    </div>
+                  </div>
+
+                  <div class="roadmap-last">
+                    <?= fmt_date($last['fecha'] ?? null) ?>
+                  </div>
                 </div>
-                <div>
-                  <span class="pac-money" style="font-size:13px; font-weight:700;">
-                    <?= fmt_date($a['fecha'] ?? null) ?>
-                  </span>
+
+                <!-- TIMELINE -->
+                <div class="roadmap-track">
+                  <?php foreach ($items as $i => $it): ?>
+                    <div class="roadmap-node <?= $i === ($total - 1) ? 'is-last' : '' ?>">
+                      <div class="roadmap-dot"></div>
+                      <div class="roadmap-date"><?= date('d/m', strtotime($it['fecha'])) ?></div>
+                    </div>
+
+                    <?php if ($i < $total - 1): ?>
+                      <div class="roadmap-line"></div>
+                    <?php endif; ?>
+                  <?php endforeach; ?>
                 </div>
-                <div>
-                  <span class="pac-desc-text" style="-webkit-line-clamp:unset;">
-                    <?= !empty($a['comentario']) ? nl2br(h($a['comentario'])) : '-' ?>
-                  </span>
-                </div>
+
+                <!-- COMENTARIO -->
+                <?php if (!empty($last['comentario'])): ?>
+                  <div class="roadmap-desc">
+                    <?= nl2br(h($last['comentario'])) ?>
+                  </div>
+                <?php endif; ?>
+
               </div>
             <?php endforeach; ?>
           </div>
+
         <?php endif; ?>
       </div>
+
 
       <!-- TAB: PACs -->
       <div class="tab-content hidden" id="tab-pacs">
@@ -1347,6 +1399,122 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     white-space: nowrap;
   }
 
+  /* ROADMAP PROJECT */
+
+  .roadmap {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .roadmap-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    padding: 16px;
+    background: #fff;
+    transition: .2s ease;
+  }
+
+  .roadmap-card:hover {
+    box-shadow: 0 12px 30px rgba(15, 23, 42, .08);
+    border-color: #cbd5e1;
+  }
+
+  /* HEADER */
+  .roadmap-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .roadmap-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  .roadmap-meta {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 4px;
+    font-weight: 600;
+  }
+
+  .roadmap-last {
+    font-size: 13px;
+    font-weight: 800;
+    color: #0f172a;
+    background: #f1f5f9;
+    padding: 6px 10px;
+    border-radius: 999px;
+  }
+
+  /* TRACK */
+  .roadmap-track {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0 12px;
+    flex-wrap: wrap;
+  }
+
+  .roadmap-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    position: relative;
+  }
+
+  .roadmap-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: #cbd5e1;
+  }
+
+  .roadmap-node.is-last .roadmap-dot {
+    width: 14px;
+    height: 14px;
+    background: #0f172a;
+    box-shadow: 0 0 0 4px rgba(15, 23, 42, .08);
+  }
+
+  .roadmap-date {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+  }
+
+  .roadmap-line {
+    height: 2px;
+    width: 34px;
+    background: linear-gradient(to right, #e2e8f0, #94a3b8);
+  }
+
+  .reprog-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    background: #fff7ed;
+    color: #c2410c;
+    border: 1px solid #fed7aa;
+    margin-left: 6px;
+  }
+
+  /* DESC */
+  .roadmap-desc {
+    font-size: 13px;
+    color: #475569;
+    line-height: 1.5;
+    margin-top: 6px;
+  }
+
   @media(max-width:900px) {
     .pac-table-head {
       display: none;
@@ -1439,6 +1607,11 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     justify-content: flex-end;
     gap: 10px;
     flex-wrap: wrap;
+  }
+
+  .roadmap-card:last-child {
+    border-color: #cbd5e1;
+    box-shadow: 0 14px 35px rgba(15, 23, 42, .08);
   }
 
   @media (max-width:1100px) {
@@ -1634,6 +1807,52 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     });
 
     activarTab('timeline');
+  });
+
+  const projectTooltip = document.getElementById('projectTooltip');
+
+  function showProjectTooltip(el, event) {
+    if (!projectTooltip) return;
+
+    const title = el.getAttribute('data-title') || 'Actividad';
+    const date = el.getAttribute('data-date') || '-';
+    const comment = el.getAttribute('data-comment') || '-';
+
+    projectTooltip.innerHTML = `
+      <div class="pt-title">${title}</div>
+      <div class="pt-date">${date}</div>
+      <div class="pt-comment">${comment}</div>
+    `;
+
+    const offsetX = 16;
+    const offsetY = 14;
+
+    projectTooltip.style.left = (event.clientX + offsetX) + 'px';
+    projectTooltip.style.top = (event.clientY + offsetY) + 'px';
+    projectTooltip.classList.add('show');
+  }
+
+  function moveProjectTooltip(event) {
+    if (!projectTooltip || !projectTooltip.classList.contains('show')) return;
+
+    const offsetX = 16;
+    const offsetY = 14;
+
+    projectTooltip.style.left = (event.clientX + offsetX) + 'px';
+    projectTooltip.style.top = (event.clientY + offsetY) + 'px';
+  }
+
+  function hideProjectTooltip() {
+    if (!projectTooltip) return;
+    projectTooltip.classList.remove('show');
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.project-point').forEach(point => {
+      point.addEventListener('mouseenter', (e) => showProjectTooltip(point, e));
+      point.addEventListener('mousemove', moveProjectTooltip);
+      point.addEventListener('mouseleave', hideProjectTooltip);
+    });
   });
 </script>
 
