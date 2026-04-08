@@ -12,25 +12,30 @@ function h($s)
 {
   return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
 }
+
 function fmt_money($n)
 {
   return 'S/ ' . number_format((float)$n, 2, '.', ',');
 }
+
 function fmt_date($d)
 {
   if (!$d) return '-';
   $ts = strtotime((string)$d);
   return $ts ? date('d/m/Y', $ts) : h($d);
 }
+
 function v($x)
 {
   return trim((string)$x) !== '' ? h($x) : '-';
 }
+
 function badgeFromCodigo($codigo)
 {
   $p = explode('-', (string)$codigo);
   return strtoupper(trim($p[0] ?? (string)$codigo));
 }
+
 function statusPillClass($estado)
 {
   $e = strtoupper(trim((string)$estado));
@@ -43,14 +48,20 @@ function statusPillClass($estado)
     default      => 'pill-slate',
   };
 }
+
 function parseObacs($raw)
 {
   $raw   = (string)$raw;
   $parts = preg_split('/[\/,\|;]+/', $raw);
   $obacs = array_values(array_filter(array_map('trim', $parts)));
-  if (empty($obacs) && $raw !== '') $obacs = [$raw];
+
+  if (empty($obacs) && $raw !== '') {
+    $obacs = [$raw];
+  }
+
   return $obacs;
 }
+
 function dotClassFromTipo($tipoCodigo)
 {
   $cod = strtoupper((string)($tipoCodigo ?? ''));
@@ -64,6 +75,7 @@ function dotClassFromTipo($tipoCodigo)
     default        => 'dot-slate',
   };
 }
+
 function tipoProcesoPillClass($tipo)
 {
   $t = strtoupper(trim((string)$tipo));
@@ -72,11 +84,13 @@ function tipoProcesoPillClass($tipo)
     default       => 'tp-ind',
   };
 }
+
 function tipoProcesoLabel($tipo)
 {
   $t = strtoupper(trim((string)$tipo));
   return $t === 'CORPORATIVO' ? 'Corporativo' : 'Individual';
 }
+
 function pacEstadoPillClass($estado)
 {
   $e = strtoupper(trim((string)$estado));
@@ -89,15 +103,17 @@ function pacEstadoPillClass($estado)
 }
 
 /* =========================
-   DATA
+   Data
    ========================= */
-$proceso             = $proceso             ?? null;
-$actividades         = $actividades         ?? [];
+$proceso             = $proceso ?? null;
+$actividades         = $actividades ?? [];
 $timelineActividades = $timelineActividades ?? $actividades;
-$pacs_vinculados     = $pacs_vinculados     ?? [];
+$pacs_vinculados     = $pacs_vinculados ?? [];
 
 $idProceso = (int)(is_array($proceso) ? ($proceso['id'] ?? 0) : 0);
-if ($idProceso <= 0) $idProceso = (int)($_GET['id'] ?? 0);
+if ($idProceso <= 0) {
+  $idProceso = (int)($_GET['id'] ?? 0);
+}
 
 require __DIR__ . '/../../layout/admin_layout.php';
 
@@ -113,7 +129,7 @@ if (!$proceso || !is_array($proceso)) {
   exit;
 }
 
-$last = !empty($timelineActividades) ? $timelineActividades[count($timelineActividades) - 1] : (!empty($actividades) ? $actividades[count($actividades) - 1] : null);
+
 $obacs         = parseObacs($proceso['obac'] ?? '');
 $estadoUp      = strtoupper(trim((string)($proceso['estado_nombre'] ?? $proceso['estado'] ?? '')));
 $tipoProceso   = strtoupper(trim((string)($proceso['tipo_proceso'] ?? 'INDIVIDUAL')));
@@ -156,13 +172,10 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     </div>
 
     <div class="right">
-
-      <!-- Estado -->
       <span class="pill <?= h(statusPillClass($estadoUp)) ?>">
         <?= h($estadoUp ?: '-') ?>
       </span>
 
-      <!-- Acciones -->
       <button type="button" class="btn-soft" onclick="printTimeline()">
         🖨️ Timeline
       </button>
@@ -175,7 +188,6 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
         + Actividad
       </button>
 
-      <!-- Menú -->
       <div class="actions">
         <button type="button" class="btn-icon" data-menu-btn aria-label="Más acciones">⋯</button>
 
@@ -184,14 +196,15 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
             ✏️ Editar
           </a>
 
-          <button class="menu-item danger" type="button"
+          <button
+            class="menu-item danger"
+            type="button"
             data-del="<?= $idProceso ?>"
             data-name="<?= h($proceso['descripcion'] ?? 'este proceso') ?>">
             🗑️ Eliminar
           </button>
         </div>
       </div>
-
     </div>
   </div>
 </div>
@@ -203,8 +216,9 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
 
     <div class="summary-head">
       <div class="summary-badge"><?= h(badgeFromCodigo($proceso['codigo_proceso'] ?? '')) ?></div>
+
       <div class="summary-main">
-        <div class="summary-kicker">Resumen ejecutivo</div>
+        <div class="summary-kicker">Nomenclatura</div>
 
         <?php if (!empty($proceso['codigo_proceso'])): ?>
           <div class="summary-title"><?= h($proceso['codigo_proceso']) ?></div>
@@ -244,50 +258,53 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
 
     <div class="kv-grid">
       <div class="kv">
-        <div class="k">Estado</div>
-        <div class="v"><?= v($estadoUp) ?></div>
-      </div>
-      <div class="kv">
         <div class="k">Tipo</div>
         <div class="v"><?= h($tipoLabel) ?></div>
       </div>
+
       <div class="kv">
         <div class="k">Año convocatoria</div>
         <div class="v"><?= v($proceso['anio_convocatoria'] ?? '') ?></div>
       </div>
+
       <div class="kv">
         <div class="k">Periodo</div>
         <div class="v"><?= v($proceso['periodo'] ?? '') ?></div>
       </div>
+
       <div class="kv">
         <div class="k">Expediente</div>
         <div class="v"><?= v($proceso['expediente'] ?? '') ?></div>
       </div>
+
       <div class="kv">
         <div class="k">F. convocatoria</div>
         <div class="v"><?= fmt_date($proceso['convocatoria'] ?? null) ?></div>
       </div>
-      <div class="kv">
-        <div class="k">F. registro</div>
-        <div class="v"><?= fmt_date($proceso['fecha_registro'] ?? null) ?></div>
-      </div>
+
       <div class="kv">
         <div class="k">PACs vinculados</div>
-        <div class="v"><?= $totalPacs ?> PAC<?= $totalPacs !== 1 ? 's' : '' ?></div>
-      </div>
-      <div class="kv">
-        <div class="k">Última actividad</div>
-        <div class="v"><?= $last ? v($last['titulo'] ?? '-') : '-' ?></div>
-      </div>
-      <div class="kv">
-        <div class="k">Fecha última</div>
-        <div class="v"><?= $last ? fmt_date($last['fecha'] ?? null) : '-' ?></div>
+        <div class="v" style="display:flex;flex-wrap:wrap;gap:6px;">
+          <?php if (empty($pacs_vinculados)): ?>
+            -
+          <?php else: ?>
+            <?php foreach ($pacs_vinculados as $p): ?>
+              <?php
+              $obac = trim((string)($p['obac_nombre'] ?? ''));
+              $nopac = trim((string)($p['nopac'] ?? ''));
+              $codigo = $obac && $nopac ? $obac . '-' . $nopac : $nopac;
+              ?>
+              <span class="chip"><?= h($codigo) ?></span>
+            <?php endforeach; ?>
+          <?php endif; ?>
+        </div>
       </div>
     </div>
 
     <?php if ($esAdjudicado && (!empty($proceso['ganador']) || !empty($proceso['fecha_adjudicacion']))): ?>
       <div class="adj-block">
         <div class="adj-label">Adjudicación</div>
+
         <div class="adj-grid">
           <?php if (!empty($proceso['ganador'])): ?>
             <div class="adj-kv full">
@@ -295,12 +312,14 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
               <div class="adj-v"><?= h($proceso['ganador']) ?></div>
             </div>
           <?php endif; ?>
+
           <?php if (!empty($proceso['fecha_adjudicacion'])): ?>
             <div class="adj-kv">
               <div class="adj-k">F. adjudicación</div>
               <div class="adj-v"><?= fmt_date($proceso['fecha_adjudicacion']) ?></div>
             </div>
           <?php endif; ?>
+
           <?php if (!empty($proceso['fecha_consentido'])): ?>
             <div class="adj-kv">
               <div class="adj-k">F. consentido</div>
@@ -310,6 +329,7 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
         </div>
       </div>
     <?php endif; ?>
+
   </aside>
 
   <!-- ===== DERECHA ===== -->
@@ -321,7 +341,7 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
         <span class="tab-count"><?= count($timelineActividades) ?></span>
       </button>
 
-      <button class="tab-btn" data-tab="seace">
+      <button class="tab-btn" data-tab="project">
         Project
         <span class="tab-count">Detallado</span>
       </button>
@@ -384,23 +404,25 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
         <ol class="timeline">
           <?php foreach ($timelineActividades as $i => $a): ?>
             <?php
-            $dot    = dotClassFromTipo($a['tipo_codigo'] ?? '');
-            $isLast = $i === count($timelineActividades) - 1;
+            $dot = dotClassFromTipo($a['tipo_codigo'] ?? '');
+            $isLastItem = $i === count($timelineActividades) - 1;
             ?>
-            <li class="titem <?= $isLast ? 'is-current' : '' ?>">
+            <li class="titem <?= $isLastItem ? 'is-current' : '' ?>">
               <div class="tline"></div>
               <div class="dot <?= h($dot) ?>"></div>
+
               <article class="tcard">
                 <div class="trow">
                   <div class="tcontent">
                     <div class="ttitle"><?= h($a['titulo'] ?? '-') ?></div>
                     <div class="tmeta">
                       <span><?= fmt_date($a['fecha'] ?? null) ?></span>
-                      <?php if ($isLast): ?>
+                      <?php if ($isLastItem): ?>
                         <span class="tcurrent-badge">Estado actual</span>
                       <?php endif; ?>
                     </div>
                   </div>
+
                   <?php if (!empty($a['tipo_nombre'])): ?>
                     <span class="tbadge"><?= h($a['tipo_nombre']) ?></span>
                   <?php endif; ?>
@@ -416,8 +438,8 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
       <?php endif; ?>
     </div>
 
-    <!-- TAB: Project (Roadmap) -->
-    <div class="tab-content hidden" id="tab-seace">
+    <!-- TAB: Project -->
+    <div class="tab-content hidden" id="tab-project">
       <?php
       $projectRows = [];
 
@@ -451,17 +473,13 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
       <?php if (empty($projectRows)): ?>
         <div class="empty">No hay actividades registradas.</div>
       <?php else: ?>
-
         <div class="roadmap">
           <?php foreach ($projectRows as $label => $items): ?>
             <?php
             $total = count($items);
-            $last  = end($items);
+            $lastItem = end($items);
             ?>
-
             <div class="roadmap-card">
-
-              <!-- HEADER -->
               <div class="roadmap-head">
                 <div>
                   <div class="roadmap-title"><?= h($label) ?></div>
@@ -476,11 +494,10 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
                 </div>
 
                 <div class="roadmap-last">
-                  <?= fmt_date($last['fecha'] ?? null) ?>
+                  <?= fmt_date($lastItem['fecha'] ?? null) ?>
                 </div>
               </div>
 
-              <!-- TIMELINE -->
               <div class="roadmap-track">
                 <?php foreach ($items as $i => $it): ?>
                   <div class="roadmap-node <?= $i === ($total - 1) ? 'is-last' : '' ?>">
@@ -494,20 +511,16 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
                 <?php endforeach; ?>
               </div>
 
-              <!-- COMENTARIO -->
-              <?php if (!empty($last['comentario'])): ?>
+              <?php if (!empty($lastItem['comentario'])): ?>
                 <div class="roadmap-desc">
-                  <?= nl2br(h($last['comentario'])) ?>
+                  <?= nl2br(h($lastItem['comentario'])) ?>
                 </div>
               <?php endif; ?>
-
             </div>
           <?php endforeach; ?>
         </div>
-
       <?php endif; ?>
     </div>
-
 
     <!-- TAB: PACs -->
     <div class="tab-content hidden" id="tab-pacs">
@@ -526,16 +539,23 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
         <div class="pac-table">
 
           <div class="pac-table-head">
+            <div class="col-obac">OBAC</div>
             <div class="col-num">N° PAC</div>
             <div class="col-pn">P/NP</div>
             <div class="col-desc">Descripción</div>
-            <div class="col-obac">OBAC</div>
             <div class="col-estado">Estado</div>
             <div class="col-monto">Estimado</div>
           </div>
 
           <?php foreach ($pacs_vinculados as $pac): ?>
             <div class="pac-row">
+              <div class="col-obac">
+                <?php if (!empty($pac['obac_nombre'])): ?>
+                  <span class="tag-obac"><?= h($pac['obac_nombre']) ?></span>
+                <?php else: ?>
+                  <span class="tag-empty">—</span>
+                <?php endif; ?>
+              </div>
 
               <div class="col-num">
                 <span class="num-badge"><?= h($pac['nopac'] ?? '-') ?></span>
@@ -547,14 +567,6 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
 
               <div class="col-desc">
                 <span class="pac-desc-text"><?= h($pac['descripcion'] ?? '-') ?></span>
-              </div>
-
-              <div class="col-obac">
-                <?php if (!empty($pac['obac_nombre'])): ?>
-                  <span class="tag-obac"><?= h($pac['obac_nombre']) ?></span>
-                <?php else: ?>
-                  <span class="tag-empty">—</span>
-                <?php endif; ?>
               </div>
 
               <div class="col-estado">
@@ -576,7 +588,6 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
 
   </section>
 </div>
-</div>
 
 <style>
   .detail-shell {
@@ -591,13 +602,13 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     gap: 18px;
   }
 
-  @media(max-width:1200px) {
+  @media (max-width:1200px) {
     .detail-grid {
       grid-template-columns: 360px 1fr;
     }
   }
 
-  @media(max-width:1023px) {
+  @media (max-width:1023px) {
     .detail-grid {
       grid-template-columns: 1fr;
     }
@@ -760,10 +771,6 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     color: #fff;
   }
 
-  .wfull {
-    width: 100%;
-  }
-
   .actions {
     position: relative;
   }
@@ -821,7 +828,7 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     align-self: start;
   }
 
-  @media(max-width:1023px) {
+  @media (max-width:1023px) {
     .sticky-panel {
       position: relative;
       top: auto;
@@ -1017,7 +1024,7 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
   }
 
   .adj-kv.full {
-    grid-column: 1/-1;
+    grid-column: 1 / -1;
   }
 
   .adj-k {
@@ -1031,12 +1038,6 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     color: #14532d;
     font-weight: 700;
     margin-top: 3px;
-  }
-
-  .panel-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
   }
 
   .right-panel {
@@ -1269,15 +1270,6 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     gap: 6px;
   }
 
-  .sep {
-    color: #94a3b8;
-  }
-
-  .tcode {
-    font-weight: 700;
-    color: #334155;
-  }
-
   .tcurrent-badge {
     display: inline-flex;
     align-items: center;
@@ -1306,7 +1298,7 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
 
   .pac-table-head {
     display: grid;
-    grid-template-columns: 70px 64px 1fr 110px 90px 120px;
+    grid-template-columns: 80px 70px 70px 1fr 110px 120px;
     padding: 10px 16px;
     background: #f8fafc;
     border-bottom: 1px solid #e2e8f0;
@@ -1340,28 +1332,16 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     background: #fafbfc;
   }
 
-  .col-num {
-    display: flex;
-    align-items: center;
-  }
-
-  .col-pn {
+  .col-num,
+  .col-pn,
+  .col-obac,
+  .col-estado {
     display: flex;
     align-items: center;
   }
 
   .col-desc {
     min-width: 0;
-  }
-
-  .col-obac {
-    display: flex;
-    align-items: center;
-  }
-
-  .col-estado {
-    display: flex;
-    align-items: center;
   }
 
   .col-monto {
@@ -1459,8 +1439,6 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     white-space: nowrap;
   }
 
-  /* ROADMAP PROJECT */
-
   .roadmap {
     display: flex;
     flex-direction: column;
@@ -1480,7 +1458,11 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     border-color: #cbd5e1;
   }
 
-  /* HEADER */
+  .roadmap-card:last-child {
+    border-color: #cbd5e1;
+    box-shadow: 0 14px 35px rgba(15, 23, 42, .08);
+  }
+
   .roadmap-head {
     display: flex;
     justify-content: space-between;
@@ -1511,7 +1493,6 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     border-radius: 999px;
   }
 
-  /* TRACK */
   .roadmap-track {
     display: flex;
     align-items: center;
@@ -1567,28 +1548,11 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     margin-left: 6px;
   }
 
-  /* DESC */
   .roadmap-desc {
     font-size: 13px;
     color: #475569;
     line-height: 1.5;
     margin-top: 6px;
-  }
-
-  @media(max-width:900px) {
-    .pac-table-head {
-      display: none;
-    }
-
-    .pac-row {
-      grid-template-columns: 1fr;
-      gap: 8px;
-      padding: 14px;
-    }
-
-    .col-monto {
-      justify-content: flex-start;
-    }
   }
 
   .empty {
@@ -1599,7 +1563,6 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     background: #fff;
   }
 
-  /* FORM ACTIVIDAD */
   .activity-form-wrap {
     margin-bottom: 16px;
     border: 1px solid #e2e8f0;
@@ -1669,75 +1632,31 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     flex-wrap: wrap;
   }
 
-  .roadmap-card:last-child {
-    border-color: #cbd5e1;
-    box-shadow: 0 14px 35px rgba(15, 23, 42, .08);
-  }
-
-  /* ================= PRINT ================= */
-  @media print {
-
-    body {
-      background: #fff !important;
-    }
-
-    /* Ocultar elementos innecesarios */
-    .detail-topbar,
-    .tab-bar,
-    .actions,
-    .btn-primary,
-    .btn-soft,
-    .btn-ghost,
-    #activityFormWrap {
-      display: none !important;
-    }
-
-    /* Opcional: ocultar panel izquierdo */
-    .summary-panel {
-      display: none !important;
-    }
-
-    /* Expandir contenido */
-    .detail-grid {
-      grid-template-columns: 1fr !important;
-    }
-
-    .panel {
-      border: none !important;
-      box-shadow: none !important;
-    }
-
-    /* Mostrar solo lo que corresponde */
-    body.print-timeline #tab-seace,
-    body.print-timeline #tab-pacs {
-      display: none !important;
-    }
-
-    body.print-project #tab-timeline,
-    body.print-project #tab-pacs {
-      display: none !important;
-    }
-
-    /* Mejorar legibilidad */
-    .tcard,
-    .roadmap-card {
-      page-break-inside: avoid;
-    }
-
-    .timeline,
-    .roadmap {
-      gap: 12px;
-    }
-
-    .section-title {
-      font-size: 18px;
-    }
-
-  }
-
   @media (max-width:1100px) {
     .form-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width:900px) {
+    .pac-table-head {
+      display: none;
+    }
+
+    .pac-row {
+      grid-template-columns: 1fr;
+      gap: 8px;
+      padding: 14px;
+    }
+
+    .col-monto {
+      justify-content: flex-start;
+    }
+  }
+
+  @media (max-width:800px) {
+    .pac-row {
+      grid-template-columns: 1fr;
     }
   }
 
@@ -1750,9 +1669,7 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
       flex-direction: column;
       align-items: stretch;
     }
-  }
 
-  @media(max-width:640px) {
     .detail-topbar {
       flex-direction: column;
       align-items: flex-start;
@@ -1786,118 +1703,68 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     .section-title {
       font-size: 18px;
     }
+  }
 
-    .seace-loading {
-      border: 1px dashed #cbd5e1;
-      border-radius: 16px;
-      padding: 16px;
-      background: #fff;
-      color: #64748b;
+  @media print {
+    body {
+      background: #fff !important;
     }
 
-    .seace-table {
-      display: flex;
-      flex-direction: column;
-      border: 1px solid #e2e8f0;
-      border-radius: 16px;
-      overflow: hidden;
-      background: #fff;
+    .detail-topbar,
+    .tab-bar,
+    .actions,
+    .btn-primary,
+    .btn-soft,
+    .btn-ghost,
+    #activityFormWrap {
+      display: none !important;
     }
 
-    .seace-head,
-    .seace-row {
-      display: grid;
-      grid-template-columns: 1.4fr 140px 140px;
+    .summary-panel {
+      display: none !important;
+    }
+
+    .detail-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    .panel {
+      border: none !important;
+      box-shadow: none !important;
+    }
+
+    body.print-timeline #tab-project,
+    body.print-timeline #tab-pacs {
+      display: none !important;
+    }
+
+    body.print-project #tab-timeline,
+    body.print-project #tab-pacs {
+      display: none !important;
+    }
+
+    .tcard,
+    .roadmap-card {
+      page-break-inside: avoid;
+    }
+
+    .timeline,
+    .roadmap {
       gap: 12px;
-      align-items: center;
-      padding: 12px 16px;
     }
 
-    .seace-head {
-      background: #f8fafc;
-      border-bottom: 1px solid #e2e8f0;
+    .section-title {
+      font-size: 18px;
     }
-
-    .seace-head>div {
-      font-size: 11px;
-      font-weight: 700;
-      color: #64748b;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-    }
-
-    .seace-row {
-      border-bottom: 1px solid #f1f5f9;
-    }
-
-    .seace-row:last-child {
-      border-bottom: none;
-    }
-
-    .seace-etapa {
-      font-size: 13px;
-      line-height: 1.45;
-      color: #0f172a;
-      font-weight: 600;
-    }
-
-    .seace-date {
-      font-size: 13px;
-      color: #334155;
-      font-weight: 700;
-    }
-
-    .seace-error {
-      border: 1px dashed #fecdd3;
-      border-radius: 16px;
-      padding: 14px;
-      background: #fff1f2;
-      color: #be123c;
-    }
-
-    @media (max-width: 800px) {
-      .seace-head {
-        display: none;
-      }
-
-      .seace-row {
-        grid-template-columns: 1fr;
-        gap: 6px;
-      }
-    }
+  }
 </style>
 
 <script>
-  const closeAllMenus = () => {
-    document.querySelectorAll('[data-menu]').forEach(m => m.classList.add('hidden'));
-  };
-
-  document.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-menu-btn]');
-    if (btn) {
-      e.preventDefault();
-      e.stopPropagation();
-      const wrap = btn.closest('.actions');
-      const m = wrap?.querySelector('[data-menu]');
-      const wasOpen = m && !m.classList.contains('hidden');
-      closeAllMenus();
-      if (m && !wasOpen) m.classList.remove('hidden');
-      return;
-    }
-    if (e.target.closest('[data-menu]')) return;
-    closeAllMenus();
-  });
-
-  document.addEventListener('click', (e) => {
-    const del = e.target.closest('[data-del]');
-    if (!del) return;
-    e.preventDefault();
-    e.stopPropagation();
-    const id = del.getAttribute('data-del');
-    const name = del.getAttribute('data-name') || 'este proceso';
-    if (!confirm(`¿Eliminar ${name}? Esta acción no se puede deshacer.`)) return;
-    window.location.href = `<?= BASE_URL ?>/admin/procesos/eliminar?id=${id}`;
-  });
+  function closeAllMenus() {
+    document.querySelectorAll('[data-menu]').forEach(menu => {
+      menu.classList.add('hidden');
+    });
+  }
 
   function toggleActivityForm() {
     const wrap = document.getElementById('activityFormWrap');
@@ -1920,62 +1787,6 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     }
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        activarTab(btn.dataset.tab);
-      });
-    });
-
-    activarTab('timeline');
-  });
-
-  const projectTooltip = document.getElementById('projectTooltip');
-
-  function showProjectTooltip(el, event) {
-    if (!projectTooltip) return;
-
-    const title = el.getAttribute('data-title') || 'Actividad';
-    const date = el.getAttribute('data-date') || '-';
-    const comment = el.getAttribute('data-comment') || '-';
-
-    projectTooltip.innerHTML = `
-      <div class="pt-title">${title}</div>
-      <div class="pt-date">${date}</div>
-      <div class="pt-comment">${comment}</div>
-    `;
-
-    const offsetX = 16;
-    const offsetY = 14;
-
-    projectTooltip.style.left = (event.clientX + offsetX) + 'px';
-    projectTooltip.style.top = (event.clientY + offsetY) + 'px';
-    projectTooltip.classList.add('show');
-  }
-
-  function moveProjectTooltip(event) {
-    if (!projectTooltip || !projectTooltip.classList.contains('show')) return;
-
-    const offsetX = 16;
-    const offsetY = 14;
-
-    projectTooltip.style.left = (event.clientX + offsetX) + 'px';
-    projectTooltip.style.top = (event.clientY + offsetY) + 'px';
-  }
-
-  function hideProjectTooltip() {
-    if (!projectTooltip) return;
-    projectTooltip.classList.remove('show');
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.project-point').forEach(point => {
-      point.addEventListener('mouseenter', (e) => showProjectTooltip(point, e));
-      point.addEventListener('mousemove', moveProjectTooltip);
-      point.addEventListener('mouseleave', hideProjectTooltip);
-    });
-  });
-
   function printTimeline() {
     document.body.classList.remove('print-project');
     document.body.classList.add('print-timeline');
@@ -1992,13 +1803,64 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     document.body.classList.remove('print-timeline');
     document.body.classList.add('print-project');
 
-    activarTab('seace');
+    activarTab('project');
 
     setTimeout(() => {
       window.print();
       document.body.classList.remove('print-project');
     }, 300);
   }
+
+  document.addEventListener('click', (e) => {
+    const menuBtn = e.target.closest('[data-menu-btn]');
+    if (menuBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const wrap = menuBtn.closest('.actions');
+      const menu = wrap?.querySelector('[data-menu]');
+      const wasOpen = menu && !menu.classList.contains('hidden');
+
+      closeAllMenus();
+
+      if (menu && !wasOpen) {
+        menu.classList.remove('hidden');
+      }
+      return;
+    }
+
+    const deleteBtn = e.target.closest('[data-del]');
+    if (deleteBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const id = deleteBtn.getAttribute('data-del');
+      const name = deleteBtn.getAttribute('data-name') || 'este proceso';
+
+      if (!confirm(`¿Eliminar ${name}? Esta acción no se puede deshacer.`)) {
+        return;
+      }
+
+      window.location.href = `<?= BASE_URL ?>/admin/procesos/eliminar?id=${id}`;
+      return;
+    }
+
+    if (e.target.closest('[data-menu]')) {
+      return;
+    }
+
+    closeAllMenus();
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        activarTab(btn.dataset.tab);
+      });
+    });
+
+    activarTab('timeline');
+  });
 </script>
 
 <?php require __DIR__ . '/../../layout/admin_footer.php'; ?>

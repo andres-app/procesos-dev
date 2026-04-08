@@ -360,7 +360,10 @@ foreach ($rows as $r) {
                     <a href="<?= BASE_URL ?>/admin/procesos_detalle?id=<?= (int)($r['id'] ?? 0) ?>"
                       class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50"
                       title="Ver detalle">
-                      <span class="text-base">👁</span>
+                      <svg viewBox="0 0 24 24" class="h-4 w-4" aria-hidden="true">
+                        <path fill="currentColor"
+                          d="M12 5c-5.5 0-9.5 4.5-10.8 6.2a1.3 1.3 0 0 0 0 1.6C2.5 14.5 6.5 19 12 19s9.5-4.5 10.8-6.2a1.3 1.3 0 0 0 0-1.6C21.5 9.5 17.5 5 12 5zm0 12c-4.4 0-7.7-3.4-9-5 1.3-1.6 4.6-5 9-5s7.7 3.4 9 5c-1.3 1.6-4.6 5-9 5zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm0 4.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
+                      </svg>
                     </a>
 
                     <!-- ⋯ MENU -->
