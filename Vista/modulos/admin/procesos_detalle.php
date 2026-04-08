@@ -129,14 +129,23 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
   <div class="detail-topbar">
     <div class="left">
       <a href="<?= BASE_URL ?>/admin/procesos" class="btn-icon" aria-label="Volver">←</a>
+
       <div class="tt">
-        <div class="kicker">Detalle del proceso</div>
+        <div class="kicker">
+          <span>Detalle del proceso</span>
+        </div>
+
         <div class="title-wrap">
-          <div class="title"><?= h($proceso['descripcion'] ?? '-') ?></div>
+          <div class="title marker-label"><?= h($proceso['descripcion'] ?? '-') ?></div>
+
           <div class="top-meta">
-            <span class="type-pill <?= h($tipoPillClass) ?>"><?= h($tipoLabel) ?></span>
+            <span class="type-pill <?= h($tipoPillClass) ?>">
+              <?= h($tipoLabel) ?>
+            </span>
+
             <span class="top-sep">•</span>
             <span class="top-code"><?= v($proceso['codigo_proceso'] ?? '') ?></span>
+
             <?php if (!empty($proceso['periodo'])): ?>
               <span class="top-sep">•</span>
               <span class="top-code">Periodo <?= h($proceso['periodo']) ?></span>
@@ -145,15 +154,36 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
         </div>
       </div>
     </div>
+
     <div class="right">
-      <span class="pill <?= h(statusPillClass($estadoUp)) ?>"><?= h($estadoUp ?: '-') ?></span>
+
+      <!-- Estado -->
+      <span class="pill <?= h(statusPillClass($estadoUp)) ?>">
+        <?= h($estadoUp ?: '-') ?>
+      </span>
+
+      <!-- Acciones -->
+      <button type="button" class="btn-soft" onclick="printTimeline()">
+        🖨️ Timeline
+      </button>
+
+      <button type="button" class="btn-soft" onclick="printProject()">
+        🖨️ Project
+      </button>
+
       <button type="button" class="btn-primary" onclick="toggleActivityForm()">
         + Actividad
       </button>
+
+      <!-- Menú -->
       <div class="actions">
         <button type="button" class="btn-icon" data-menu-btn aria-label="Más acciones">⋯</button>
+
         <div class="menu hidden" data-menu>
-          <a class="menu-item" href="<?= BASE_URL ?>/admin/procesos/editar?id=<?= $idProceso ?>">✏️ Editar</a>
+          <a class="menu-item" href="<?= BASE_URL ?>/admin/procesos/editar?id=<?= $idProceso ?>">
+            ✏️ Editar
+          </a>
+
           <button class="menu-item danger" type="button"
             data-del="<?= $idProceso ?>"
             data-name="<?= h($proceso['descripcion'] ?? 'este proceso') ?>">
@@ -161,384 +191,391 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
           </button>
         </div>
       </div>
+
     </div>
   </div>
+</div>
 
-  <div class="detail-grid">
+<div class="detail-grid">
 
-    <!-- ===== IZQUIERDA ===== -->
-    <aside class="panel sticky-panel summary-panel">
+  <!-- ===== IZQUIERDA ===== -->
+  <aside class="panel sticky-panel summary-panel">
 
-      <div class="summary-head">
-        <div class="summary-badge"><?= h(badgeFromCodigo($proceso['codigo_proceso'] ?? '')) ?></div>
-        <div class="summary-main">
-          <div class="summary-kicker">Resumen ejecutivo</div>
-          <div class="summary-title"><?= h($proceso['descripcion'] ?? '-') ?></div>
-          <?php if (!empty($proceso['obac_nombre'])): ?>
-            <div class="obac-name"><?= h($proceso['obac_nombre']) ?></div>
-          <?php endif; ?>
-          <div class="chips">
-            <?php foreach ($obacs as $ob): ?>
-              <span class="chip"><?= h($ob) ?></span>
-            <?php endforeach; ?>
-          </div>
-        </div>
-      </div>
+    <div class="summary-head">
+      <div class="summary-badge"><?= h(badgeFromCodigo($proceso['codigo_proceso'] ?? '')) ?></div>
+      <div class="summary-main">
+        <div class="summary-kicker">Resumen ejecutivo</div>
 
-      <div class="money-card">
-        <div class="money-label">Valor estimado</div>
-        <div class="money-value-wrap">
-          <span class="money-symbol">S/</span>
-          <span class="money-value"><?= number_format((float)($proceso['estimado'] ?? 0), 2, '.', ',') ?></span>
-        </div>
-        <?php if (!empty($proceso['moneda'])): ?>
-          <div class="money-sub">Moneda: <?= h($proceso['moneda']) ?></div>
+        <?php if (!empty($proceso['codigo_proceso'])): ?>
+          <div class="summary-title"><?= h($proceso['codigo_proceso']) ?></div>
         <?php endif; ?>
-      </div>
 
-      <div class="desc-card">
-        <?php if (!empty($proceso['objeto_contratacion'])): ?>
-          <div class="desc-kicker">Objeto de contratación</div>
-          <div class="desc" style="margin-bottom:12px"><?= h($proceso['objeto_contratacion']) ?></div>
+        <?php if (!empty($proceso['obac_nombre'])): ?>
+          <div class="obac-name"><?= h($proceso['obac_nombre']) ?></div>
         <?php endif; ?>
-        <div class="desc-kicker">Descripción</div>
-        <div class="desc"><?= nl2br(h($proceso['descripcion'] ?? '')) ?></div>
-      </div>
 
-      <div class="kv-grid">
-        <div class="kv">
-          <div class="k">Estado</div>
-          <div class="v"><?= v($estadoUp) ?></div>
-        </div>
-        <div class="kv">
-          <div class="k">Tipo</div>
-          <div class="v"><?= h($tipoLabel) ?></div>
-        </div>
-        <div class="kv">
-          <div class="k">Año convocatoria</div>
-          <div class="v"><?= v($proceso['anio_convocatoria'] ?? '') ?></div>
-        </div>
-        <div class="kv">
-          <div class="k">Periodo</div>
-          <div class="v"><?= v($proceso['periodo'] ?? '') ?></div>
-        </div>
-        <div class="kv">
-          <div class="k">Expediente</div>
-          <div class="v"><?= v($proceso['expediente'] ?? '') ?></div>
-        </div>
-        <div class="kv">
-          <div class="k">F. convocatoria</div>
-          <div class="v"><?= fmt_date($proceso['convocatoria'] ?? null) ?></div>
-        </div>
-        <div class="kv">
-          <div class="k">F. registro</div>
-          <div class="v"><?= fmt_date($proceso['fecha_registro'] ?? null) ?></div>
-        </div>
-        <div class="kv">
-          <div class="k">PACs vinculados</div>
-          <div class="v"><?= $totalPacs ?> PAC<?= $totalPacs !== 1 ? 's' : '' ?></div>
-        </div>
-        <div class="kv">
-          <div class="k">Última actividad</div>
-          <div class="v"><?= $last ? v($last['titulo'] ?? '-') : '-' ?></div>
-        </div>
-        <div class="kv">
-          <div class="k">Fecha última</div>
-          <div class="v"><?= $last ? fmt_date($last['fecha'] ?? null) : '-' ?></div>
+        <div class="chips">
+          <?php foreach ($obacs as $ob): ?>
+            <span class="chip"><?= h($ob) ?></span>
+          <?php endforeach; ?>
         </div>
       </div>
+    </div>
 
-      <?php if ($esAdjudicado && (!empty($proceso['ganador']) || !empty($proceso['fecha_adjudicacion']))): ?>
-        <div class="adj-block">
-          <div class="adj-label">Adjudicación</div>
-          <div class="adj-grid">
-            <?php if (!empty($proceso['ganador'])): ?>
-              <div class="adj-kv full">
-                <div class="adj-k">Ganador</div>
-                <div class="adj-v"><?= h($proceso['ganador']) ?></div>
-              </div>
-            <?php endif; ?>
-            <?php if (!empty($proceso['fecha_adjudicacion'])): ?>
-              <div class="adj-kv">
-                <div class="adj-k">F. adjudicación</div>
-                <div class="adj-v"><?= fmt_date($proceso['fecha_adjudicacion']) ?></div>
-              </div>
-            <?php endif; ?>
-            <?php if (!empty($proceso['fecha_consentido'])): ?>
-              <div class="adj-kv">
-                <div class="adj-k">F. consentido</div>
-                <div class="adj-v"><?= fmt_date($proceso['fecha_consentido']) ?></div>
-              </div>
-            <?php endif; ?>
-          </div>
-        </div>
+    <div class="money-card">
+      <div class="money-label">Valor estimado</div>
+      <div class="money-value-wrap">
+        <span class="money-symbol">S/</span>
+        <span class="money-value"><?= number_format((float)($proceso['estimado'] ?? 0), 2, '.', ',') ?></span>
+      </div>
+      <?php if (!empty($proceso['moneda'])): ?>
+        <div class="money-sub">Moneda: <?= h($proceso['moneda']) ?></div>
       <?php endif; ?>
-    </aside>
+    </div>
 
-    <!-- ===== DERECHA ===== -->
-    <section class="panel right-panel">
+    <?php $objetoContratacion = trim((string)($proceso['objeto_contratacion'] ?? '')); ?>
 
-      <div class="tab-bar">
-        <button class="tab-btn active" data-tab="timeline">
-          Línea de tiempo
-          <span class="tab-count"><?= count($timelineActividades) ?></span>
-        </button>
-
-        <button class="tab-btn" data-tab="seace">
-          Project
-          <span class="tab-count">Live</span>
-        </button>
-
-        <button class="tab-btn" data-tab="pacs">
-          PACs vinculados
-          <span class="tab-count"><?= $totalPacs ?></span>
-        </button>
+    <?php if ($objetoContratacion !== ''): ?>
+      <div class="desc-card">
+        <div class="desc-kicker">Objeto de contratación</div>
+        <div class="desc"><?= nl2br(h($objetoContratacion)) ?></div>
       </div>
+    <?php endif; ?>
 
-      <div id="activityFormWrap" class="activity-form-wrap hidden">
-        <form action="<?= BASE_URL ?>/admin/proceso_actividad_guardar" method="POST" class="activity-form">
-          <input type="hidden" name="proceso_id" value="<?= (int)$idProceso ?>">
-
-          <div class="form-grid">
-            <div class="field field-full">
-              <label>Actividad</label>
-              <select name="tipo_id" required>
-                <option value="">Seleccione actividad</option>
-                <?php foreach (($tiposActividad ?? []) as $t): ?>
-                  <option value="<?= (int)$t['id'] ?>">
-                    <?= h($t['nombre']) ?>
-                  </option>
-                <?php endforeach; ?>
-              </select>
-            </div>
-
-            <div class="field">
-              <label>Fecha</label>
-              <input type="date" name="fecha" value="<?= date('Y-m-d') ?>" required>
-            </div>
-
-            <div class="field field-full">
-              <label>Comentario</label>
-              <textarea name="comentario" rows="4" placeholder="Detalle o seguimiento"></textarea>
-            </div>
-          </div>
-
-          <div class="form-actions">
-            <button type="button" class="btn-ghost" onclick="toggleActivityForm()">Cancelar</button>
-            <button type="submit" class="btn-primary">Guardar actividad</button>
-          </div>
-        </form>
+    <div class="kv-grid">
+      <div class="kv">
+        <div class="k">Estado</div>
+        <div class="v"><?= v($estadoUp) ?></div>
       </div>
+      <div class="kv">
+        <div class="k">Tipo</div>
+        <div class="v"><?= h($tipoLabel) ?></div>
+      </div>
+      <div class="kv">
+        <div class="k">Año convocatoria</div>
+        <div class="v"><?= v($proceso['anio_convocatoria'] ?? '') ?></div>
+      </div>
+      <div class="kv">
+        <div class="k">Periodo</div>
+        <div class="v"><?= v($proceso['periodo'] ?? '') ?></div>
+      </div>
+      <div class="kv">
+        <div class="k">Expediente</div>
+        <div class="v"><?= v($proceso['expediente'] ?? '') ?></div>
+      </div>
+      <div class="kv">
+        <div class="k">F. convocatoria</div>
+        <div class="v"><?= fmt_date($proceso['convocatoria'] ?? null) ?></div>
+      </div>
+      <div class="kv">
+        <div class="k">F. registro</div>
+        <div class="v"><?= fmt_date($proceso['fecha_registro'] ?? null) ?></div>
+      </div>
+      <div class="kv">
+        <div class="k">PACs vinculados</div>
+        <div class="v"><?= $totalPacs ?> PAC<?= $totalPacs !== 1 ? 's' : '' ?></div>
+      </div>
+      <div class="kv">
+        <div class="k">Última actividad</div>
+        <div class="v"><?= $last ? v($last['titulo'] ?? '-') : '-' ?></div>
+      </div>
+      <div class="kv">
+        <div class="k">Fecha última</div>
+        <div class="v"><?= $last ? fmt_date($last['fecha'] ?? null) : '-' ?></div>
+      </div>
+    </div>
 
-      <!-- TAB: Timeline -->
-      <div class="tab-content" id="tab-timeline">
-        <div class="section-head">
-          <div>
-            <div class="kicker2">Seguimiento</div>
-            <div class="section-title">Línea de tiempo</div>
-            <div class="section-subtitle">Historial cronológico de actuaciones del proceso</div>
+    <?php if ($esAdjudicado && (!empty($proceso['ganador']) || !empty($proceso['fecha_adjudicacion']))): ?>
+      <div class="adj-block">
+        <div class="adj-label">Adjudicación</div>
+        <div class="adj-grid">
+          <?php if (!empty($proceso['ganador'])): ?>
+            <div class="adj-kv full">
+              <div class="adj-k">Ganador</div>
+              <div class="adj-v"><?= h($proceso['ganador']) ?></div>
+            </div>
+          <?php endif; ?>
+          <?php if (!empty($proceso['fecha_adjudicacion'])): ?>
+            <div class="adj-kv">
+              <div class="adj-k">F. adjudicación</div>
+              <div class="adj-v"><?= fmt_date($proceso['fecha_adjudicacion']) ?></div>
+            </div>
+          <?php endif; ?>
+          <?php if (!empty($proceso['fecha_consentido'])): ?>
+            <div class="adj-kv">
+              <div class="adj-k">F. consentido</div>
+              <div class="adj-v"><?= fmt_date($proceso['fecha_consentido']) ?></div>
+            </div>
+          <?php endif; ?>
+        </div>
+      </div>
+    <?php endif; ?>
+  </aside>
+
+  <!-- ===== DERECHA ===== -->
+  <section class="panel right-panel">
+
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="timeline">
+        Línea de tiempo
+        <span class="tab-count"><?= count($timelineActividades) ?></span>
+      </button>
+
+      <button class="tab-btn" data-tab="seace">
+        Project
+        <span class="tab-count">Detallado</span>
+      </button>
+
+      <button class="tab-btn" data-tab="pacs">
+        PACs vinculados
+        <span class="tab-count"><?= $totalPacs ?></span>
+      </button>
+    </div>
+
+    <div id="activityFormWrap" class="activity-form-wrap hidden">
+      <form action="<?= BASE_URL ?>/admin/proceso_actividad_guardar" method="POST" class="activity-form">
+        <input type="hidden" name="proceso_id" value="<?= (int)$idProceso ?>">
+
+        <div class="form-grid">
+          <div class="field field-full">
+            <label>Actividad</label>
+            <select name="tipo_id" required>
+              <option value="">Seleccione actividad</option>
+              <?php foreach (($tiposActividad ?? []) as $t): ?>
+                <option value="<?= (int)$t['id'] ?>">
+                  <?= h($t['nombre']) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
           </div>
-          <div class="pill pill-slate"><?= count($timelineActividades) ?> actividades</div>
+
+          <div class="field">
+            <label>Fecha</label>
+            <input type="date" name="fecha" value="<?= date('Y-m-d') ?>" required>
+          </div>
+
+          <div class="field field-full">
+            <label>Comentario</label>
+            <textarea name="comentario" rows="4" placeholder="Detalle o seguimiento"></textarea>
+          </div>
         </div>
 
-        <?php if (empty($timelineActividades)): ?>
-          <div class="empty">No hay actividades registradas para este proceso.</div>
-        <?php else: ?>
-          <ol class="timeline">
-            <?php foreach ($timelineActividades as $i => $a): ?>
-              <?php
-              $dot    = dotClassFromTipo($a['tipo_codigo'] ?? '');
-              $isLast = $i === count($timelineActividades) - 1;
-              ?>
-              <li class="titem <?= $isLast ? 'is-current' : '' ?>">
-                <div class="tline"></div>
-                <div class="dot <?= h($dot) ?>"></div>
-                <article class="tcard">
-                  <div class="trow">
-                    <div class="tcontent">
-                      <div class="ttitle"><?= h($a['titulo'] ?? '-') ?></div>
-                      <div class="tmeta">
-                        <span><?= fmt_date($a['fecha'] ?? null) ?></span>
-                        <?php if ($isLast): ?>
-                          <span class="tcurrent-badge">Estado actual</span>
-                        <?php endif; ?>
-                      </div>
-                    </div>
-                    <?php if (!empty($a['tipo_nombre'])): ?>
-                      <span class="tbadge"><?= h($a['tipo_nombre']) ?></span>
-                    <?php endif; ?>
-                  </div>
+        <div class="form-actions">
+          <button type="button" class="btn-ghost" onclick="toggleActivityForm()">Cancelar</button>
+          <button type="submit" class="btn-primary">Guardar actividad</button>
+        </div>
+      </form>
+    </div>
 
-                  <?php if (!empty($a['comentario'])): ?>
-                    <div class="tdesc"><?= nl2br(h($a['comentario'])) ?></div>
-                  <?php endif; ?>
-                </article>
-              </li>
-            <?php endforeach; ?>
-          </ol>
-        <?php endif; ?>
+    <!-- TAB: Timeline -->
+    <div class="tab-content" id="tab-timeline">
+      <div class="section-head">
+        <div>
+          <div class="kicker2">Seguimiento</div>
+          <div class="section-title">Línea de tiempo</div>
+          <div class="section-subtitle">Historial cronológico de actuaciones del proceso</div>
+        </div>
+        <div class="pill pill-slate"><?= count($timelineActividades) ?> actividades</div>
       </div>
 
-      <!-- TAB: Project (Roadmap) -->
-      <div class="tab-content hidden" id="tab-seace">
-        <?php
-        $projectRows = [];
-
-        foreach ($actividades as $a) {
-          $label = trim((string)($a['titulo'] ?? $a['tipo_nombre'] ?? 'Actividad'));
-
-          if (!isset($projectRows[$label])) {
-            $projectRows[$label] = [];
-          }
-
-          $projectRows[$label][] = $a;
-        }
-
-        foreach ($projectRows as &$items) {
-          usort($items, function ($x, $y) {
-            return strtotime($x['fecha']) <=> strtotime($y['fecha']);
-          });
-        }
-        unset($items);
-        ?>
-
-        <div class="section-head">
-          <div>
-            <div class="kicker2">Histórico visual</div>
-            <div class="section-title">Project</div>
-            <div class="section-subtitle">Evolución de cada actividad en el tiempo</div>
-          </div>
-          <div class="pill pill-slate"><?= count($actividades) ?> registros</div>
-        </div>
-
-        <?php if (empty($projectRows)): ?>
-          <div class="empty">No hay actividades registradas.</div>
-        <?php else: ?>
-
-          <div class="roadmap">
-            <?php foreach ($projectRows as $label => $items): ?>
-              <?php
-              $total = count($items);
-              $last  = end($items);
-              ?>
-
-              <div class="roadmap-card">
-
-                <!-- HEADER -->
-                <div class="roadmap-head">
-                  <div>
-                    <div class="roadmap-title"><?= h($label) ?></div>
-                    <div class="roadmap-meta">
-                      <?= $total ?> registro<?= $total !== 1 ? 's' : '' ?>
-                      <?php if ($total > 1): ?>
-                        <span class="reprog-badge">
-                          Reprogramado <?= $total - 1 ?> vez<?= ($total - 1) !== 1 ? 'es' : '' ?>
-                        </span>
+      <?php if (empty($timelineActividades)): ?>
+        <div class="empty">No hay actividades registradas para este proceso.</div>
+      <?php else: ?>
+        <ol class="timeline">
+          <?php foreach ($timelineActividades as $i => $a): ?>
+            <?php
+            $dot    = dotClassFromTipo($a['tipo_codigo'] ?? '');
+            $isLast = $i === count($timelineActividades) - 1;
+            ?>
+            <li class="titem <?= $isLast ? 'is-current' : '' ?>">
+              <div class="tline"></div>
+              <div class="dot <?= h($dot) ?>"></div>
+              <article class="tcard">
+                <div class="trow">
+                  <div class="tcontent">
+                    <div class="ttitle"><?= h($a['titulo'] ?? '-') ?></div>
+                    <div class="tmeta">
+                      <span><?= fmt_date($a['fecha'] ?? null) ?></span>
+                      <?php if ($isLast): ?>
+                        <span class="tcurrent-badge">Estado actual</span>
                       <?php endif; ?>
                     </div>
                   </div>
-
-                  <div class="roadmap-last">
-                    <?= fmt_date($last['fecha'] ?? null) ?>
-                  </div>
-                </div>
-
-                <!-- TIMELINE -->
-                <div class="roadmap-track">
-                  <?php foreach ($items as $i => $it): ?>
-                    <div class="roadmap-node <?= $i === ($total - 1) ? 'is-last' : '' ?>">
-                      <div class="roadmap-dot"></div>
-                      <div class="roadmap-date"><?= date('d/m', strtotime($it['fecha'])) ?></div>
-                    </div>
-
-                    <?php if ($i < $total - 1): ?>
-                      <div class="roadmap-line"></div>
-                    <?php endif; ?>
-                  <?php endforeach; ?>
-                </div>
-
-                <!-- COMENTARIO -->
-                <?php if (!empty($last['comentario'])): ?>
-                  <div class="roadmap-desc">
-                    <?= nl2br(h($last['comentario'])) ?>
-                  </div>
-                <?php endif; ?>
-
-              </div>
-            <?php endforeach; ?>
-          </div>
-
-        <?php endif; ?>
-      </div>
-
-
-      <!-- TAB: PACs -->
-      <div class="tab-content hidden" id="tab-pacs">
-        <div class="section-head">
-          <div>
-            <div class="kicker2">Origen</div>
-            <div class="section-title">PACs vinculados</div>
-            <div class="section-subtitle">Items del Plan Anual de Contrataciones que originan este proceso</div>
-          </div>
-          <span class="type-pill <?= h($tipoPillClass) ?>"><?= h($tipoLabel) ?> · <?= $totalPacs ?> PAC</span>
-        </div>
-
-        <?php if (empty($pacs_vinculados)): ?>
-          <div class="empty">No hay PACs vinculados a este proceso.</div>
-        <?php else: ?>
-          <div class="pac-table">
-
-            <div class="pac-table-head">
-              <div class="col-num">N° PAC</div>
-              <div class="col-pn">P/NP</div>
-              <div class="col-desc">Descripción</div>
-              <div class="col-obac">OBAC</div>
-              <div class="col-estado">Estado</div>
-              <div class="col-monto">Estimado</div>
-            </div>
-
-            <?php foreach ($pacs_vinculados as $pac): ?>
-              <div class="pac-row">
-
-                <div class="col-num">
-                  <span class="num-badge"><?= h($pac['nopac'] ?? '-') ?></span>
-                </div>
-
-                <div class="col-pn">
-                  <span class="pn-badge"><?= h($pac['pn'] ?? '-') ?></span>
-                </div>
-
-                <div class="col-desc">
-                  <span class="pac-desc-text"><?= h($pac['descripcion'] ?? '-') ?></span>
-                </div>
-
-                <div class="col-obac">
-                  <?php if (!empty($pac['obac_nombre'])): ?>
-                    <span class="tag-obac"><?= h($pac['obac_nombre']) ?></span>
-                  <?php else: ?>
-                    <span class="tag-empty">—</span>
+                  <?php if (!empty($a['tipo_nombre'])): ?>
+                    <span class="tbadge"><?= h($a['tipo_nombre']) ?></span>
                   <?php endif; ?>
                 </div>
 
-                <div class="col-estado">
-                  <span class="pac-estado <?= pacEstadoPillClass($pac['estado_nombre'] ?? '') ?>">
-                    <?= h($pac['estado_nombre'] ?? '-') ?>
-                  </span>
-                </div>
+                <?php if (!empty($a['comentario'])): ?>
+                  <div class="tdesc"><?= nl2br(h($a['comentario'])) ?></div>
+                <?php endif; ?>
+              </article>
+            </li>
+          <?php endforeach; ?>
+        </ol>
+      <?php endif; ?>
+    </div>
 
-                <div class="col-monto">
-                  <span class="pac-money"><?= fmt_money($pac['estimado'] ?? 0) ?></span>
-                </div>
+    <!-- TAB: Project (Roadmap) -->
+    <div class="tab-content hidden" id="tab-seace">
+      <?php
+      $projectRows = [];
 
-              </div>
-            <?php endforeach; ?>
+      foreach ($actividades as $a) {
+        $label = trim((string)($a['titulo'] ?? $a['tipo_nombre'] ?? 'Actividad'));
 
-          </div>
-        <?php endif; ?>
+        if (!isset($projectRows[$label])) {
+          $projectRows[$label] = [];
+        }
+
+        $projectRows[$label][] = $a;
+      }
+
+      foreach ($projectRows as &$items) {
+        usort($items, function ($x, $y) {
+          return strtotime($x['fecha']) <=> strtotime($y['fecha']);
+        });
+      }
+      unset($items);
+      ?>
+
+      <div class="section-head">
+        <div>
+          <div class="kicker2">Histórico visual</div>
+          <div class="section-title">Project</div>
+          <div class="section-subtitle">Evolución de cada actividad en el tiempo</div>
+        </div>
+        <div class="pill pill-slate"><?= count($actividades) ?> registros</div>
       </div>
 
-    </section>
-  </div>
+      <?php if (empty($projectRows)): ?>
+        <div class="empty">No hay actividades registradas.</div>
+      <?php else: ?>
+
+        <div class="roadmap">
+          <?php foreach ($projectRows as $label => $items): ?>
+            <?php
+            $total = count($items);
+            $last  = end($items);
+            ?>
+
+            <div class="roadmap-card">
+
+              <!-- HEADER -->
+              <div class="roadmap-head">
+                <div>
+                  <div class="roadmap-title"><?= h($label) ?></div>
+                  <div class="roadmap-meta">
+                    <?= $total ?> registro<?= $total !== 1 ? 's' : '' ?>
+                    <?php if ($total > 1): ?>
+                      <span class="reprog-badge">
+                        Reprogramado <?= $total - 1 ?> vez<?= ($total - 1) !== 1 ? 'es' : '' ?>
+                      </span>
+                    <?php endif; ?>
+                  </div>
+                </div>
+
+                <div class="roadmap-last">
+                  <?= fmt_date($last['fecha'] ?? null) ?>
+                </div>
+              </div>
+
+              <!-- TIMELINE -->
+              <div class="roadmap-track">
+                <?php foreach ($items as $i => $it): ?>
+                  <div class="roadmap-node <?= $i === ($total - 1) ? 'is-last' : '' ?>">
+                    <div class="roadmap-dot"></div>
+                    <div class="roadmap-date"><?= date('d/m', strtotime($it['fecha'])) ?></div>
+                  </div>
+
+                  <?php if ($i < $total - 1): ?>
+                    <div class="roadmap-line"></div>
+                  <?php endif; ?>
+                <?php endforeach; ?>
+              </div>
+
+              <!-- COMENTARIO -->
+              <?php if (!empty($last['comentario'])): ?>
+                <div class="roadmap-desc">
+                  <?= nl2br(h($last['comentario'])) ?>
+                </div>
+              <?php endif; ?>
+
+            </div>
+          <?php endforeach; ?>
+        </div>
+
+      <?php endif; ?>
+    </div>
+
+
+    <!-- TAB: PACs -->
+    <div class="tab-content hidden" id="tab-pacs">
+      <div class="section-head">
+        <div>
+          <div class="kicker2">Origen</div>
+          <div class="section-title">PACs vinculados</div>
+          <div class="section-subtitle">Items del Plan Anual de Contrataciones que originan este proceso</div>
+        </div>
+        <span class="type-pill <?= h($tipoPillClass) ?>"><?= h($tipoLabel) ?> · <?= $totalPacs ?> PAC</span>
+      </div>
+
+      <?php if (empty($pacs_vinculados)): ?>
+        <div class="empty">No hay PACs vinculados a este proceso.</div>
+      <?php else: ?>
+        <div class="pac-table">
+
+          <div class="pac-table-head">
+            <div class="col-num">N° PAC</div>
+            <div class="col-pn">P/NP</div>
+            <div class="col-desc">Descripción</div>
+            <div class="col-obac">OBAC</div>
+            <div class="col-estado">Estado</div>
+            <div class="col-monto">Estimado</div>
+          </div>
+
+          <?php foreach ($pacs_vinculados as $pac): ?>
+            <div class="pac-row">
+
+              <div class="col-num">
+                <span class="num-badge"><?= h($pac['nopac'] ?? '-') ?></span>
+              </div>
+
+              <div class="col-pn">
+                <span class="pn-badge"><?= h($pac['pn'] ?? '-') ?></span>
+              </div>
+
+              <div class="col-desc">
+                <span class="pac-desc-text"><?= h($pac['descripcion'] ?? '-') ?></span>
+              </div>
+
+              <div class="col-obac">
+                <?php if (!empty($pac['obac_nombre'])): ?>
+                  <span class="tag-obac"><?= h($pac['obac_nombre']) ?></span>
+                <?php else: ?>
+                  <span class="tag-empty">—</span>
+                <?php endif; ?>
+              </div>
+
+              <div class="col-estado">
+                <span class="pac-estado <?= pacEstadoPillClass($pac['estado_nombre'] ?? '') ?>">
+                  <?= h($pac['estado_nombre'] ?? '-') ?>
+                </span>
+              </div>
+
+              <div class="col-monto">
+                <span class="pac-money"><?= fmt_money($pac['estimado'] ?? 0) ?></span>
+              </div>
+
+            </div>
+          <?php endforeach; ?>
+
+        </div>
+      <?php endif; ?>
+    </div>
+
+  </section>
+</div>
 </div>
 
 <style>
@@ -605,6 +642,29 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     color: #64748b;
     font-weight: 600;
     letter-spacing: .01em;
+  }
+
+  .marker-label {
+    display: inline-block;
+    position: relative;
+    color: #334155;
+    font-weight: 800;
+    padding: 0 4px;
+    z-index: 1;
+  }
+
+  .marker-label::before {
+    content: "";
+    position: absolute;
+    left: -2px;
+    right: -2px;
+    bottom: 1px;
+    height: 0.8em;
+    background: #fde047;
+    border-radius: 4px;
+    z-index: -1;
+    transform: rotate(-1deg);
+    opacity: .95;
   }
 
   .title-wrap {
@@ -1614,6 +1674,67 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     box-shadow: 0 14px 35px rgba(15, 23, 42, .08);
   }
 
+  /* ================= PRINT ================= */
+  @media print {
+
+    body {
+      background: #fff !important;
+    }
+
+    /* Ocultar elementos innecesarios */
+    .detail-topbar,
+    .tab-bar,
+    .actions,
+    .btn-primary,
+    .btn-soft,
+    .btn-ghost,
+    #activityFormWrap {
+      display: none !important;
+    }
+
+    /* Opcional: ocultar panel izquierdo */
+    .summary-panel {
+      display: none !important;
+    }
+
+    /* Expandir contenido */
+    .detail-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    .panel {
+      border: none !important;
+      box-shadow: none !important;
+    }
+
+    /* Mostrar solo lo que corresponde */
+    body.print-timeline #tab-seace,
+    body.print-timeline #tab-pacs {
+      display: none !important;
+    }
+
+    body.print-project #tab-timeline,
+    body.print-project #tab-pacs {
+      display: none !important;
+    }
+
+    /* Mejorar legibilidad */
+    .tcard,
+    .roadmap-card {
+      page-break-inside: avoid;
+    }
+
+    .timeline,
+    .roadmap {
+      gap: 12px;
+    }
+
+    .section-title {
+      font-size: 18px;
+    }
+
+  }
+
   @media (max-width:1100px) {
     .form-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1854,6 +1975,30 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
       point.addEventListener('mouseleave', hideProjectTooltip);
     });
   });
+
+  function printTimeline() {
+    document.body.classList.remove('print-project');
+    document.body.classList.add('print-timeline');
+
+    activarTab('timeline');
+
+    setTimeout(() => {
+      window.print();
+      document.body.classList.remove('print-timeline');
+    }, 300);
+  }
+
+  function printProject() {
+    document.body.classList.remove('print-timeline');
+    document.body.classList.add('print-project');
+
+    activarTab('seace');
+
+    setTimeout(() => {
+      window.print();
+      document.body.classList.remove('print-project');
+    }, 300);
+  }
 </script>
 
 <?php require __DIR__ . '/../../layout/admin_footer.php'; ?>
