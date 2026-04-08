@@ -1,5 +1,4 @@
 <?php
-// Controlador/CtrProcesoAdmin.php
 require_once __DIR__ . '/../Config/config.php';
 require_once __DIR__ . '/../Modelo/MdProcesoAdmin.php';
 require_once __DIR__ . '/../Modelo/MdActividadAdmin.php';
@@ -32,6 +31,65 @@ final class CtrProcesoAdmin
 
         $pacsDisponibles = MdProcesoAdmin::listarPacsDisponibles($filtrosPac);
 
+        $proceso = [
+            'id'                => null,
+            'codigo_proceso'    => '',
+            'tipo_proceso'      => 'INDIVIDUAL',
+            'expediente'        => '',
+            'obac'              => '',
+            'descripcion'       => '',
+            'estimado'          => '',
+            'estado_id'         => '',
+            'anio_convocatoria' => date('Y'),
+            'periodo'           => date('Y'),
+            'convocatoria'      => '',
+            'moneda'            => 'PEN',
+            'fecha_registro'    => date('Y-m-d'),
+            'objeto_contratacion' => '',
+            'ganador'             => '',
+            'fecha_adjudicacion'  => '',
+            'fecha_consentido'    => '',
+        ];
+
+        $pacIdsSeleccionados = [];
+
+        require __DIR__ . '/../Vista/modulos/admin/proceso_form.php';
+    }
+
+    public static function editar(): void
+    {
+        $id = (int)($_GET['id'] ?? 0);
+
+        if ($id <= 0) {
+            http_response_code(400);
+            echo "ID inválido";
+            return;
+        }
+
+        $proceso = MdProcesoAdmin::obtener($id);
+
+        if (!$proceso) {
+            http_response_code(404);
+            echo "Proceso no encontrado";
+            return;
+        }
+
+        $estadosProceso = MdProcesoAdmin::listarEstadosProceso();
+
+        $filtrosPac = [
+            'q'       => $_GET['pac_q'] ?? '',
+            'periodo' => $_GET['pac_periodo'] ?? '',
+            'obac'    => $_GET['pac_obac'] ?? '',
+        ];
+
+        $pacsDisponibles = MdProcesoAdmin::listarPacsDisponibles($filtrosPac);
+        $pacsVinculados  = MdProcesoAdmin::obtenerPacsVinculados($id);
+
+        $pacIdsSeleccionados = array_map(
+            fn($row) => (int)($row['id'] ?? 0),
+            $pacsVinculados
+        );
+
         require __DIR__ . '/../Vista/modulos/admin/proceso_form.php';
     }
 
@@ -55,6 +113,7 @@ final class CtrProcesoAdmin
                 'codigo_proceso'    => $_POST['codigo_proceso'] ?? '',
                 'tipo_proceso'      => $_POST['tipo_proceso'] ?? 'INDIVIDUAL',
                 'expediente'        => $_POST['expediente'] ?? '',
+                'obac'              => $_POST['obac'] ?? null,
                 'descripcion'       => $_POST['descripcion'] ?? '',
                 'estimado'          => $_POST['estimado'] ?? 0,
                 'estado_id'         => $estadoConvocadoId,
@@ -63,6 +122,10 @@ final class CtrProcesoAdmin
                 'convocatoria'      => $_POST['convocatoria'] ?? null,
                 'moneda'            => $_POST['moneda'] ?? 'PEN',
                 'fecha_registro'    => $_POST['fecha_registro'] ?? date('Y-m-d'),
+                'objeto_contratacion' => $_POST['objeto_contratacion'] ?? null,
+                'ganador'             => $_POST['ganador'] ?? null,
+                'fecha_adjudicacion'  => $_POST['fecha_adjudicacion'] ?? null,
+                'fecha_consentido'    => $_POST['fecha_consentido'] ?? null,
             ];
 
             $pacIds = $_POST['pac_ids'] ?? [];
@@ -127,7 +190,8 @@ final class CtrProcesoAdmin
             echo json_encode([
                 'ok'         => true,
                 'msg'        => $id ? 'Proceso actualizado correctamente.' : 'Proceso creado correctamente.',
-                'proceso_id' => $procesoId
+                'proceso_id' => $procesoId,
+                'redirect'   => BASE_URL . '/admin/procesos_detalle?id=' . $procesoId
             ]);
             exit;
         } catch (Throwable $e) {
@@ -156,10 +220,10 @@ final class CtrProcesoAdmin
                 return;
             }
 
-            $actividades     = MdActividadAdmin::listarPorProceso($id) ?? [];
+            $actividades         = MdActividadAdmin::listarPorProceso($id) ?? [];
             $timelineActividades = self::construirTimelineActividades($actividades);
-            $pacs_vinculados = MdProcesoAdmin::obtenerPacsVinculados($id);
-            $tiposActividad  = MdActividadAdmin::listarTiposActividad('PROCESO') ?? [];
+            $pacs_vinculados     = MdProcesoAdmin::obtenerPacsVinculados($id);
+            $tiposActividad      = MdActividadAdmin::listarTiposActividad('PROCESO') ?? [];
 
             require __DIR__ . '/../Vista/modulos/admin/procesos_detalle.php';
         } catch (Throwable $e) {
@@ -186,7 +250,6 @@ final class CtrProcesoAdmin
             $id     = (int)($a['id'] ?? 0);
 
             if ($tipoId <= 0) {
-                // Si por alguna razón no tiene tipo_id, lo dejamos único con su propio id
                 $ultimasPorTipo['sin_tipo_' . $id] = $a;
                 continue;
             }
@@ -199,8 +262,6 @@ final class CtrProcesoAdmin
             $actualFecha = strtotime((string)($ultimasPorTipo[$tipoId]['fecha'] ?? '')) ?: 0;
             $actualId    = (int)($ultimasPorTipo[$tipoId]['id'] ?? 0);
 
-            // Reemplaza si la nueva actividad es más reciente
-            // Si tienen la misma fecha, gana la de mayor id
             if ($fecha > $actualFecha || ($fecha === $actualFecha && $id > $actualId)) {
                 $ultimasPorTipo[$tipoId] = $a;
             }

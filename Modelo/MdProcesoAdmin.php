@@ -141,24 +141,24 @@ class MdProcesoAdmin
         $db = db();
 
         $sql = "
-        SELECT
-            p.id,
-            p.nopac,
-            p.pn,
-            p.descripcion,
-            p.estimado,
-            COALESCE(e.nombre, '') AS obac_nombre,
-            COALESCE(est.nombre, '') AS estado_nombre
-        FROM proceso_pac pp
-        INNER JOIN pac p
-            ON p.id = pp.pac_id
-        LEFT JOIN entidad e
-            ON e.id = p.obac
-        LEFT JOIN estado est
-            ON est.id = p.estado
-        WHERE pp.proceso_id = :proceso_id
-        ORDER BY p.nopac ASC, p.id ASC
-    ";
+            SELECT
+                p.id,
+                p.nopac,
+                p.pn,
+                p.descripcion,
+                p.estimado,
+                COALESCE(e.nombre, '') AS obac_nombre,
+                COALESCE(est.nombre, '') AS estado_nombre
+            FROM proceso_pac pp
+            INNER JOIN pac p
+                ON p.id = pp.pac_id
+            LEFT JOIN entidad e
+                ON e.id = p.obac
+            LEFT JOIN estado est
+                ON est.id = p.estado
+            WHERE pp.proceso_id = :proceso_id
+            ORDER BY p.nopac ASC, p.id ASC
+        ";
 
         $st = $db->prepare($sql);
         $st->execute([':proceso_id' => $procesoId]);
@@ -236,49 +236,49 @@ class MdProcesoAdmin
             }
 
             $sql = "
-            INSERT INTO procesos (
-                codigo_proceso,
-                tipo_proceso,
-                expediente,
-                obac,
-                descripcion,
-                estimado,
-                estado_id,
-                anio_convocatoria,
-                periodo,
-                convocatoria,
-                moneda,
-                fecha_registro,
-                objeto_contratacion,
-                ganador,
-                fecha_adjudicacion,
-                fecha_consentido
-            ) VALUES (
-                :codigo_proceso,
-                :tipo_proceso,
-                :expediente,
-                :obac,
-                :descripcion,
-                :estimado,
-                :estado_id,
-                :anio_convocatoria,
-                :periodo,
-                :convocatoria,
-                :moneda,
-                :fecha_registro,
-                :objeto_contratacion,
-                :ganador,
-                :fecha_adjudicacion,
-                :fecha_consentido
-            )
-        ";
+                INSERT INTO procesos (
+                    codigo_proceso,
+                    tipo_proceso,
+                    expediente,
+                    obac,
+                    descripcion,
+                    estimado,
+                    estado_id,
+                    anio_convocatoria,
+                    periodo,
+                    convocatoria,
+                    moneda,
+                    fecha_registro,
+                    objeto_contratacion,
+                    ganador,
+                    fecha_adjudicacion,
+                    fecha_consentido
+                ) VALUES (
+                    :codigo_proceso,
+                    :tipo_proceso,
+                    :expediente,
+                    :obac,
+                    :descripcion,
+                    :estimado,
+                    :estado_id,
+                    :anio_convocatoria,
+                    :periodo,
+                    :convocatoria,
+                    :moneda,
+                    :fecha_registro,
+                    :objeto_contratacion,
+                    :ganador,
+                    :fecha_adjudicacion,
+                    :fecha_consentido
+                )
+            ";
 
             $st = $db->prepare($sql);
             $st->execute(self::mapData($data));
 
             $procesoId = (int)$db->lastInsertId();
 
-            self::guardarPacsVinculados($procesoId, $pacIds, $db);
+            self::guardarPacsVinculados($procesoId, $pacIds, $db, null);
 
             require_once __DIR__ . '/MdActividadAdmin.php';
 
@@ -345,7 +345,7 @@ class MdProcesoAdmin
             $del = $db->prepare("DELETE FROM proceso_pac WHERE proceso_id = :proceso_id");
             $del->execute([':proceso_id' => $id]);
 
-            self::guardarPacsVinculados($id, $pacIds, $db);
+            self::guardarPacsVinculados($id, $pacIds, $db, $id);
 
             if ($db->inTransaction()) {
                 $db->commit();
@@ -360,7 +360,7 @@ class MdProcesoAdmin
         }
     }
 
-    private static function guardarPacsVinculados(int $procesoId, array $pacIds, PDO $db): void
+    private static function guardarPacsVinculados(int $procesoId, array $pacIds, PDO $db, ?int $procesoIdExcluir = null): void
     {
         $pacIds = array_values(array_unique(array_map('intval', $pacIds)));
         $pacIds = array_values(array_filter($pacIds, fn($id) => $id > 0));
@@ -370,7 +370,7 @@ class MdProcesoAdmin
         }
 
         foreach ($pacIds as $pacId) {
-            if (self::pacYaVinculadoAOtroProceso($pacId, null, $db)) {
+            if (self::pacYaVinculadoAOtroProceso($pacId, $procesoIdExcluir, $db)) {
                 throw new Exception("El PAC ID {$pacId} ya está vinculado a otro proceso.");
             }
         }
@@ -478,11 +478,11 @@ class MdProcesoAdmin
         $db = db();
 
         $sql = "
-        SELECT id
-        FROM estado
-        WHERE UPPER(nombre) = UPPER(:codigo)
-        LIMIT 1
-    ";
+            SELECT id
+            FROM estado
+            WHERE UPPER(nombre) = UPPER(:codigo)
+            LIMIT 1
+        ";
 
         $st = $db->prepare($sql);
         $st->execute([

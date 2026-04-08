@@ -188,6 +188,12 @@ if ($module === 'admin') {
         exit;
     }
 
+        if ($subRoute === 'procesos_editar') {
+        require_once __DIR__ . '/../Controlador/CtrProcesoAdmin.php';
+        CtrProcesoAdmin::editar();
+        exit;
+    }
+
     if ($subRoute === 'procesos_guardar') {
         require_once __DIR__ . '/../Controlador/CtrProcesoAdmin.php';
         CtrProcesoAdmin::guardar();

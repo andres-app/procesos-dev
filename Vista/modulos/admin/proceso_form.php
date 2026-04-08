@@ -1,5 +1,5 @@
 <?php
-$titulo = 'Nuevo proceso';
+$titulo = !empty($proceso['id']) ? 'Editar proceso' : 'Nuevo proceso';
 $active = 'procesos';
 require __DIR__ . '/../../layout/admin_layout.php';
 
@@ -7,13 +7,50 @@ function h($s)
 {
     return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
 }
+
+$esEdicion = !empty($proceso['id']);
+$procesoId = (int)($proceso['id'] ?? 0);
+
+$valCodigo            = $proceso['codigo_proceso'] ?? '';
+$valTipoProceso       = strtoupper((string)($proceso['tipo_proceso'] ?? 'INDIVIDUAL'));
+$valExpediente        = $proceso['expediente'] ?? '';
+$valDescripcion       = $proceso['descripcion'] ?? '';
+$valConvocatoria      = !empty($proceso['convocatoria']) ? date('Y-m-d', strtotime((string)$proceso['convocatoria'])) : date('Y-m-d');
+$valAnioConvocatoria  = $proceso['anio_convocatoria'] ?? date('Y');
+$valPeriodo           = $proceso['periodo'] ?? date('Y');
+$valMoneda            = $proceso['moneda'] ?? 'PEN';
+$valFechaRegistro     = !empty($proceso['fecha_registro']) ? date('Y-m-d', strtotime((string)$proceso['fecha_registro'])) : date('Y-m-d');
+$valEstimado          = (float)($proceso['estimado'] ?? 0);
+
+$pacIdsSeleccionados = $pacIdsSeleccionados ?? [];
+$pacsVinculados = $pacsVinculados ?? [];
+
+$pacsIniciales = [];
+if (!empty($pacsVinculados)) {
+    foreach ($pacsVinculados as $pac) {
+        $idPac = (int)($pac['id'] ?? 0);
+        if ($idPac <= 0) continue;
+
+        $pacsIniciales[] = [
+            'id'          => (string)$idPac,
+            'nopac'       => (string)($pac['nopac'] ?? ''),
+            'pn'          => (string)($pac['pn'] ?? ''),
+            'descripcion' => (string)($pac['descripcion'] ?? ''),
+            'obac'        => (string)($pac['obac_nombre'] ?? ''),
+            'estado'      => (string)($pac['estado_nombre'] ?? ''),
+            'estimado'    => (float)($pac['estimado'] ?? 0),
+        ];
+    }
+}
 ?>
 
 <div class="space-y-6">
     <div class="flex items-center justify-between gap-3">
         <div>
             <div class="text-xs text-slate-500">Mantenimiento</div>
-            <h1 class="text-xl font-semibold text-slate-900">Nuevo proceso</h1>
+            <h1 class="text-xl font-semibold text-slate-900">
+                <?= $esEdicion ? 'Editar proceso' : 'Nuevo proceso' ?>
+            </h1>
         </div>
 
         <a
@@ -23,22 +60,30 @@ function h($s)
         </a>
     </div>
 
-    <!-- FORMULARIO PRINCIPAL -->
     <div class="rounded-2xl border border-slate-200 bg-white p-5">
         <div class="mb-4 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3">
-            <div class="text-xs font-semibold uppercase tracking-wide text-blue-700">Estado inicial</div>
-            <div class="mt-1 text-sm font-semibold text-blue-900">CONVOCADO</div>
+            <div class="text-xs font-semibold uppercase tracking-wide text-blue-700">
+                <?= $esEdicion ? 'Edición' : 'Estado inicial' ?>
+            </div>
+            <div class="mt-1 text-sm font-semibold text-blue-900">
+                <?= $esEdicion ? 'Actualización del proceso' : 'CONVOCADO' ?>
+            </div>
             <div class="mt-1 text-xs text-blue-700">
-                El proceso se crea como convocado y luego continuará su avance mediante actividades.
+                <?= $esEdicion
+                    ? 'Modifica la información del proceso y sus PAC vinculados.'
+                    : 'El proceso se crea como convocado y luego continuará su avance mediante actividades.' ?>
             </div>
         </div>
 
         <form id="procesoForm" class="grid grid-cols-1 gap-4 md:grid-cols-12">
+            <input type="hidden" id="proceso_id" value="<?= $procesoId ?>">
+
             <div class="md:col-span-3">
                 <label class="mb-1.5 block text-xs text-slate-500">Código proceso</label>
                 <input
                     id="codigo_proceso"
                     type="text"
+                    value="<?= h($valCodigo) ?>"
                     class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm"
                     placeholder="Ej: PROC-2026-001">
             </div>
@@ -46,8 +91,8 @@ function h($s)
             <div class="md:col-span-3">
                 <label class="mb-1.5 block text-xs text-slate-500">Tipo proceso</label>
                 <select id="tipo_proceso" class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm">
-                    <option value="INDIVIDUAL">INDIVIDUAL</option>
-                    <option value="CORPORATIVO">CORPORATIVO</option>
+                    <option value="INDIVIDUAL" <?= $valTipoProceso === 'INDIVIDUAL' ? 'selected' : '' ?>>INDIVIDUAL</option>
+                    <option value="CORPORATIVO" <?= $valTipoProceso === 'CORPORATIVO' ? 'selected' : '' ?>>CORPORATIVO</option>
                 </select>
             </div>
 
@@ -56,6 +101,7 @@ function h($s)
                 <input
                     id="expediente"
                     type="text"
+                    value="<?= h($valExpediente) ?>"
                     class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm"
                     placeholder="Expediente">
             </div>
@@ -65,7 +111,7 @@ function h($s)
                 <input
                     id="convocatoria"
                     type="date"
-                    value="<?= date('Y-m-d') ?>"
+                    value="<?= h($valConvocatoria) ?>"
                     class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm">
             </div>
 
@@ -74,7 +120,7 @@ function h($s)
                 <input
                     id="anio_convocatoria"
                     type="number"
-                    value="<?= date('Y') ?>"
+                    value="<?= h((string)$valAnioConvocatoria) ?>"
                     class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm"
                     placeholder="2026">
             </div>
@@ -84,7 +130,7 @@ function h($s)
                 <input
                     id="periodo"
                     type="number"
-                    value="<?= date('Y') ?>"
+                    value="<?= h((string)$valPeriodo) ?>"
                     class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm"
                     placeholder="2026">
             </div>
@@ -94,7 +140,7 @@ function h($s)
                 <input
                     id="moneda"
                     type="text"
-                    value="PEN"
+                    value="<?= h($valMoneda) ?>"
                     class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm">
             </div>
 
@@ -103,7 +149,7 @@ function h($s)
                 <input
                     id="fecha_registro"
                     type="date"
-                    value="<?= date('Y-m-d') ?>"
+                    value="<?= h($valFechaRegistro) ?>"
                     class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm">
             </div>
 
@@ -115,6 +161,7 @@ function h($s)
                     step="0.01"
                     min="0"
                     readonly
+                    value="<?= number_format($valEstimado, 2, '.', '') ?>"
                     class="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700"
                     placeholder="0.00">
             </div>
@@ -125,12 +172,11 @@ function h($s)
                     id="descripcion"
                     rows="3"
                     class="w-full rounded-xl border border-slate-200 px-3 py-3 text-sm"
-                    placeholder="Descripción del proceso"></textarea>
+                    placeholder="Descripción del proceso"><?= h($valDescripcion) ?></textarea>
             </div>
         </form>
     </div>
 
-    <!-- RESUMEN PAC VINCULADOS -->
     <div class="rounded-2xl border border-slate-200 bg-white overflow-hidden">
         <div class="flex flex-col gap-3 border-b border-slate-200 px-5 py-4 md:flex-row md:items-center md:justify-between">
             <div>
@@ -151,7 +197,7 @@ function h($s)
         <div class="grid grid-cols-1 gap-3 border-b border-slate-100 bg-slate-50/70 px-5 py-4 md:grid-cols-3">
             <div class="rounded-xl border border-slate-200 bg-white px-4 py-3">
                 <div class="text-[11px] uppercase tracking-wide text-slate-500">Tipo</div>
-                <div id="resumenTipoProceso" class="mt-1 text-sm font-semibold text-slate-900">INDIVIDUAL</div>
+                <div id="resumenTipoProceso" class="mt-1 text-sm font-semibold text-slate-900"><?= h($valTipoProceso) ?></div>
             </div>
 
             <div class="rounded-xl border border-slate-200 bg-white px-4 py-3">
@@ -200,12 +246,11 @@ function h($s)
             type="button"
             id="btnGuardarProceso"
             class="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-slate-800">
-            Guardar proceso
+            <?= $esEdicion ? 'Actualizar proceso' : 'Guardar proceso' ?>
         </button>
     </div>
 </div>
 
-<!-- MODAL SELECCIÓN PAC -->
 <div id="modalPac" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
     <div class="absolute inset-0 bg-slate-900/40" id="overlayModalPac"></div>
 
@@ -282,9 +327,14 @@ function h($s)
                 </thead>
                 <tbody id="tablaPacModal" class="divide-y divide-slate-100">
                     <?php foreach ($pacsDisponibles as $pac): ?>
+                        <?php
+                            $pacId = (int)($pac['id'] ?? 0);
+                            $estaSeleccionado = in_array($pacId, $pacIdsSeleccionados, true);
+                            $yaVinculado = (int)($pac['ya_vinculado'] ?? 0) === 1 && !$estaSeleccionado;
+                        ?>
                         <tr
-                            class="pac-row <?= (int)$pac['ya_vinculado'] === 1 ? 'bg-slate-50 opacity-60' : 'hover:bg-slate-50' ?>"
-                            data-id="<?= (int)$pac['id'] ?>"
+                            class="pac-row <?= $yaVinculado ? 'bg-slate-50 opacity-60' : 'hover:bg-slate-50' ?>"
+                            data-id="<?= $pacId ?>"
                             data-nopac="<?= h($pac['nopac']) ?>"
                             data-pn="<?= h($pac['pn']) ?>"
                             data-desc="<?= h($pac['descripcion']) ?>"
@@ -293,13 +343,14 @@ function h($s)
                             data-estimado="<?= (float)$pac['estimado'] ?>"
                             data-periodo="<?= h($pac['periodo'] ?? '') ?>">
                             <td class="px-4 py-3">
-                                <?php if ((int)$pac['ya_vinculado'] === 1): ?>
+                                <?php if ($yaVinculado): ?>
                                     <span class="text-xs font-semibold text-rose-600">Usado</span>
                                 <?php else: ?>
                                     <input
                                         type="checkbox"
                                         class="pac-check-modal h-4 w-4"
-                                        value="<?= (int)$pac['id'] ?>">
+                                        value="<?= $pacId ?>"
+                                        <?= $estaSeleccionado ? 'checked' : '' ?>>
                                 <?php endif; ?>
                             </td>
                             <td class="px-4 py-3 font-semibold text-slate-900"><?= h($pac['nopac']) ?></td>
@@ -395,8 +446,14 @@ function h($s)
         };
     }
 </script>
+
 <script>
     const pacSeleccionados = new Map();
+    const pacsIniciales = <?= json_encode($pacsIniciales, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+
+    pacsIniciales.forEach(pac => {
+        pacSeleccionados.set(String(pac.id), pac);
+    });
 
     function formatMoney(value) {
         const n = Number(value || 0);
@@ -614,6 +671,7 @@ function h($s)
         const textoOriginal = btn.textContent;
         const tipo = getTipoProceso();
         const pacIds = Array.from(pacSeleccionados.keys());
+        const procesoId = document.getElementById('proceso_id').value;
 
         if (!document.getElementById('codigo_proceso').value.trim()) {
             showToast('Debe ingresar el código del proceso.', 'error', 'Error');
@@ -641,9 +699,13 @@ function h($s)
         }
 
         btn.disabled = true;
-        btn.textContent = 'Guardando...';
+        btn.textContent = <?= json_encode($esEdicion ? 'Actualizando...' : 'Guardando...') ?>;
 
         const fd = new FormData();
+        if (procesoId && Number(procesoId) > 0) {
+            fd.append('id', procesoId);
+        }
+
         fd.append('codigo_proceso', document.getElementById('codigo_proceso').value);
         fd.append('tipo_proceso', document.getElementById('tipo_proceso').value);
         fd.append('expediente', document.getElementById('expediente').value);
@@ -674,9 +736,17 @@ function h($s)
                 return;
             }
 
-            showToast(data.msg || 'Proceso guardado correctamente.', 'success', 'Correcto');
+            showToast(
+                data.msg || <?= json_encode($esEdicion ? 'Proceso actualizado correctamente.' : 'Proceso guardado correctamente.') ?>,
+                'success',
+                'Correcto'
+            );
 
             setTimeout(() => {
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                    return;
+                }
                 window.location.href = '<?= BASE_URL ?>/admin/procesos';
             }, 700);
         } catch (e) {
@@ -687,5 +757,5 @@ function h($s)
         }
     });
 
-    actualizarResumen();
+    renderPacsSeleccionados();
 </script>

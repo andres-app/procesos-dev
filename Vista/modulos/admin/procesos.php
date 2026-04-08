@@ -377,7 +377,7 @@ foreach ($rows as $r) {
                       <div class="hidden absolute right-0 z-50 mt-2 w-44 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
                         data-menu>
 
-                        <a href="<?= BASE_URL ?>/admin/procesos/editar?id=<?= (int)($r['id'] ?? 0) ?>"
+                        <a href="<?= BASE_URL ?>/admin/procesos_editar?id=<?= (int)($r['id'] ?? 0) ?>"
                           class="block px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
                           ✏ Editar
                         </a>
