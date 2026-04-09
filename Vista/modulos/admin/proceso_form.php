@@ -60,194 +60,267 @@ if (!empty($pacsVinculados)) {
         </a>
     </div>
 
-    <div class="rounded-2xl border border-slate-200 bg-white p-5">
-        <div class="mb-4 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3">
-            <div class="text-xs font-semibold uppercase tracking-wide text-blue-700">
-                <?= $esEdicion ? 'Edición' : 'Estado inicial' ?>
-            </div>
-            <div class="mt-1 text-sm font-semibold text-blue-900">
-                <?= $esEdicion ? 'Actualización del proceso' : 'CONVOCADO' ?>
-            </div>
-            <div class="mt-1 text-xs text-blue-700">
-                <?= $esEdicion
-                    ? 'Modifica la información del proceso y sus PAC vinculados.'
-                    : 'El proceso se crea como convocado y luego continuará su avance mediante actividades.' ?>
-            </div>
-        </div>
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <div class="space-y-6 lg:col-span-8">
+            <div id="step1" class="space-y-6">
+                <div class="rounded-2xl border border-slate-200 bg-white p-5">
+                    <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Asistente de registro
+                    </div>
+                    <h2 class="mt-1 text-lg font-semibold text-slate-900">
+                        Paso 1. Selecciona el tipo y los PAC
+                    </h2>
+                    <p class="mt-1 text-sm text-slate-500">
+                        Primero define si el proceso será individual o corporativo. Luego selecciona los PAC que se vincularán.
+                    </p>
+                </div>
 
-        <form id="procesoForm" class="grid grid-cols-1 gap-4 md:grid-cols-12">
-            <input type="hidden" id="proceso_id" value="<?= $procesoId ?>">
+                <input type="hidden" id="tipo_proceso" value="<?= h($valTipoProceso) ?>">
 
-            <div class="md:col-span-3">
-                <label class="mb-1.5 block text-xs text-slate-500">Código proceso</label>
-                <input
-                    id="codigo_proceso"
-                    type="text"
-                    value="<?= h($valCodigo) ?>"
-                    class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm"
-                    placeholder="Ej: PROC-2026-001">
-            </div>
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <button
+                        type="button"
+                        id="cardTipoIndividual"
+                        class="tipo-card rounded-2xl border border-slate-200 bg-white p-5 text-left transition hover:shadow-sm"
+                        onclick="setTipoProceso('INDIVIDUAL')">
+                        <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Individual</div>
+                        <div class="mt-1 text-base font-semibold text-slate-900">1 PAC</div>
+                        <div class="mt-2 text-sm text-slate-500">
+                            Proceso asociado a un único PAC.
+                        </div>
+                    </button>
 
-            <div class="md:col-span-3">
-                <label class="mb-1.5 block text-xs text-slate-500">Tipo proceso</label>
-                <select id="tipo_proceso" class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm">
-                    <option value="INDIVIDUAL" <?= $valTipoProceso === 'INDIVIDUAL' ? 'selected' : '' ?>>INDIVIDUAL</option>
-                    <option value="CORPORATIVO" <?= $valTipoProceso === 'CORPORATIVO' ? 'selected' : '' ?>>CORPORATIVO</option>
-                </select>
-            </div>
+                    <button
+                        type="button"
+                        id="cardTipoCorporativo"
+                        class="tipo-card rounded-2xl border border-slate-200 bg-white p-5 text-left transition hover:shadow-sm"
+                        onclick="setTipoProceso('CORPORATIVO')">
+                        <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Corporativo</div>
+                        <div class="mt-1 text-base font-semibold text-slate-900">2 o más PAC</div>
+                        <div class="mt-2 text-sm text-slate-500">
+                            Proceso que agrupa varios PAC.
+                        </div>
+                    </button>
+                </div>
 
-            <div class="md:col-span-3">
-                <label class="mb-1.5 block text-xs text-slate-500">Expediente</label>
-                <input
-                    id="expediente"
-                    type="text"
-                    value="<?= h($valExpediente) ?>"
-                    class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm"
-                    placeholder="Expediente">
-            </div>
+                <div class="rounded-2xl border border-slate-200 bg-white p-5">
+                    <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">PAC vinculados</div>
+                            <div class="mt-1 text-xs text-slate-500">
+                                Selecciona los PAC que formarán parte del proceso.
+                            </div>
+                        </div>
 
-            <div class="md:col-span-3">
-                <label class="mb-1.5 block text-xs text-slate-500">Fecha convocatoria</label>
-                <input
-                    id="convocatoria"
-                    type="date"
-                    value="<?= h($valConvocatoria) ?>"
-                    class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm">
-            </div>
+                        <button
+                            type="button"
+                            id="btnAbrirModalPac"
+                            class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800">
+                            Seleccionar PAC
+                        </button>
+                    </div>
 
-            <div class="md:col-span-3">
-                <label class="mb-1.5 block text-xs text-slate-500">Año convocatoria</label>
-                <input
-                    id="anio_convocatoria"
-                    type="number"
-                    value="<?= h((string)$valAnioConvocatoria) ?>"
-                    class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm"
-                    placeholder="2026">
-            </div>
+                    <div id="pacsChips" class="mt-4 flex flex-wrap gap-2"></div>
+                </div>
 
-            <div class="md:col-span-3">
-                <label class="mb-1.5 block text-xs text-slate-500">Periodo</label>
-                <input
-                    id="periodo"
-                    type="number"
-                    value="<?= h((string)$valPeriodo) ?>"
-                    class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm"
-                    placeholder="2026">
-            </div>
+                <div class="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+                    <table class="min-w-full text-left">
+                        <thead class="bg-slate-50">
+                            <tr class="text-xs font-semibold uppercase tracking-wide text-slate-600">
+                                <th class="px-4 py-3">N° PAC</th>
+                                <th class="px-4 py-3">Descripción</th>
+                                <th class="px-4 py-3">OBAC</th>
+                                <th class="px-4 py-3 text-right">Estimado</th>
+                                <th class="px-4 py-3 text-right">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaPacsSeleccionados" class="divide-y divide-slate-100">
+                            <tr id="filaSinPac">
+                                <td colspan="5" class="px-4 py-8 text-center text-sm text-slate-500">
+                                    Aún no has agregado PAC al proceso.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-            <div class="md:col-span-2">
-                <label class="mb-1.5 block text-xs text-slate-500">Moneda</label>
-                <input
-                    id="moneda"
-                    type="text"
-                    value="<?= h($valMoneda) ?>"
-                    class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm">
-            </div>
-
-            <div class="md:col-span-2">
-                <label class="mb-1.5 block text-xs text-slate-500">Fecha registro</label>
-                <input
-                    id="fecha_registro"
-                    type="date"
-                    value="<?= h($valFechaRegistro) ?>"
-                    class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm">
-            </div>
-
-            <div class="md:col-span-2">
-                <label class="mb-1.5 block text-xs text-slate-500">Estimado total</label>
-                <input
-                    id="estimado"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    readonly
-                    value="<?= number_format($valEstimado, 2, '.', '') ?>"
-                    class="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700"
-                    placeholder="0.00">
-            </div>
-
-            <div class="md:col-span-12">
-                <label class="mb-1.5 block text-xs text-slate-500">Descripción</label>
-                <textarea
-                    id="descripcion"
-                    rows="3"
-                    class="w-full rounded-xl border border-slate-200 px-3 py-3 text-sm"
-                    placeholder="Descripción del proceso"><?= h($valDescripcion) ?></textarea>
-            </div>
-        </form>
-    </div>
-
-    <div class="rounded-2xl border border-slate-200 bg-white overflow-hidden">
-        <div class="flex flex-col gap-3 border-b border-slate-200 px-5 py-4 md:flex-row md:items-center md:justify-between">
-            <div>
-                <div class="text-sm font-semibold text-slate-900">PAC vinculados al proceso</div>
-                <div class="mt-1 text-xs text-slate-500">
-                    Agrega uno o más PAC al proceso y revísalos aquí antes de guardar.
+                <div class="flex justify-end">
+                    <button
+                        type="button"
+                        id="btnIrPaso2"
+                        class="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-slate-800">
+                        Continuar
+                    </button>
                 </div>
             </div>
 
-            <button
-                type="button"
-                id="btnAbrirModalPac"
-                class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800">
-                + Agregar PAC
-            </button>
+            <div id="step2" class="hidden space-y-6">
+                <div class="rounded-2xl border border-slate-200 bg-white p-5">
+                    <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Paso 2
+                    </div>
+                    <h2 class="mt-1 text-lg font-semibold text-slate-900">
+                        Completa los datos del proceso
+                    </h2>
+                    <p class="mt-1 text-sm text-slate-500">
+                        Registra la información general del proceso en base a los PAC seleccionados.
+                    </p>
+                </div>
+
+                <div class="rounded-2xl border border-slate-200 bg-white p-5">
+                    <form id="procesoForm" class="grid grid-cols-1 gap-4 md:grid-cols-12">
+                        <input type="hidden" id="proceso_id" value="<?= $procesoId ?>">
+
+                        <div class="md:col-span-4">
+                            <label class="mb-1.5 block text-xs text-slate-500">Código proceso</label>
+                            <input
+                                id="codigo_proceso"
+                                type="text"
+                                value="<?= h($valCodigo) ?>"
+                                class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm"
+                                placeholder="Ej: PROC-2026-001">
+                        </div>
+
+                        <div class="md:col-span-4">
+                            <label class="mb-1.5 block text-xs text-slate-500">Expediente</label>
+                            <input
+                                id="expediente"
+                                type="text"
+                                value="<?= h($valExpediente) ?>"
+                                class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm"
+                                placeholder="Expediente">
+                        </div>
+
+                        <div class="md:col-span-4">
+                            <label class="mb-1.5 block text-xs text-slate-500">Fecha convocatoria</label>
+                            <input
+                                id="convocatoria"
+                                type="date"
+                                value="<?= h($valConvocatoria) ?>"
+                                class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm">
+                        </div>
+
+                        <div class="md:col-span-3">
+                            <label class="mb-1.5 block text-xs text-slate-500">Año convocatoria</label>
+                            <input
+                                id="anio_convocatoria"
+                                type="number"
+                                value="<?= h((string)$valAnioConvocatoria) ?>"
+                                class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm"
+                                placeholder="2026">
+                        </div>
+
+                        <div class="md:col-span-3">
+                            <label class="mb-1.5 block text-xs text-slate-500">Periodo</label>
+                            <input
+                                id="periodo"
+                                type="number"
+                                value="<?= h((string)$valPeriodo) ?>"
+                                class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm"
+                                placeholder="2026">
+                        </div>
+
+                        <div class="md:col-span-3">
+                            <label class="mb-1.5 block text-xs text-slate-500">Moneda</label>
+                            <input
+                                id="moneda"
+                                type="text"
+                                value="<?= h($valMoneda) ?>"
+                                class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm">
+                        </div>
+
+                        <div class="md:col-span-3">
+                            <label class="mb-1.5 block text-xs text-slate-500">Fecha registro</label>
+                            <input
+                                id="fecha_registro"
+                                type="date"
+                                value="<?= h($valFechaRegistro) ?>"
+                                class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm">
+                        </div>
+
+                        <div class="md:col-span-4">
+                            <label class="mb-1.5 block text-xs text-slate-500">Estimado total</label>
+                            <input
+                                id="estimado"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                readonly
+                                value="<?= number_format($valEstimado, 2, '.', '') ?>"
+                                class="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700"
+                                placeholder="0.00">
+                        </div>
+
+                        <div class="md:col-span-12">
+                            <label class="mb-1.5 block text-xs text-slate-500">Descripción</label>
+                            <textarea
+                                id="descripcion"
+                                rows="4"
+                                class="w-full rounded-xl border border-slate-200 px-3 py-3 text-sm"
+                                placeholder="Descripción del proceso"><?= h($valDescripcion) ?></textarea>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="flex items-center justify-between gap-2">
+                    <button
+                        type="button"
+                        id="btnVolverPaso1"
+                        class="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                        Volver
+                    </button>
+
+                    <div class="flex items-center gap-2">
+                        <a
+                            href="<?= BASE_URL ?>/admin/procesos"
+                            class="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                            Cancelar
+                        </a>
+
+                        <button
+                            type="button"
+                            id="btnGuardarProceso"
+                            class="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-slate-800">
+                            <?= $esEdicion ? 'Actualizar proceso' : 'Guardar proceso' ?>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="grid grid-cols-1 gap-3 border-b border-slate-100 bg-slate-50/70 px-5 py-4 md:grid-cols-3">
-            <div class="rounded-xl border border-slate-200 bg-white px-4 py-3">
-                <div class="text-[11px] uppercase tracking-wide text-slate-500">Tipo</div>
-                <div id="resumenTipoProceso" class="mt-1 text-sm font-semibold text-slate-900"><?= h($valTipoProceso) ?></div>
-            </div>
+        <div class="lg:col-span-4">
+            <div class="lg:sticky lg:top-6">
+                <div class="rounded-2xl border border-slate-200 bg-white p-5">
+                    <div class="text-sm font-semibold text-slate-900">Resumen del proceso</div>
 
-            <div class="rounded-xl border border-slate-200 bg-white px-4 py-3">
-                <div class="text-[11px] uppercase tracking-wide text-slate-500">PAC seleccionados</div>
-                <div id="pacSeleccionadosInfo" class="mt-1 text-sm font-semibold text-slate-900">0</div>
-            </div>
+                    <div class="mt-4 space-y-4">
+                        <div>
+                            <div class="text-[11px] uppercase tracking-wide text-slate-500">Tipo</div>
+                            <div id="resumenTipoProceso" class="mt-1 text-sm font-semibold text-slate-900">
+                                <?= h($valTipoProceso) ?>
+                            </div>
+                        </div>
 
-            <div class="rounded-xl border border-slate-200 bg-white px-4 py-3">
-                <div class="text-[11px] uppercase tracking-wide text-slate-500">Estimado acumulado</div>
-                <div id="estimadoResumen" class="mt-1 text-sm font-semibold text-slate-900">S/ 0.00</div>
+                        <div>
+                            <div class="text-[11px] uppercase tracking-wide text-slate-500">PAC seleccionados</div>
+                            <div id="pacSeleccionadosInfo" class="mt-1 text-sm font-semibold text-slate-900">0</div>
+                        </div>
+
+                        <div>
+                            <div class="text-[11px] uppercase tracking-wide text-slate-500">Estimado acumulado</div>
+                            <div id="estimadoResumen" class="mt-1 text-sm font-semibold text-slate-900">S/ 0.00</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                        <div class="text-[11px] uppercase tracking-wide text-slate-500">Regla actual</div>
+                        <div id="reglaProceso" class="mt-1 text-sm font-medium text-slate-700">
+                            Solo 1 PAC permitido
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-
-        <div class="overflow-auto">
-            <table class="min-w-full text-left">
-                <thead class="bg-slate-50">
-                    <tr class="text-xs font-semibold uppercase tracking-wide text-slate-600">
-                        <th class="px-4 py-3">N° PAC</th>
-                        <th class="px-4 py-3">P/NP</th>
-                        <th class="px-4 py-3">Descripción</th>
-                        <th class="px-4 py-3">OBAC</th>
-                        <th class="px-4 py-3">Estado</th>
-                        <th class="px-4 py-3 text-right">Estimado</th>
-                        <th class="px-4 py-3 text-right">Acción</th>
-                    </tr>
-                </thead>
-                <tbody id="tablaPacsSeleccionados" class="divide-y divide-slate-100">
-                    <tr id="filaSinPac">
-                        <td colspan="7" class="px-4 py-8 text-center text-sm text-slate-500">
-                            Aún no has agregado PAC al proceso.
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="flex items-center justify-end gap-2">
-        <a
-            href="<?= BASE_URL ?>/admin/procesos"
-            class="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">
-            Cancelar
-        </a>
-
-        <button
-            type="button"
-            id="btnGuardarProceso"
-            class="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-slate-800">
-            <?= $esEdicion ? 'Actualizar proceso' : 'Guardar proceso' ?>
-        </button>
     </div>
 </div>
 
@@ -464,7 +537,8 @@ if (!empty($pacsVinculados)) {
     }
 
     function getTipoProceso() {
-        return document.getElementById('tipo_proceso').value;
+        const el = document.getElementById('tipo_proceso');
+        return el ? el.value : 'INDIVIDUAL';
     }
 
     function openModalPac() {
@@ -492,45 +566,31 @@ if (!empty($pacsVinculados)) {
         document.getElementById('contadorModalPac').textContent = String(total);
     }
 
-    function renderPacsSeleccionados() {
-        const tbody = document.getElementById('tablaPacsSeleccionados');
-        tbody.innerHTML = '';
+    function renderPacsChips() {
+        const wrap = document.getElementById('pacsChips');
+        if (!wrap) return;
+
+        wrap.innerHTML = '';
 
         if (pacSeleccionados.size === 0) {
-            tbody.innerHTML = `
-                <tr id="filaSinPac">
-                    <td colspan="7" class="px-4 py-8 text-center text-sm text-slate-500">
-                        Aún no has agregado PAC al proceso.
-                    </td>
-                </tr>
+            wrap.innerHTML = `
+                <div class="rounded-full border border-dashed border-slate-300 px-3 py-1.5 text-xs text-slate-500">
+                    Ningún PAC seleccionado
+                </div>
             `;
-            actualizarResumen();
             return;
         }
 
-        pacSeleccionados.forEach((pac, id) => {
-            const tr = document.createElement('tr');
-            tr.className = 'hover:bg-slate-50';
-            tr.innerHTML = `
-                <td class="px-4 py-3 font-semibold text-slate-900">${pac.nopac}</td>
-                <td class="px-4 py-3">${pac.pn}</td>
-                <td class="px-4 py-3">${pac.descripcion}</td>
-                <td class="px-4 py-3">${pac.obac}</td>
-                <td class="px-4 py-3">${pac.estado}</td>
-                <td class="px-4 py-3 text-right font-semibold text-slate-900">${formatMoney(pac.estimado)}</td>
-                <td class="px-4 py-3 text-right">
-                    <button
-                        type="button"
-                        class="inline-flex items-center justify-center rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-100"
-                        onclick="quitarPacSeleccionado('${id}')">
-                        Quitar
-                    </button>
-                </td>
+        pacSeleccionados.forEach((pac) => {
+            const chip = document.createElement('div');
+            chip.className = 'inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700';
+            chip.innerHTML = `
+                <span class="font-semibold">${pac.nopac}</span>
+                <span class="text-slate-400">•</span>
+                <span>${pac.obac}</span>
             `;
-            tbody.appendChild(tr);
+            wrap.appendChild(chip);
         });
-
-        actualizarResumen();
     }
 
     function actualizarResumen() {
@@ -545,6 +605,47 @@ if (!empty($pacsVinculados)) {
         document.getElementById('estimadoResumen').textContent = formatMoney(totalEstimado);
         document.getElementById('estimado').value = totalEstimado.toFixed(2);
         document.getElementById('resumenTipoProceso').textContent = getTipoProceso();
+
+        renderPacsChips();
+    }
+
+    function renderPacsSeleccionados() {
+        const tbody = document.getElementById('tablaPacsSeleccionados');
+        tbody.innerHTML = '';
+
+        if (pacSeleccionados.size === 0) {
+            tbody.innerHTML = `
+                <tr id="filaSinPac">
+                    <td colspan="5" class="px-4 py-8 text-center text-sm text-slate-500">
+                        Aún no has agregado PAC al proceso.
+                    </td>
+                </tr>
+            `;
+            actualizarResumen();
+            return;
+        }
+
+        pacSeleccionados.forEach((pac, id) => {
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-slate-50';
+            tr.innerHTML = `
+                <td class="px-4 py-3 font-semibold text-slate-900">${pac.nopac}</td>
+                <td class="px-4 py-3">${pac.descripcion}</td>
+                <td class="px-4 py-3">${pac.obac}</td>
+                <td class="px-4 py-3 text-right font-semibold text-slate-900">${formatMoney(pac.estimado)}</td>
+                <td class="px-4 py-3 text-right">
+                    <button
+                        type="button"
+                        class="inline-flex items-center justify-center rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-100"
+                        onclick="quitarPacSeleccionado('${id}')">
+                        Quitar
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        actualizarResumen();
     }
 
     function quitarPacSeleccionado(id) {
@@ -587,7 +688,9 @@ if (!empty($pacsVinculados)) {
             const firstKey = pacSeleccionados.keys().next().value;
             const firstPac = pacSeleccionados.get(firstKey);
             pacSeleccionados.clear();
-            pacSeleccionados.set(firstKey, firstPac);
+            if (firstPac) {
+                pacSeleccionados.set(firstKey, firstPac);
+            }
         }
 
         renderPacsSeleccionados();
@@ -626,8 +729,99 @@ if (!empty($pacsVinculados)) {
         aplicarFiltroPacModal();
     }
 
-    document.getElementById('tipo_proceso')?.addEventListener('change', () => {
+    function activarPaso(numero) {
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+
+        if (numero === 1) {
+            step1.classList.remove('hidden');
+            step2.classList.add('hidden');
+            return;
+        }
+
+        step1.classList.add('hidden');
+        step2.classList.remove('hidden');
+    }
+
+    function validarPaso1() {
         const tipo = getTipoProceso();
+        const total = pacSeleccionados.size;
+
+        if (tipo === 'INDIVIDUAL' && total !== 1) {
+            showToast('Un proceso individual debe tener exactamente 1 PAC.', 'error', 'Error');
+            return false;
+        }
+
+        if (tipo === 'CORPORATIVO' && total < 2) {
+            showToast('Un proceso corporativo debe tener al menos 2 PAC.', 'error', 'Error');
+            return false;
+        }
+
+        return true;
+    }
+
+    function setTipoProceso(tipo) {
+        const inputTipo = document.getElementById('tipo_proceso');
+        if (inputTipo) inputTipo.value = tipo;
+
+        const cardIndividual = document.getElementById('cardTipoIndividual');
+        const cardCorporativo = document.getElementById('cardTipoCorporativo');
+
+        [cardIndividual, cardCorporativo].forEach(card => {
+            if (!card) return;
+
+            card.classList.remove('border-slate-900', 'bg-slate-900');
+            card.classList.add('border-slate-200', 'bg-white');
+
+            card.querySelectorAll('div').forEach(el => {
+                el.classList.remove('text-white', 'text-slate-300');
+                if (el.textContent.trim() === 'Individual' || el.textContent.trim() === 'Corporativo') {
+                    el.classList.add('text-slate-500');
+                    el.classList.remove('text-slate-900');
+                }
+            });
+
+            const nodes = card.querySelectorAll('div');
+            if (nodes[0]) {
+                nodes[0].classList.remove('text-white', 'text-slate-300');
+                nodes[0].classList.add('text-slate-500');
+            }
+            if (nodes[1]) {
+                nodes[1].classList.remove('text-white', 'text-slate-300');
+                nodes[1].classList.add('text-slate-900');
+            }
+            if (nodes[2]) {
+                nodes[2].classList.remove('text-white', 'text-slate-300');
+                nodes[2].classList.add('text-slate-500');
+            }
+        });
+
+        const activa = tipo === 'INDIVIDUAL' ? cardIndividual : cardCorporativo;
+        if (activa) {
+            activa.classList.remove('border-slate-200', 'bg-white');
+            activa.classList.add('border-slate-900', 'bg-slate-900');
+
+            const nodes = activa.querySelectorAll('div');
+            if (nodes[0]) {
+                nodes[0].classList.remove('text-slate-500');
+                nodes[0].classList.add('text-slate-300');
+            }
+            if (nodes[1]) {
+                nodes[1].classList.remove('text-slate-900');
+                nodes[1].classList.add('text-white');
+            }
+            if (nodes[2]) {
+                nodes[2].classList.remove('text-slate-500');
+                nodes[2].classList.add('text-slate-300');
+            }
+        }
+
+        const regla = document.getElementById('reglaProceso');
+        if (regla) {
+            regla.textContent = tipo === 'INDIVIDUAL'
+                ? 'Solo 1 PAC permitido'
+                : 'Debe seleccionar 2 o más PAC';
+        }
 
         if (tipo === 'INDIVIDUAL' && pacSeleccionados.size > 1) {
             const firstKey = pacSeleccionados.keys().next().value;
@@ -637,12 +831,12 @@ if (!empty($pacsVinculados)) {
                 pacSeleccionados.set(firstKey, firstPac);
             }
             renderPacsSeleccionados();
+            syncChecksModal();
+            actualizarContadorModal();
         }
 
         actualizarResumen();
-        syncChecksModal();
-        actualizarContadorModal();
-    });
+    }
 
     document.getElementById('btnAbrirModalPac')?.addEventListener('click', openModalPac);
     document.getElementById('btnCerrarModalPac')?.addEventListener('click', closeModalPac);
@@ -666,12 +860,27 @@ if (!empty($pacsVinculados)) {
     document.getElementById('filtroPacPeriodo')?.addEventListener('input', aplicarFiltroPacModal);
     document.getElementById('btnLimpiarFiltroPac')?.addEventListener('click', limpiarFiltroPacModal);
 
+    document.getElementById('btnIrPaso2')?.addEventListener('click', () => {
+        if (!validarPaso1()) return;
+        activarPaso(2);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    document.getElementById('btnVolverPaso1')?.addEventListener('click', () => {
+        activarPaso(1);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
     document.getElementById('btnGuardarProceso')?.addEventListener('click', async () => {
         const btn = document.getElementById('btnGuardarProceso');
         const textoOriginal = btn.textContent;
-        const tipo = getTipoProceso();
         const pacIds = Array.from(pacSeleccionados.keys());
         const procesoId = document.getElementById('proceso_id').value;
+
+        if (!validarPaso1()) {
+            activarPaso(1);
+            return;
+        }
 
         if (!document.getElementById('codigo_proceso').value.trim()) {
             showToast('Debe ingresar el código del proceso.', 'error', 'Error');
@@ -685,16 +894,6 @@ if (!empty($pacsVinculados)) {
 
         if (!document.getElementById('convocatoria').value) {
             showToast('Debe ingresar la fecha de convocatoria.', 'error', 'Error');
-            return;
-        }
-
-        if (tipo === 'INDIVIDUAL' && pacIds.length !== 1) {
-            showToast('Un proceso individual debe tener exactamente 1 PAC.', 'error', 'Error');
-            return;
-        }
-
-        if (tipo === 'CORPORATIVO' && pacIds.length < 2) {
-            showToast('Un proceso corporativo debe tener al menos 2 PAC.', 'error', 'Error');
             return;
         }
 
@@ -757,5 +956,13 @@ if (!empty($pacsVinculados)) {
         }
     });
 
+    setTipoProceso(getTipoProceso());
     renderPacsSeleccionados();
+    activarPaso(1);
+
+    <?php if ($esEdicion): ?>
+    if (pacSeleccionados.size > 0) {
+        actualizarResumen();
+    }
+    <?php endif; ?>
 </script>
