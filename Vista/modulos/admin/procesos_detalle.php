@@ -141,71 +141,87 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
 
 <div class="detail-shell space-y-4">
 
-  <!-- TOP BAR -->
-  <div class="detail-topbar">
-    <div class="left">
-      <a href="<?= BASE_URL ?>/admin/procesos" class="btn-icon" aria-label="Volver">←</a>
+  <!-- TOP BAR REDISEÑADO -->
+  <div class="detail-topbar premium-topbar">
 
-      <div class="tt">
-        <div class="kicker">
-          <span>Detalle del proceso</span>
-        </div>
+    <div class="topbar-main">
+      <div class="topbar-left">
+        <a href="<?= BASE_URL ?>/admin/procesos" class="btn-icon btn-back" aria-label="Volver">←</a>
 
-        <div class="title-wrap">
-          <div class="title marker-label"><?= h($proceso['descripcion'] ?? '-') ?></div>
+        <div class="process-head">
+          <div class="process-kicker-row">
+            <span class="process-kicker">Detalle del proceso</span>
+            <?php if (!empty($proceso['codigo_proceso'])): ?>
+              <span class="process-mini-code"><?= h($proceso['codigo_proceso']) ?></span>
+            <?php endif; ?>
+          </div>
 
-          <div class="top-meta">
+          <h1 class="process-title">
+            <?= h($proceso['descripcion'] ?? '-') ?>
+          </h1>
+
+          <div class="process-meta">
             <span class="type-pill <?= h($tipoPillClass) ?>">
               <?= h($tipoLabel) ?>
             </span>
 
-            <span class="top-sep">•</span>
-            <span class="top-code"><?= v($proceso['codigo_proceso'] ?? '') ?></span>
-
             <?php if (!empty($proceso['periodo'])): ?>
-              <span class="top-sep">•</span>
-              <span class="top-code">Periodo <?= h($proceso['periodo']) ?></span>
+              <span class="meta-chip">Periodo <?= h($proceso['periodo']) ?></span>
             <?php endif; ?>
+
+            <?php if (!empty($proceso['anio_convocatoria'])): ?>
+              <span class="meta-chip">Convocatoria <?= h($proceso['anio_convocatoria']) ?></span>
+            <?php endif; ?>
+          </div>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <div class="status-block">
+          <div class="status-label">Estado actual</div>
+          <span class="pill <?= h(statusPillClass($estadoUp)) ?> status-pill-lg">
+            <?= h($estadoUp ?: '-') ?>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <div class="topbar-actions-left">
+        <button type="button" class="btn-soft btn-action" onclick="printTimeline()">
+          🖨️ <span>Timeline</span>
+        </button>
+
+        <button type="button" class="btn-soft btn-action" onclick="printProject()">
+          🖨️ <span>Project</span>
+        </button>
+      </div>
+
+      <div class="topbar-actions-right">
+        <button type="button" class="btn-primary btn-action-main" onclick="toggleActivityForm()">
+          + Actividad
+        </button>
+
+        <div class="actions">
+          <button type="button" class="btn-icon" data-menu-btn aria-label="Más acciones">⋯</button>
+
+          <div class="menu hidden" data-menu>
+            <a class="menu-item" href="<?= BASE_URL ?>/admin/procesos_editar?id=<?= $idProceso ?>">
+              ✏️ Editar
+            </a>
+
+            <button
+              class="menu-item danger"
+              type="button"
+              data-del="<?= $idProceso ?>"
+              data-name="<?= h($proceso['descripcion'] ?? 'este proceso') ?>">
+              🗑️ Eliminar
+            </button>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="right">
-      <span class="pill <?= h(statusPillClass($estadoUp)) ?>">
-        <?= h($estadoUp ?: '-') ?>
-      </span>
-
-      <button type="button" class="btn-soft" onclick="printTimeline()">
-        🖨️ Timeline
-      </button>
-
-      <button type="button" class="btn-soft" onclick="printProject()">
-        🖨️ Project
-      </button>
-
-      <button type="button" class="btn-primary" onclick="toggleActivityForm()">
-        + Actividad
-      </button>
-
-      <div class="actions">
-        <button type="button" class="btn-icon" data-menu-btn aria-label="Más acciones">⋯</button>
-
-        <div class="menu hidden" data-menu>
-          <a class="menu-item" href="<?= BASE_URL ?>/admin/procesos/editar?id=<?= $idProceso ?>">
-            ✏️ Editar
-          </a>
-
-          <button
-            class="menu-item danger"
-            type="button"
-            data-del="<?= $idProceso ?>"
-            data-name="<?= h($proceso['descripcion'] ?? 'este proceso') ?>">
-            🗑️ Eliminar
-          </button>
-        </div>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -258,16 +274,6 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
 
     <div class="kv-grid">
       <div class="kv">
-        <div class="k">Tipo</div>
-        <div class="v"><?= h($tipoLabel) ?></div>
-      </div>
-
-      <div class="kv">
-        <div class="k">Año convocatoria</div>
-        <div class="v"><?= v($proceso['anio_convocatoria'] ?? '') ?></div>
-      </div>
-
-      <div class="kv">
         <div class="k">Periodo</div>
         <div class="v"><?= v($proceso['periodo'] ?? '') ?></div>
       </div>
@@ -282,20 +288,22 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
         <div class="v"><?= fmt_date($proceso['convocatoria'] ?? null) ?></div>
       </div>
 
-      <div class="kv">
+      <div class="kv kv-pacs">
         <div class="k">PACs vinculados</div>
-        <div class="v" style="display:flex;flex-wrap:wrap;gap:6px;">
+        <div class="v">
           <?php if (empty($pacs_vinculados)): ?>
-            -
+            <div class="chips chips-empty">-</div>
           <?php else: ?>
-            <?php foreach ($pacs_vinculados as $p): ?>
-              <?php
-              $obac = trim((string)($p['obac_nombre'] ?? ''));
-              $nopac = trim((string)($p['nopac'] ?? ''));
-              $codigo = $obac && $nopac ? $obac . '-' . $nopac : $nopac;
-              ?>
-              <span class="chip"><?= h($codigo) ?></span>
-            <?php endforeach; ?>
+            <div class="chips">
+              <?php foreach ($pacs_vinculados as $p): ?>
+                <?php
+                $obac = trim((string)($p['obac_nombre'] ?? ''));
+                $nopac = trim((string)($p['nopac'] ?? ''));
+                $codigo = $obac && $nopac ? $obac . '-' . $nopac : $nopac;
+                ?>
+                <span class="chip"><?= h($codigo) ?></span>
+              <?php endforeach; ?>
+            </div>
           <?php endif; ?>
         </div>
       </div>
@@ -590,6 +598,47 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
 </div>
 
 <style>
+  :root {
+    --slate-50: #f8fafc;
+    --slate-100: #f1f5f9;
+    --slate-200: #e2e8f0;
+    --slate-300: #cbd5e1;
+    --slate-400: #94a3b8;
+    --slate-500: #64748b;
+    --slate-600: #475569;
+    --slate-900: #0f172a;
+
+    --white: #ffffff;
+    --blue-50: #e0f2fe;
+    --blue-700: #0369a1;
+    --indigo-50: #ede9fe;
+    --indigo-700: #6d28d9;
+    --green-50: #dcfce7;
+    --green-700: #15803d;
+    --green-900: #14532d;
+    --green-100: #f0fdf4;
+    --green-200: #bbf7d0;
+    --green-300: #86efac;
+    --rose-50: #ffe4e6;
+    --rose-700: #be123c;
+    --amber-50: #fef3c7;
+    --amber-700: #92400e;
+    --orange-50: #fff7ed;
+    --orange-700: #c2410c;
+    --orange-200: #fed7aa;
+    --wine: #7a1e2c;
+    --shadow-sm: 0 8px 20px rgba(15, 23, 42, .06);
+    --shadow-md: 0 12px 30px rgba(15, 23, 42, .08);
+    --shadow-lg: 0 20px 45px rgba(15, 23, 42, .12);
+    --radius-xl: 18px;
+    --radius-lg: 16px;
+    --radius-md: 14px;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
   .detail-shell {
     width: 100%;
     max-width: 1600px;
@@ -602,131 +651,224 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     gap: 18px;
   }
 
-  @media (max-width:1200px) {
-    .detail-grid {
-      grid-template-columns: 360px 1fr;
-    }
+  .panel {
+    border: 1px solid var(--slate-200);
+    background: var(--white);
+    border-radius: var(--radius-xl);
+    padding: 18px;
   }
 
-  @media (max-width:1023px) {
-    .detail-grid {
-      grid-template-columns: 1fr;
-    }
+  .right-panel,
+  .summary-panel {
+    display: flex;
+    flex-direction: column;
   }
 
+  .summary-panel {
+    gap: 16px;
+  }
+
+  .sticky-panel {
+    position: sticky;
+    top: 92px;
+    align-self: start;
+  }
+
+  /* =========================
+     HEADER PREMIUM
+     ========================= */
   .detail-topbar {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 16px;
-    border: 1px solid #e2e8f0;
-    background: #fff;
-    border-radius: 18px;
+    flex-direction: column;
+    gap: 18px;
+    padding: 20px 22px;
+    border: 1px solid #dbe3ee;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+    border-radius: 22px;
     position: sticky;
     top: 12px;
     z-index: 20;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, .04);
   }
 
-  .detail-topbar .left {
+  .topbar-main {
     display: flex;
-    align-items: center;
-    gap: 12px;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+  }
+
+  .topbar-left {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
     min-width: 0;
     flex: 1;
   }
 
-  .detail-topbar .right {
+  .topbar-right {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    flex-shrink: 0;
+  }
+
+  .btn-back {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+
+  .process-head {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .process-kicker-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+
+  .process-kicker,
+  .kicker2 {
+    font-size: 12px;
+    color: var(--slate-500);
+    font-weight: 600;
+    letter-spacing: .01em;
+  }
+
+  .process-mini-code {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--slate-50);
+    border: 1px solid var(--slate-200);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--slate-600);
+  }
+
+  .process-title {
+    margin: 0;
+    font-size: 25px;
+    line-height: 1.08;
+    letter-spacing: -0.04em;
+    font-weight: 850;
+    color: var(--slate-900);
+    max-width: 920px;
+    text-wrap: balance;
+  }
+
+  .process-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .meta-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 11px;
+    border-radius: 999px;
+    background: var(--slate-50);
+    border: 1px solid var(--slate-200);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--slate-600);
+  }
+
+  .status-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    min-width: 130px;
+  }
+
+  .status-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--slate-400);
+  }
+
+  .status-pill-lg {
+    padding: 9px 14px;
+    font-size: 12px;
+    letter-spacing: .01em;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18);
+  }
+
+  .topbar-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    padding-top: 14px;
+    border-top: 1px solid #edf2f7;
+    flex-wrap: wrap;
+  }
+
+  .topbar-actions-left,
+  .topbar-actions-right {
     display: flex;
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
   }
 
-  .tt {
-    min-width: 0;
+  .btn-action {
+    min-height: 40px;
+    padding: 10px 14px;
   }
 
-  .kicker,
-  .kicker2 {
-    font-size: 12px;
-    color: #64748b;
-    font-weight: 600;
-    letter-spacing: .01em;
+  .btn-action-main {
+    min-height: 42px;
+    padding: 10px 16px;
   }
 
-  .marker-label {
-    display: inline-block;
-    position: relative;
-    color: #334155;
-    font-weight: 800;
-    padding: 0 4px;
-    z-index: 1;
-  }
-
-  .marker-label::before {
-    content: "";
-    position: absolute;
-    left: -2px;
-    right: -2px;
-    bottom: 1px;
-    height: 0.8em;
-    background: #fde047;
-    border-radius: 4px;
-    z-index: -1;
-    transform: rotate(-1deg);
-    opacity: .95;
-  }
-
-  .title-wrap {
-    min-width: 0;
-  }
-
-  .title {
-    font-size: 22px;
-    font-weight: 800;
-    color: #0f172a;
-    line-height: 1.15;
-    letter-spacing: -0.02em;
-    margin-top: 2px;
-  }
-
-  .top-meta {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 8px;
-  }
-
-  .top-sep {
-    color: #94a3b8;
-    font-size: 12px;
-  }
-
-  .top-code {
-    font-size: 12px;
-    color: #64748b;
-    font-weight: 600;
+  /* =========================
+     BOTONES Y PILLS
+     ========================= */
+  .type-pill,
+  .pill,
+  .chip,
+  .tab-count,
+  .tbadge,
+  .tcurrent-badge,
+  .pac-estado,
+  .meta-chip,
+  .process-mini-code {
+    white-space: nowrap;
   }
 
   .type-pill {
     display: inline-flex;
     align-items: center;
     border-radius: 999px;
-    padding: 5px 11px;
+    padding: 6px 12px;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 800;
+    letter-spacing: .01em;
   }
 
   .tp-ind {
-    background: #e0f2fe;
-    color: #0369a1;
+    background: var(--blue-50);
+    color: var(--blue-700);
   }
 
   .tp-corp {
-    background: #ede9fe;
-    color: #6d28d9;
+    background: var(--indigo-50);
+    color: var(--indigo-700);
   }
 
   .btn-icon {
@@ -736,11 +878,17 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     width: 40px;
     height: 40px;
     border-radius: 14px;
-    border: 1px solid #e2e8f0;
-    background: #fff;
+    border: 1px solid var(--slate-200);
+    background: var(--white);
     cursor: pointer;
     text-decoration: none;
-    color: #0f172a;
+    color: var(--slate-900);
+    transition: .18s ease;
+  }
+
+  .btn-icon:hover {
+    background: var(--slate-50);
+    border-color: var(--slate-300);
   }
 
   .btn-soft,
@@ -756,21 +904,71 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     font-weight: 700;
     text-decoration: none;
     cursor: pointer;
+    transition: .18s ease;
   }
 
   .btn-soft,
   .btn-ghost {
-    border: 1px solid #e2e8f0;
-    background: #fff;
-    color: #0f172a;
+    border: 1px solid var(--slate-200);
+    background: var(--white);
+    color: var(--slate-900);
+  }
+
+  .btn-soft:hover,
+  .btn-ghost:hover {
+    background: var(--slate-50);
+    border-color: var(--slate-300);
   }
 
   .btn-primary {
-    border: 1px solid #0f172a;
-    background: #0f172a;
-    color: #fff;
+    border: 1px solid var(--slate-900);
+    background: var(--slate-900);
+    color: var(--white);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, .10);
   }
 
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px rgba(15, 23, 42, .14);
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .pill-slate {
+    background: var(--slate-100);
+    color: #334155;
+  }
+
+  .pill-wine {
+    background: var(--wine);
+    color: var(--white);
+  }
+
+  .pill-amber {
+    background: var(--amber-50);
+    color: var(--amber-700);
+  }
+
+  .pill-rose {
+    background: var(--rose-50);
+    color: var(--rose-700);
+  }
+
+  .pill-dark {
+    background: var(--slate-200);
+    color: var(--slate-900);
+  }
+
+  /* =========================
+     MENU ACCIONES
+     ========================= */
   .actions {
     position: relative;
   }
@@ -780,10 +978,10 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     right: 0;
     top: 46px;
     width: 210px;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    box-shadow: 0 20px 45px rgba(15, 23, 42, .12);
+    background: var(--white);
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
     padding: 6px;
   }
 
@@ -800,7 +998,7 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     border-radius: 12px;
     font-size: 13px;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--slate-900);
     text-decoration: none;
     border: none;
     background: transparent;
@@ -808,39 +1006,16 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
   }
 
   .menu-item:hover {
-    background: #f8fafc;
+    background: var(--slate-50);
   }
 
   .menu-item.danger {
     color: #e11d48;
   }
 
-  .panel {
-    border: 1px solid #e2e8f0;
-    background: #fff;
-    border-radius: 18px;
-    padding: 18px;
-  }
-
-  .sticky-panel {
-    position: sticky;
-    top: 86px;
-    align-self: start;
-  }
-
-  @media (max-width:1023px) {
-    .sticky-panel {
-      position: relative;
-      top: auto;
-    }
-  }
-
-  .summary-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
+  /* =========================
+     COLUMNA IZQUIERDA
+     ========================= */
   .summary-head {
     display: flex;
     gap: 14px;
@@ -851,8 +1026,8 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     min-width: 58px;
     height: 58px;
     border-radius: 18px;
-    background: #0f172a;
-    color: #fff;
+    background: var(--slate-900);
+    color: var(--white);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -868,7 +1043,7 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
   .summary-kicker {
     font-size: 11px;
     font-weight: 700;
-    color: #64748b;
+    color: var(--slate-500);
     text-transform: uppercase;
     letter-spacing: .08em;
   }
@@ -877,7 +1052,7 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     margin-top: 4px;
     font-size: 19px;
     font-weight: 800;
-    color: #0f172a;
+    color: var(--slate-900);
     line-height: 1.35;
     letter-spacing: -0.02em;
   }
@@ -885,36 +1060,46 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
   .obac-name {
     margin-top: 4px;
     font-size: 13px;
-    color: #64748b;
+    color: var(--slate-500);
   }
 
   .chips {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    justify-content: center;
+    /* centra horizontal */
+    align-items: center;
+    gap: 8px;
     margin-top: 10px;
+    min-height: 52px;
+    /* da aire vertical */
   }
 
   .chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 30px;
+    padding: 6px 12px;
     font-size: 12px;
     font-weight: 700;
     color: #334155;
     background: #f1f5f9;
     border: 1px solid #e2e8f0;
     border-radius: 999px;
-    padding: 4px 10px;
+    text-align: center;
   }
 
   .money-card {
     padding: 16px;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    background: #f8fafc;
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius-lg);
+    background: var(--slate-50);
   }
 
   .money-label {
     font-size: 12px;
-    color: #64748b;
+    color: var(--slate-500);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: .05em;
@@ -930,33 +1115,33 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
   .money-symbol {
     font-size: 13px;
     font-weight: 700;
-    color: #64748b;
+    color: var(--slate-500);
   }
 
   .money-value {
     font-size: 30px;
     font-weight: 800;
     line-height: 1;
-    color: #0f172a;
+    color: var(--slate-900);
     letter-spacing: -0.03em;
   }
 
   .money-sub {
     margin-top: 6px;
     font-size: 12px;
-    color: #64748b;
+    color: var(--slate-500);
   }
 
   .desc-card {
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    background: #fff;
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius-lg);
+    background: var(--white);
     padding: 16px;
   }
 
   .desc-kicker {
     font-size: 12px;
-    color: #64748b;
+    color: var(--slate-500);
     font-weight: 700;
     margin-bottom: 8px;
   }
@@ -974,15 +1159,15 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
   }
 
   .kv {
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--slate-200);
     border-radius: 14px;
     padding: 12px;
-    background: #fff;
+    background: var(--white);
   }
 
   .kv .k {
     font-size: 12px;
-    color: #64748b;
+    color: var(--slate-500);
     font-weight: 600;
   }
 
@@ -990,21 +1175,31 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     font-size: 14px;
     color: #0f172a;
     font-weight: 700;
-    margin-top: 3px;
+    margin-top: 6px;
     line-height: 1.4;
   }
 
+  .kv-pacs .v {
+    margin-top: 8px;
+  }
+
+  .chips-empty {
+    justify-content: center;
+    color: #94a3b8;
+    min-height: 40px;
+  }
+
   .adj-block {
-    border: 1px solid #86efac;
-    border-radius: 16px;
+    border: 1px solid var(--green-300);
+    border-radius: var(--radius-lg);
     padding: 14px;
-    background: #f0fdf4;
+    background: var(--green-100);
   }
 
   .adj-label {
     font-size: 11px;
     font-weight: 700;
-    color: #15803d;
+    color: var(--green-700);
     text-transform: uppercase;
     letter-spacing: .06em;
     margin-bottom: 10px;
@@ -1017,8 +1212,8 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
   }
 
   .adj-kv {
-    background: #fff;
-    border: 1px solid #bbf7d0;
+    background: var(--white);
+    border: 1px solid var(--green-200);
     border-radius: 12px;
     padding: 10px;
   }
@@ -1029,34 +1224,33 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
 
   .adj-k {
     font-size: 12px;
-    color: #15803d;
+    color: var(--green-700);
     font-weight: 600;
   }
 
   .adj-v {
     font-size: 14px;
-    color: #14532d;
+    color: var(--green-900);
     font-weight: 700;
     margin-top: 3px;
   }
 
-  .right-panel {
-    display: flex;
-    flex-direction: column;
-  }
-
+  /* =========================
+     TABS
+     ========================= */
   .tab-bar {
     display: flex;
     gap: 4px;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--slate-200);
     margin-bottom: 16px;
+    flex-wrap: wrap;
   }
 
   .tab-btn {
     padding: 8px 14px;
     font-size: 13px;
     font-weight: 600;
-    color: #64748b;
+    color: var(--slate-500);
     border: none;
     border-bottom: 2px solid transparent;
     background: transparent;
@@ -1068,12 +1262,12 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
   }
 
   .tab-btn.active {
-    color: #0f172a;
-    border-bottom-color: #0f172a;
+    color: var(--slate-900);
+    border-bottom-color: var(--slate-900);
   }
 
   .tab-count {
-    background: #f1f5f9;
+    background: var(--slate-100);
     border-radius: 999px;
     padding: 2px 7px;
     font-size: 11px;
@@ -1100,7 +1294,7 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
   .section-title {
     font-size: 20px;
     font-weight: 800;
-    color: #0f172a;
+    color: var(--slate-900);
     line-height: 1.15;
     letter-spacing: -0.02em;
     margin-top: 2px;
@@ -1109,43 +1303,92 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
   .section-subtitle {
     margin-top: 6px;
     font-size: 13px;
-    color: #64748b;
+    color: var(--slate-500);
   }
 
-  .pill {
-    display: inline-flex;
-    align-items: center;
-    border-radius: 999px;
-    padding: 6px 12px;
+  .empty {
+    border: 1px dashed var(--slate-300);
+    border-radius: var(--radius-lg);
+    padding: 14px;
+    color: var(--slate-500);
+    background: var(--white);
+  }
+
+  /* =========================
+     FORMULARIO
+     ========================= */
+  .activity-form-wrap {
+    margin-bottom: 16px;
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius-lg);
+    padding: 14px;
+    background: var(--slate-50);
+  }
+
+  .activity-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .field-full {
+    grid-column: 1 / -1;
+  }
+
+  .field label {
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 600;
+    color: var(--slate-500);
   }
 
-  .pill-slate {
-    background: #f1f5f9;
-    color: #334155;
+  .field input,
+  .field select,
+  .field textarea {
+    width: 100%;
+    border: 1px solid #dbe2ea;
+    border-radius: 14px;
+    background: var(--white);
+    color: var(--slate-900);
+    padding: 11px 13px;
+    font-size: 14px;
+    outline: none;
+    transition: .18s ease;
   }
 
-  .pill-wine {
-    background: #7a1e2c;
-    color: #fff;
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
+    border-color: var(--slate-400);
+    box-shadow: 0 0 0 4px rgba(148, 163, 184, .15);
   }
 
-  .pill-amber {
-    background: #fef3c7;
-    color: #92400e;
+  .field textarea {
+    min-height: 110px;
+    resize: vertical;
   }
 
-  .pill-rose {
-    background: #ffe4e6;
-    color: #be123c;
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
   }
 
-  .pill-dark {
-    background: #e2e8f0;
-    color: #0f172a;
-  }
-
+  /* =========================
+     TIMELINE
+     ========================= */
   .timeline {
     position: relative;
     display: flex;
@@ -1170,7 +1413,7 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     top: 0;
     bottom: -16px;
     width: 2px;
-    background: #e2e8f0;
+    background: var(--slate-200);
   }
 
   .titem:last-child .tline {
@@ -1184,11 +1427,11 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     align-self: center;
     justify-self: center;
     z-index: 2;
-    border: 3px solid #fff;
+    border: 3px solid var(--white);
   }
 
   .dot-wine {
-    background: #7a1e2c;
+    background: var(--wine);
   }
 
   .dot-amber {
@@ -1208,26 +1451,26 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
   }
 
   .dot-slate {
-    background: #94a3b8;
+    background: var(--slate-400);
   }
 
   .tcard {
     border: 1px solid #dbe3ee;
-    border-radius: 18px;
+    border-radius: var(--radius-xl);
     padding: 16px;
-    background: #fff;
+    background: var(--white);
     transition: .18s ease;
   }
 
   .tcard:hover {
-    border-color: #cbd5e1;
+    border-color: var(--slate-300);
     box-shadow: 0 10px 28px rgba(15, 23, 42, .06);
     transform: translateY(-1px);
   }
 
   .titem.is-current .tcard {
-    border-color: #cbd5e1;
-    box-shadow: 0 12px 30px rgba(15, 23, 42, .08);
+    border-color: var(--slate-300);
+    box-shadow: var(--shadow-md);
   }
 
   .trow {
@@ -1245,7 +1488,7 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
   .ttitle {
     font-size: 16px;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--slate-900);
     line-height: 1.35;
   }
 
@@ -1253,17 +1496,16 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     font-size: 11px;
     font-weight: 700;
     color: #334155;
-    background: #f1f5f9;
-    border: 1px solid #e2e8f0;
+    background: var(--slate-100);
+    border: 1px solid var(--slate-200);
     padding: 5px 10px;
     border-radius: 999px;
-    white-space: nowrap;
   }
 
   .tmeta {
     margin-top: 7px;
     font-size: 12px;
-    color: #64748b;
+    color: var(--slate-500);
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -1275,7 +1517,7 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     align-items: center;
     border-radius: 999px;
     padding: 4px 9px;
-    background: #e2e8f0;
+    background: var(--slate-200);
     color: #334155;
     font-size: 11px;
     font-weight: 700;
@@ -1283,16 +1525,138 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
 
   .tdesc {
     margin-top: 11px;
-    color: #475569;
+    color: var(--slate-600);
     line-height: 1.6;
     font-size: 13px;
   }
 
+  /* =========================
+     PROJECT
+     ========================= */
+  .roadmap {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .roadmap-card {
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius-xl);
+    padding: 16px;
+    background: var(--white);
+    transition: .2s ease;
+  }
+
+  .roadmap-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--slate-300);
+  }
+
+  .roadmap-card:last-child {
+    border-color: var(--slate-300);
+    box-shadow: 0 14px 35px rgba(15, 23, 42, .08);
+  }
+
+  .roadmap-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .roadmap-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--slate-900);
+  }
+
+  .roadmap-meta {
+    font-size: 12px;
+    color: var(--slate-500);
+    margin-top: 4px;
+    font-weight: 600;
+  }
+
+  .roadmap-last {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--slate-900);
+    background: var(--slate-100);
+    padding: 6px 10px;
+    border-radius: 999px;
+  }
+
+  .roadmap-track {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0 12px;
+    flex-wrap: wrap;
+  }
+
+  .roadmap-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    position: relative;
+  }
+
+  .roadmap-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: var(--slate-300);
+  }
+
+  .roadmap-node.is-last .roadmap-dot {
+    width: 14px;
+    height: 14px;
+    background: var(--slate-900);
+    box-shadow: 0 0 0 4px rgba(15, 23, 42, .08);
+  }
+
+  .roadmap-date {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--slate-500);
+  }
+
+  .roadmap-line {
+    height: 2px;
+    width: 34px;
+    background: linear-gradient(to right, var(--slate-200), var(--slate-400));
+  }
+
+  .reprog-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    background: var(--orange-50);
+    color: var(--orange-700);
+    border: 1px solid var(--orange-200);
+    margin-left: 6px;
+  }
+
+  .roadmap-desc {
+    font-size: 13px;
+    color: var(--slate-600);
+    line-height: 1.5;
+    margin-top: 6px;
+  }
+
+  /* =========================
+     PACS
+     ========================= */
   .pac-table {
     display: flex;
     flex-direction: column;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius-lg);
     overflow: hidden;
   }
 
@@ -1300,8 +1664,8 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     display: grid;
     grid-template-columns: 80px 70px 70px 1fr 110px 120px;
     padding: 10px 16px;
-    background: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
+    background: var(--slate-50);
+    border-bottom: 1px solid var(--slate-200);
     gap: 12px;
     align-items: center;
   }
@@ -1309,18 +1673,18 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
   .pac-table-head>div {
     font-size: 11px;
     font-weight: 700;
-    color: #64748b;
+    color: var(--slate-500);
     text-transform: uppercase;
     letter-spacing: .06em;
   }
 
   .pac-row {
     display: grid;
-    grid-template-columns: 70px 64px 1fr 110px 90px 120px;
+    grid-template-columns: 70px 64px 70px 1fr 110px 120px;
     padding: 14px 16px;
     gap: 12px;
     align-items: center;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--slate-100);
     transition: .15s ease;
   }
 
@@ -1354,8 +1718,8 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     min-width: 32px;
     height: 32px;
     border-radius: 10px;
-    background: #0f172a;
-    color: #fff;
+    background: var(--slate-900);
+    color: var(--white);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1367,8 +1731,8 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     width: 32px;
     height: 32px;
     border-radius: 999px;
-    background: #e0f2fe;
-    color: #0369a1;
+    background: var(--blue-50);
+    color: var(--blue-700);
     border: 1px solid #bae6fd;
     display: flex;
     align-items: center;
@@ -1380,7 +1744,7 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
   .pac-desc-text {
     font-size: 13px;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--slate-900);
     line-height: 1.45;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -1396,7 +1760,6 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     border: 1px solid #bfdbfe;
     border-radius: 8px;
     padding: 4px 8px;
-    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 100px;
@@ -1404,7 +1767,7 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
 
   .tag-empty {
     font-size: 13px;
-    color: #94a3b8;
+    color: var(--slate-400);
   }
 
   .pac-estado {
@@ -1414,231 +1777,77 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     padding: 5px 11px;
     font-size: 11px;
     font-weight: 700;
-    white-space: nowrap;
   }
 
   .pe-inc {
-    background: #e0f2fe;
-    color: #0369a1;
+    background: var(--blue-50);
+    color: var(--blue-700);
   }
 
   .pe-adj {
-    background: #dcfce7;
-    color: #15803d;
+    background: var(--green-50);
+    color: var(--green-700);
   }
 
   .pe-obs {
-    background: #ffe4e6;
-    color: #be123c;
+    background: var(--rose-50);
+    color: var(--rose-700);
   }
 
   .pac-money {
     font-size: 13px;
     font-weight: 800;
-    color: #0f172a;
+    color: var(--slate-900);
     white-space: nowrap;
   }
 
-  .roadmap {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
+  /* =========================
+     RESPONSIVE
+     ========================= */
+  @media (max-width: 1200px) {
+    .detail-grid {
+      grid-template-columns: 360px 1fr;
+    }
   }
 
-  .roadmap-card {
-    border: 1px solid #e2e8f0;
-    border-radius: 18px;
-    padding: 16px;
-    background: #fff;
-    transition: .2s ease;
-  }
-
-  .roadmap-card:hover {
-    box-shadow: 0 12px 30px rgba(15, 23, 42, .08);
-    border-color: #cbd5e1;
-  }
-
-  .roadmap-card:last-child {
-    border-color: #cbd5e1;
-    box-shadow: 0 14px 35px rgba(15, 23, 42, .08);
-  }
-
-  .roadmap-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 10px;
-    margin-bottom: 12px;
-  }
-
-  .roadmap-title {
-    font-size: 15px;
-    font-weight: 800;
-    color: #0f172a;
-  }
-
-  .roadmap-meta {
-    font-size: 12px;
-    color: #64748b;
-    margin-top: 4px;
-    font-weight: 600;
-  }
-
-  .roadmap-last {
-    font-size: 13px;
-    font-weight: 800;
-    color: #0f172a;
-    background: #f1f5f9;
-    padding: 6px 10px;
-    border-radius: 999px;
-  }
-
-  .roadmap-track {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 10px 0 12px;
-    flex-wrap: wrap;
-  }
-
-  .roadmap-node {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    position: relative;
-  }
-
-  .roadmap-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 999px;
-    background: #cbd5e1;
-  }
-
-  .roadmap-node.is-last .roadmap-dot {
-    width: 14px;
-    height: 14px;
-    background: #0f172a;
-    box-shadow: 0 0 0 4px rgba(15, 23, 42, .08);
-  }
-
-  .roadmap-date {
-    font-size: 11px;
-    font-weight: 700;
-    color: #64748b;
-  }
-
-  .roadmap-line {
-    height: 2px;
-    width: 34px;
-    background: linear-gradient(to right, #e2e8f0, #94a3b8);
-  }
-
-  .reprog-badge {
-    display: inline-flex;
-    align-items: center;
-    border-radius: 999px;
-    padding: 4px 10px;
-    font-size: 11px;
-    font-weight: 700;
-    background: #fff7ed;
-    color: #c2410c;
-    border: 1px solid #fed7aa;
-    margin-left: 6px;
-  }
-
-  .roadmap-desc {
-    font-size: 13px;
-    color: #475569;
-    line-height: 1.5;
-    margin-top: 6px;
-  }
-
-  .empty {
-    border: 1px dashed #cbd5e1;
-    border-radius: 16px;
-    padding: 14px;
-    color: #64748b;
-    background: #fff;
-  }
-
-  .activity-form-wrap {
-    margin-bottom: 16px;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 14px;
-    background: #f8fafc;
-  }
-
-  .activity-form {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-
-  .form-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 12px;
-  }
-
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .field-full {
-    grid-column: 1 / -1;
-  }
-
-  .field label {
-    font-size: 12px;
-    font-weight: 600;
-    color: #64748b;
-  }
-
-  .field input,
-  .field select,
-  .field textarea {
-    width: 100%;
-    border: 1px solid #dbe2ea;
-    border-radius: 14px;
-    background: #fff;
-    color: #0f172a;
-    padding: 11px 13px;
-    font-size: 14px;
-    outline: none;
-    transition: .18s ease;
-  }
-
-  .field input:focus,
-  .field select:focus,
-  .field textarea:focus {
-    border-color: #94a3b8;
-    box-shadow: 0 0 0 4px rgba(148, 163, 184, .15);
-  }
-
-  .field textarea {
-    min-height: 110px;
-    resize: vertical;
-  }
-
-  .form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  @media (max-width:1100px) {
+  @media (max-width: 1100px) {
     .form-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
-  @media (max-width:900px) {
+  @media (max-width: 1024px) {
+    .topbar-main {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .topbar-right {
+      justify-content: flex-start;
+    }
+
+    .status-block {
+      align-items: flex-start;
+    }
+
+    .process-title {
+      font-size: 28px;
+      max-width: 100%;
+    }
+  }
+
+  @media (max-width: 1023px) {
+    .detail-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .sticky-panel {
+      position: relative;
+      top: auto;
+    }
+  }
+
+  @media (max-width: 900px) {
     .pac-table-head {
       display: none;
     }
@@ -1654,13 +1863,50 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     }
   }
 
-  @media (max-width:800px) {
-    .pac-row {
-      grid-template-columns: 1fr;
+  @media (max-width: 640px) {
+    .detail-topbar {
+      padding: 16px;
+      gap: 16px;
     }
-  }
 
-  @media (max-width:640px) {
+    .topbar-left {
+      gap: 12px;
+    }
+
+    .process-title {
+      font-size: 22px;
+      line-height: 1.12;
+    }
+
+    .process-meta {
+      margin-top: 12px;
+    }
+
+    .topbar-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .topbar-actions-left,
+    .topbar-actions-right {
+      width: 100%;
+    }
+
+    .topbar-actions-left {
+      flex-direction: column;
+    }
+
+    .topbar-actions-left .btn-soft,
+    .topbar-actions-right .btn-primary {
+      width: 100%;
+    }
+
+    .trow {
+      flex-direction: column;
+    }
+
+    .kv-grid,
+    .adj-grid,
     .form-grid {
       grid-template-columns: 1fr;
     }
@@ -1670,30 +1916,8 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
       align-items: stretch;
     }
 
-    .detail-topbar {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    .detail-topbar .right {
-      width: 100%;
-    }
-
-    .trow {
-      flex-direction: column;
-    }
-
-    .kv-grid,
-    .adj-grid {
-      grid-template-columns: 1fr;
-    }
-
     .money-value {
       font-size: 24px;
-    }
-
-    .title {
-      font-size: 18px;
     }
 
     .summary-title {
@@ -1705,6 +1929,9 @@ $esAdjudicado  = $estadoUp === 'ADJUDICADO';
     }
   }
 
+  /* =========================
+     PRINT
+     ========================= */
   @media print {
     body {
       background: #fff !important;
