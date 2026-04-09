@@ -14,19 +14,23 @@ class CtrDashboardAdmin
             'estado'    => $_GET['estado'] ?? '',
         ];
 
-        $kpis            = MdDashboardAdmin::obtenerKpisGenerales($filtros);
-        $porEstado       = MdDashboardAdmin::obtenerResumenPorEstado($filtros);
-        $porObac         = MdDashboardAdmin::obtenerResumenPorObac($filtros);
-        $porMercado      = MdDashboardAdmin::obtenerResumenPorMercado($filtros);
-        $porModalidad    = MdDashboardAdmin::obtenerResumenPorModalidad($filtros);
-        $tendenciaMes    = MdDashboardAdmin::obtenerTendenciaMensual($filtros);
-        $topDependencias = MdDashboardAdmin::obtenerTopDependencias($filtros, 5);
-        $topObac         = MdDashboardAdmin::obtenerTopObac($filtros, 5);
-        $alertas         = MdDashboardAdmin::obtenerAlertasGerenciales($filtros);
-        $comparativo     = MdDashboardAdmin::obtenerComparativoFinanciero($filtros);
-        $pacCriticos     = MdDashboardAdmin::obtenerPacCriticos($filtros, 8);
-        $participacion = MdDashboardAdmin::obtenerParticipacionSectorDefensa($filtros);
+        $kpis             = MdDashboardAdmin::obtenerKpisGenerales($filtros);
+        $porEstado        = MdDashboardAdmin::obtenerResumenPorEstado($filtros);
+        $porObac          = MdDashboardAdmin::obtenerResumenPorObac($filtros);
+        $porMercado       = MdDashboardAdmin::obtenerResumenPorMercado($filtros);
+        $porModalidad     = MdDashboardAdmin::obtenerResumenPorModalidad($filtros);
+        $tendenciaMes     = MdDashboardAdmin::obtenerTendenciaMensual($filtros);
+        $topDependencias  = MdDashboardAdmin::obtenerTopDependencias($filtros, 5);
+        $topObac          = MdDashboardAdmin::obtenerTopObac($filtros, 5);
+        $alertas          = MdDashboardAdmin::obtenerAlertasGerenciales($filtros);
+        $comparativo      = MdDashboardAdmin::obtenerComparativoFinanciero($filtros);
+        $pacCriticos      = MdDashboardAdmin::obtenerPacCriticos($filtros, 8);
+        $participacion    = MdDashboardAdmin::obtenerParticipacionSectorDefensa($filtros);
         $participacionPie = MdDashboardAdmin::obtenerParticipacionPie($filtros);
+
+        // NUEVO
+        $resumenListas  = MdDashboardAdmin::obtenerResumenListasGenerales($filtros);
+        $resumenMercadoDetalle = MdDashboardAdmin::obtenerResumenTipoCompraPorMercado($filtros);
 
         $periodos = MdPacAdmin::listarPeriodo();
         $obacs    = MdPacAdmin::listarObac();

@@ -66,6 +66,11 @@ function buildDashboardFilterUrl(array $changes = []): string
   return '?' . http_build_query($query);
 }
 
+function fmt_resumen_pac_dashboard(int $cantidad, float $monto): string
+{
+  return $cantidad . '/(' . number_format($monto, 2, '.', ',') . ')';
+}
+
 $totalPacGeneral   = (int)($kpis['total_pac'] ?? 0);
 $totalMontoGeneral = (float)($kpis['total_estimado'] ?? 0);
 $ejecucionActual   = isset($_GET['ejecucion']) ? (string)$_GET['ejecucion'] : '4';
@@ -84,10 +89,10 @@ $partRestoPctMonto   = (float)($participacion['resto_pct_monto'] ?? 0);
 $maxMontoDep  = 0;
 $maxMontoObac = 0;
 
-foreach ($topDependencias as $item) {
+foreach (($topDependencias ?? []) as $item) {
   $maxMontoDep = max($maxMontoDep, (float)($item['monto'] ?? 0));
 }
-foreach ($topObac as $item) {
+foreach (($topObac ?? []) as $item) {
   $maxMontoObac = max($maxMontoObac, (float)($item['monto'] ?? 0));
 }
 
@@ -109,22 +114,21 @@ foreach (($participacionPie ?? []) as $item) {
 
 $chartEstadoLabels = [];
 $chartEstadoTotals = [];
-
-foreach ($porEstado as $item) {
+foreach (($porEstado ?? []) as $item) {
   $chartEstadoLabels[] = (string)($item['nombre'] ?? '-');
   $chartEstadoTotals[] = (int)($item['total'] ?? 0);
 }
 
 $chartObacLabels = [];
 $chartObacMontos = [];
-foreach ($porObac as $item) {
+foreach (($porObac ?? []) as $item) {
   $chartObacLabels[] = (string)($item['nombre'] ?? '-');
   $chartObacMontos[] = (float)($item['monto'] ?? 0);
 }
 
 $chartMercadoLabels = [];
 $chartMercadoTotals = [];
-foreach ($porMercado as $item) {
+foreach (($porMercado ?? []) as $item) {
   $nombre = trim((string)($item['nombre'] ?? ''));
   if ($nombre === '') {
     continue;
@@ -136,7 +140,7 @@ foreach ($porMercado as $item) {
 
 $chartModalidadLabels = [];
 $chartModalidadTotals = [];
-foreach ($porModalidad as $item) {
+foreach (($porModalidad ?? []) as $item) {
   $nombre = trim((string)($item['nombre'] ?? ''));
   if ($nombre === '') {
     continue;
@@ -149,34 +153,86 @@ foreach ($porModalidad as $item) {
 $chartMesLabels  = [];
 $chartMesMontos  = [];
 $chartMesTotales = [];
-foreach ($tendenciaMes as $item) {
+foreach (($tendenciaMes ?? []) as $item) {
   $chartMesLabels[]  = (string)($item['nombre'] ?? '-');
   $chartMesMontos[]  = (float)($item['monto'] ?? 0);
   $chartMesTotales[] = (int)($item['total'] ?? 0);
 }
 ?>
 
-<div class="space-y-6">
+<div class="space-y-6 dashboard-shell">
 
-  <div class="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
-    <div>
-      <div class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-        Panel gerencial
+  <!-- HERO / CABECERA -->
+  <section class="hero-premium">
+    <div class="hero-premium__glow hero-premium__glow--one"></div>
+    <div class="hero-premium__glow hero-premium__glow--two"></div>
+
+    <div class="relative z-[1] flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+      <div class="max-w-3xl">
+        <div class="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 backdrop-blur">
+          <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+          Panel gerencial
+        </div>
+
+        <h1 class="mt-4 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+          Dashboard PAC
+        </h1>
+
+        <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-[15px]">
+          Lectura ejecutiva de la programación anual de contrataciones, con foco en cobertura financiera,
+          participación sectorial, distribución de mercado y alertas gerenciales.
+        </p>
+
+        <div class="mt-5 flex flex-wrap items-center gap-2">
+          <a
+            href="<?= htmlspecialchars(buildDashboardFilterUrl(['ejecucion' => 4]), ENT_QUOTES, 'UTF-8') ?>"
+            class="inline-flex items-center rounded-full border px-3.5 py-2 text-xs font-semibold transition <?= $ejecucionActual === '4'
+                                                                                                              ? 'border-rose-300 bg-rose-600 text-white shadow-[0_8px_20px_rgba(225,29,72,.22)]'
+                                                                                                              : 'border-slate-200 bg-white/85 text-slate-700 hover:border-rose-200 hover:text-rose-700' ?>">
+            ACFFAA
+          </a>
+
+          <a
+            href="<?= htmlspecialchars(buildDashboardFilterUrl(['ejecucion' => 0]), ENT_QUOTES, 'UTF-8') ?>"
+            class="inline-flex items-center rounded-full border px-3.5 py-2 text-xs font-semibold transition <?= $ejecucionActual === '0'
+                                                                                                              ? 'border-slate-300 bg-slate-900 text-white shadow-[0_8px_20px_rgba(15,23,42,.20)]'
+                                                                                                              : 'border-slate-200 bg-white/85 text-slate-700 hover:border-slate-300 hover:text-slate-900' ?>">
+            Todos
+          </a>
+        </div>
       </div>
-      <h1 class="mt-1 text-2xl font-semibold tracking-tight text-slate-900">
-        Dashboard PAC
-      </h1>
-      <p class="mt-1 text-sm text-slate-500">
-        Lectura ejecutiva de programación anual de contrataciones.
-      </p>
+
+      <div class="hero-mini-kpi-grid">
+        <div class="hero-mini-kpi-card">
+          <div class="hero-mini-kpi-label">PAC</div>
+          <div class="hero-mini-kpi-value"><?= (int)($kpis['total_pac'] ?? 0) ?></div>
+          <div class="hero-mini-kpi-sub">Registros</div>
+        </div>
+
+        <div class="hero-mini-kpi-card">
+          <div class="hero-mini-kpi-label">Estimado</div>
+          <div class="hero-mini-kpi-value hero-mini-kpi-value--money"><?= fmt_money_dashboard($kpis['total_estimado'] ?? 0) ?></div>
+          <div class="hero-mini-kpi-sub">Monto total</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FILTROS -->
+  <section class="section-card">
+    <div class="section-head">
+      <div>
+        <div class="section-kicker">Filtros</div>
+        <h2 class="section-title">Control de vista</h2>
+      </div>
     </div>
 
-    <form method="GET" class="grid grid-cols-1 gap-2 sm:grid-cols-4">
+    <form method="GET" class="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_1fr_1fr_auto]">
       <select
         name="periodo"
-        class="h-11 rounded-2xl border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
+        class="h-12 rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
         <option value="">Periodo</option>
-        <?php foreach ($periodos as $p): ?>
+        <?php foreach (($periodos ?? []) as $p): ?>
           <option value="<?= (int)$p['id'] ?>" <?= ((string)($_GET['periodo'] ?? '') === (string)$p['id']) ? 'selected' : '' ?>>
             <?= htmlspecialchars($p['nombre'], ENT_QUOTES, 'UTF-8') ?>
           </option>
@@ -185,9 +241,9 @@ foreach ($tendenciaMes as $item) {
 
       <select
         name="obac"
-        class="h-11 rounded-2xl border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
+        class="h-12 rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
         <option value="">OBAC</option>
-        <?php foreach ($obacs as $o): ?>
+        <?php foreach (($obacs ?? []) as $o): ?>
           <option value="<?= (int)$o['id'] ?>" <?= ((string)($_GET['obac'] ?? '') === (string)$o['id']) ? 'selected' : '' ?>>
             <?= htmlspecialchars($o['nombre'], ENT_QUOTES, 'UTF-8') ?>
           </option>
@@ -196,9 +252,9 @@ foreach ($tendenciaMes as $item) {
 
       <select
         name="estado"
-        class="h-11 rounded-2xl border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
+        class="h-12 rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
         <option value="">Estado</option>
-        <?php foreach ($estados as $e): ?>
+        <?php foreach (($estados ?? []) as $e): ?>
           <option value="<?= (int)$e['id'] ?>" <?= ((string)($_GET['estado'] ?? '') === (string)$e['id']) ? 'selected' : '' ?>>
             <?= htmlspecialchars($e['nombre'], ENT_QUOTES, 'UTF-8') ?>
           </option>
@@ -208,111 +264,79 @@ foreach ($tendenciaMes as $item) {
       <div class="flex gap-2">
         <button
           type="submit"
-          class="flex-1 rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800">
-          Filtrar
+          class="h-12 rounded-2xl bg-slate-900 px-5 text-sm font-semibold text-white transition hover:bg-slate-800">
+          Aplicar
         </button>
 
         <a
           href="<?= BASE_URL ?>/admin/dashboard"
-          class="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 transition hover:bg-slate-50">
+          class="inline-flex h-12 items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
           Limpiar
         </a>
       </div>
     </form>
-  </div>
+  </section>
 
-  <div class="flex flex-wrap items-center gap-2">
-    <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">
-      Vista rápida:
-    </span>
+  <!-- KPI -->
+  <section class="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-4">
+    <article class="metric-card metric-card--dark">
+      <div class="metric-card__label">Total PAC</div>
+      <div class="metric-card__value"><?= (int)($kpis['total_pac'] ?? 0) ?></div>
+      <div class="metric-card__sub">Registros acumulados</div>
+    </article>
 
-    <a
-      href="<?= htmlspecialchars(buildDashboardFilterUrl(['ejecucion' => 4]), ENT_QUOTES, 'UTF-8') ?>"
-      class="inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition <?= $ejecucionActual === '4'
-                                                                                                          ? 'border-rose-300 bg-rose-600 text-white'
-                                                                                                          : 'border-slate-200 bg-white text-slate-700 hover:border-rose-200 hover:text-rose-700' ?>">
-      ACFFAA
-    </a>
+    <article class="metric-card">
+      <div class="metric-card__label">Monto estimado</div>
+      <div class="metric-card__value"><?= fmt_money_dashboard($kpis['total_estimado'] ?? 0) ?></div>
+      <div class="metric-card__sub">Suma total estimada</div>
+    </article>
 
-    <a
-      href="<?= htmlspecialchars(buildDashboardFilterUrl(['ejecucion' => 0]), ENT_QUOTES, 'UTF-8') ?>"
-      class="inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition <?= $ejecucionActual === '0'
-                                                                                                          ? 'border-slate-300 bg-slate-900 text-white'
-                                                                                                          : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900' ?>">
-      Todos
-    </a>
-  </div>
+    <article class="metric-card">
+      <div class="metric-card__label">Monto certificado</div>
+      <div class="metric-card__value"><?= fmt_money_dashboard($kpis['total_certificado'] ?? 0) ?></div>
+      <div class="metric-card__sub">Total certificado registrado</div>
+    </article>
 
-  <div class="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-4">
-    <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.06)]">
-      <div class="text-xs font-medium uppercase tracking-wide text-slate-400">Total PAC</div>
-      <div class="mt-3 text-3xl font-semibold tracking-tight text-slate-900">
-        <?= (int)($kpis['total_pac'] ?? 0) ?>
-      </div>
-      <div class="mt-2 text-sm text-slate-500">Registros acumulados</div>
-    </div>
+    <article class="metric-card">
+      <div class="metric-card__label">PAC con inversión</div>
+      <div class="metric-card__value"><?= (int)($kpis['total_con_inversion'] ?? 0) ?></div>
+      <div class="metric-card__sub">Registros con inversiones</div>
+    </article>
+  </section>
 
-    <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.06)]">
-      <div class="text-xs font-medium uppercase tracking-wide text-slate-400">Monto estimado</div>
-      <div class="mt-3 text-3xl font-semibold tracking-tight text-slate-900">
-        <?= fmt_money_dashboard($kpis['total_estimado'] ?? 0) ?>
-      </div>
-      <div class="mt-2 text-sm text-slate-500">Suma total estimada</div>
-    </div>
-
-    <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.06)]">
-      <div class="text-xs font-medium uppercase tracking-wide text-slate-400">Monto certificado</div>
-      <div class="mt-3 text-3xl font-semibold tracking-tight text-slate-900">
-        <?= fmt_money_dashboard($kpis['total_certificado'] ?? 0) ?>
-      </div>
-      <div class="mt-2 text-sm text-slate-500">Total certificado registrado</div>
-    </div>
-
-    <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.06)]">
-      <div class="text-xs font-medium uppercase tracking-wide text-slate-400">PAC con inversión</div>
-      <div class="mt-3 text-3xl font-semibold tracking-tight text-slate-900">
-        <?= (int)($kpis['total_con_inversion'] ?? 0) ?>
-      </div>
-      <div class="mt-2 text-sm text-slate-500">Registros con inversiones</div>
-    </div>
-  </div>
-
-  <div class="grid grid-cols-1 gap-4 xl:grid-cols-3">
-    <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.06)] xl:col-span-2">
-      <div class="flex items-start justify-between gap-3">
+  <!-- RESUMEN FINANCIERO -->
+  <section class="grid grid-cols-1 gap-4 xl:grid-cols-3">
+    <article class="section-card xl:col-span-2">
+      <div class="section-head">
         <div>
-          <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Cobertura</div>
-          <h2 class="mt-1 text-lg font-semibold tracking-tight text-slate-900">Estimado vs certificado</h2>
+          <div class="section-kicker">Cobertura</div>
+          <h2 class="section-title">Estimado vs certificado</h2>
+          <p class="section-subtitle">Relación entre programación estimada y cobertura financiera registrada.</p>
         </div>
-        <div class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+
+        <div class="stat-pill stat-pill--emerald">
           <?= $coberturaPct ?>%
         </div>
       </div>
 
       <div class="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-          <div class="text-xs uppercase tracking-wide text-slate-400">Estimado</div>
-          <div class="mt-2 text-2xl font-semibold text-slate-900">
-            <?= fmt_money_dashboard($comparativo['total_estimado'] ?? 0) ?>
-          </div>
+        <div class="soft-mini-card">
+          <div class="soft-mini-card__label">Estimado</div>
+          <div class="soft-mini-card__value"><?= fmt_money_dashboard($comparativo['total_estimado'] ?? 0) ?></div>
         </div>
 
-        <div class="rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
-          <div class="text-xs uppercase tracking-wide text-emerald-600">Certificado</div>
-          <div class="mt-2 text-2xl font-semibold text-emerald-800">
-            <?= fmt_money_dashboard($comparativo['total_certificado'] ?? 0) ?>
-          </div>
+        <div class="soft-mini-card soft-mini-card--emerald">
+          <div class="soft-mini-card__label">Certificado</div>
+          <div class="soft-mini-card__value"><?= fmt_money_dashboard($comparativo['total_certificado'] ?? 0) ?></div>
         </div>
 
-        <div class="rounded-2xl border border-amber-100 bg-amber-50 p-4">
-          <div class="text-xs uppercase tracking-wide text-amber-600">Brecha</div>
-          <div class="mt-2 text-2xl font-semibold text-amber-800">
-            <?= fmt_money_dashboard($comparativo['brecha'] ?? 0) ?>
-          </div>
+        <div class="soft-mini-card soft-mini-card--amber">
+          <div class="soft-mini-card__label">Brecha</div>
+          <div class="soft-mini-card__value"><?= fmt_money_dashboard($comparativo['brecha'] ?? 0) ?></div>
         </div>
       </div>
 
-      <div class="mt-5">
+      <div class="mt-6">
         <div class="mb-2 flex items-center justify-between gap-3">
           <div class="text-sm font-medium text-slate-700">Nivel de cobertura financiera</div>
           <div class="text-sm font-semibold text-slate-900"><?= $coberturaPct ?>%</div>
@@ -321,38 +345,139 @@ foreach ($tendenciaMes as $item) {
           <div class="h-full rounded-full bg-emerald-600 transition-all" style="width: <?= min($coberturaPct, 100) ?>%;"></div>
         </div>
       </div>
-    </section>
+    </article>
 
-    <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.06)]">
-      <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Estado financiero</div>
-      <h2 class="mt-1 text-lg font-semibold tracking-tight text-slate-900">PAC certificados</h2>
-
-      <div class="mt-5 space-y-4">
-        <div class="rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
-          <div class="text-xs uppercase tracking-wide text-emerald-600">Con certificado</div>
-          <div class="mt-2 text-3xl font-semibold text-emerald-800">
-            <?= (int)($comparativo['pac_con_certificado'] ?? 0) ?>
-          </div>
-        </div>
-
-        <div class="rounded-2xl border border-amber-100 bg-amber-50 p-4">
-          <div class="text-xs uppercase tracking-wide text-amber-600">Sin certificado</div>
-          <div class="mt-2 text-3xl font-semibold text-amber-800">
-            <?= (int)($comparativo['pac_sin_certificado'] ?? 0) ?>
-          </div>
+    <article class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">Estado financiero</div>
+          <h2 class="section-title">PAC certificados</h2>
         </div>
       </div>
-    </section>
-  </div>
 
-  <div class="grid grid-cols-1 gap-5 xl:grid-cols-3">
+      <div class="mt-5 space-y-4">
+        <div class="soft-mini-card soft-mini-card--emerald">
+          <div class="soft-mini-card__label">Con certificado</div>
+          <div class="soft-mini-card__value"><?= (int)($comparativo['pac_con_certificado'] ?? 0) ?></div>
+        </div>
 
+        <div class="soft-mini-card soft-mini-card--amber">
+          <div class="soft-mini-card__label">Sin certificado</div>
+          <div class="soft-mini-card__value"><?= (int)($comparativo['pac_sin_certificado'] ?? 0) ?></div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- TABLAS RESUMEN -->
+  <section class="grid grid-cols-1 gap-5 xl:grid-cols-2">
+    <article class="section-card overflow-hidden">
+      <div class="section-head section-head--border">
+        <div>
+          <div class="section-kicker">Resumen ejecutivo</div>
+          <h2 class="section-title">Listas generales de compras</h2>
+          <p class="section-subtitle">Vista consolidada dinámica de tipo de compra.</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="premium-table">
+          <thead>
+            <tr>
+              <th>Listas</th>
+              <th class="text-center">Individuales</th>
+              <th class="text-center">Corporativos</th>
+              <th class="text-center">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php foreach (($resumenListas ?? []) as $row): ?>
+              <?php $isTotal = !empty($row['is_total']); ?>
+              <tr class="<?= $isTotal ? 'is-total' : '' ?>">
+                <td><?= htmlspecialchars((string)($row['lista'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></td>
+                <td class="text-center">
+                  <?= fmt_resumen_pac_dashboard(
+                    (int)($row['individuales_cantidad'] ?? 0),
+                    (float)($row['individuales_monto'] ?? 0)
+                  ) ?>
+                </td>
+                <td class="text-center">
+                  <?= fmt_resumen_pac_dashboard(
+                    (int)($row['corporativos_cantidad'] ?? 0),
+                    (float)($row['corporativos_monto'] ?? 0)
+                  ) ?>
+                </td>
+                <td class="text-center">
+                  <?= fmt_resumen_pac_dashboard(
+                    (int)($row['total_cantidad'] ?? 0),
+                    (float)($row['total_monto'] ?? 0)
+                  ) ?>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="section-card overflow-hidden">
+      <div class="section-head section-head--border">
+        <div>
+          <div class="section-kicker">Resumen ejecutivo</div>
+          <h2 class="section-title">Tipo de compra por mercado</h2>
+          <p class="section-subtitle">Distribución dinámica entre individuales y corporativos por mercado.</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="premium-table">
+          <thead>
+            <tr>
+              <th>Mercado</th>
+              <th class="text-center">Individuales</th>
+              <th class="text-center">Corporativos</th>
+              <th class="text-center">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php foreach (($resumenMercadoDetalle ?? []) as $row): ?>
+              <?php $isTotal = !empty($row['is_total']); ?>
+              <tr class="<?= $isTotal ? 'is-total' : '' ?>">
+                <td><?= htmlspecialchars((string)($row['mercado'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></td>
+                <td class="text-center">
+                  <?= fmt_resumen_pac_dashboard(
+                    (int)($row['individuales_cantidad'] ?? 0),
+                    (float)($row['individuales_monto'] ?? 0)
+                  ) ?>
+                </td>
+                <td class="text-center">
+                  <?= fmt_resumen_pac_dashboard(
+                    (int)($row['corporativos_cantidad'] ?? 0),
+                    (float)($row['corporativos_monto'] ?? 0)
+                  ) ?>
+                </td>
+                <td class="text-center">
+                  <?= fmt_resumen_pac_dashboard(
+                    (int)($row['total_cantidad'] ?? 0),
+                    (float)($row['total_monto'] ?? 0)
+                  ) ?>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
+    </article>
+  </section>
+
+  <!-- CHARTS -->
+  <section class="grid grid-cols-1 gap-5 xl:grid-cols-3">
     <section class="premium-chart-card">
       <div class="premium-chart-head">
         <div>
-          <div class="premium-kicker">VISUAL EJECUTIVO</div>
+          <div class="premium-kicker">Visual ejecutivo</div>
           <h2 class="premium-title">Participación sectorial</h2>
-          <p class="premium-subtitle">Distribución del monto estimado entre ACFFAA y OBAC</p>
+          <p class="premium-subtitle">Distribución del monto estimado entre ACFFAA y OBAC.</p>
         </div>
         <div class="premium-chip premium-chip-blue">Pie</div>
       </div>
@@ -364,9 +489,9 @@ foreach ($tendenciaMes as $item) {
     <section class="premium-chart-card">
       <div class="premium-chart-head">
         <div>
-          <div class="premium-kicker">VISUAL EJECUTIVO</div>
+          <div class="premium-kicker">Visual ejecutivo</div>
           <h2 class="premium-title">Tipo de mercado</h2>
-          <p class="premium-subtitle">Participación nacional y extranjero</p>
+          <p class="premium-subtitle">Participación nacional y extranjero.</p>
         </div>
         <div class="premium-chip premium-chip-emerald">Doughnut</div>
       </div>
@@ -378,9 +503,9 @@ foreach ($tendenciaMes as $item) {
     <section class="premium-chart-card">
       <div class="premium-chart-head">
         <div>
-          <div class="premium-kicker">VISUAL EJECUTIVO</div>
+          <div class="premium-kicker">Visual ejecutivo</div>
           <h2 class="premium-title">Modalidad</h2>
-          <p class="premium-subtitle">Peso relativo por modalidad de compra</p>
+          <p class="premium-subtitle">Peso relativo por modalidad de compra.</p>
         </div>
         <div class="premium-chip premium-chip-violet">Doughnut</div>
       </div>
@@ -392,9 +517,9 @@ foreach ($tendenciaMes as $item) {
     <section class="premium-chart-card xl:col-span-2">
       <div class="premium-chart-head">
         <div>
-          <div class="premium-kicker">VISUAL EJECUTIVO</div>
+          <div class="premium-kicker">Visual ejecutivo</div>
           <h2 class="premium-title">Tendencia mensual</h2>
-          <p class="premium-subtitle">Comportamiento del monto estimado por mes de convocatoria</p>
+          <p class="premium-subtitle">Comportamiento del monto estimado por mes de convocatoria.</p>
         </div>
         <div class="premium-chip premium-chip-slate">Barras</div>
       </div>
@@ -406,9 +531,9 @@ foreach ($tendenciaMes as $item) {
     <section class="premium-chart-card">
       <div class="premium-chart-head">
         <div>
-          <div class="premium-kicker">VISUAL EJECUTIVO</div>
+          <div class="premium-kicker">Visual ejecutivo</div>
           <h2 class="premium-title">OBAC por monto</h2>
-          <p class="premium-subtitle">Concentración presupuestal por órgano</p>
+          <p class="premium-subtitle">Concentración presupuestal por órgano.</p>
         </div>
         <div class="premium-chip premium-chip-blue">Ranking</div>
       </div>
@@ -416,45 +541,41 @@ foreach ($tendenciaMes as $item) {
         <canvas id="chartObac"></canvas>
       </div>
     </section>
+  </section>
 
-  </div>
-
-  <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
-    <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.06)]">
-      <div class="flex items-start justify-between gap-3">
+  <!-- PARTICIPACION -->
+  <section class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+    <article class="section-card">
+      <div class="section-head">
         <div>
-          <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Participación ejecutiva</div>
-          <h2 class="mt-1 text-lg font-semibold tracking-tight text-slate-900">ACFFAA</h2>
-          <p class="mt-1 text-sm text-slate-500">Peso relativo dentro del universo filtrado del dashboard.</p>
+          <div class="section-kicker">Participación ejecutiva</div>
+          <h2 class="section-title">ACFFAA</h2>
+          <p class="section-subtitle">Peso relativo dentro del universo filtrado del dashboard.</p>
         </div>
-        <div class="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
-          <?= number_format($partAcffaaPctPac, 1) ?>% PAC
-        </div>
+        <div class="stat-pill stat-pill--blue"><?= number_format($partAcffaaPctPac, 1) ?>% PAC</div>
       </div>
 
       <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-          <div class="text-xs uppercase tracking-wide text-slate-400">PAC registrados</div>
-          <div class="mt-2 text-3xl font-semibold tracking-tight text-slate-900">
-            <?= $partAcffaaPac ?>
-          </div>
-          <div class="mt-2 text-sm text-slate-500">
-            Participación en cantidad: <span class="font-semibold text-slate-700"><?= number_format($partAcffaaPctPac, 1) ?>%</span>
+        <div class="soft-mini-card">
+          <div class="soft-mini-card__label">PAC registrados</div>
+          <div class="soft-mini-card__value"><?= $partAcffaaPac ?></div>
+          <div class="soft-mini-card__foot">
+            Participación en cantidad:
+            <span class="font-semibold text-slate-700"><?= number_format($partAcffaaPctPac, 1) ?>%</span>
           </div>
         </div>
 
-        <div class="rounded-2xl border border-blue-100 bg-blue-50 p-4">
-          <div class="text-xs uppercase tracking-wide text-blue-600">Monto estimado</div>
-          <div class="mt-2 text-2xl font-semibold tracking-tight text-blue-900">
-            <?= fmt_money_dashboard($partAcffaaMonto) ?>
-          </div>
-          <div class="mt-2 text-sm text-blue-700/80">
-            Participación en monto: <span class="font-semibold"><?= number_format($partAcffaaPctMonto, 1) ?>%</span>
+        <div class="soft-mini-card soft-mini-card--blue">
+          <div class="soft-mini-card__label">Monto estimado</div>
+          <div class="soft-mini-card__value"><?= fmt_money_dashboard($partAcffaaMonto) ?></div>
+          <div class="soft-mini-card__foot">
+            Participación en monto:
+            <span class="font-semibold"><?= number_format($partAcffaaPctMonto, 1) ?>%</span>
           </div>
         </div>
       </div>
 
-      <div class="mt-5 space-y-3">
+      <div class="mt-5 space-y-4">
         <div>
           <div class="mb-2 flex items-center justify-between gap-3">
             <div class="text-sm font-medium text-slate-700">Participación por PAC</div>
@@ -475,43 +596,39 @@ foreach ($tendenciaMes as $item) {
           </div>
         </div>
       </div>
-    </section>
+    </article>
 
-    <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.06)]">
-      <div class="flex items-start justify-between gap-3">
+    <article class="section-card">
+      <div class="section-head">
         <div>
-          <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Participación ejecutiva</div>
-          <h2 class="mt-1 text-lg font-semibold tracking-tight text-slate-900">Resto del sector</h2>
-          <p class="mt-1 text-sm text-slate-500">Comparativo del conjunto no ACFFAA dentro del mismo filtro.</p>
+          <div class="section-kicker">Participación ejecutiva</div>
+          <h2 class="section-title">Resto del sector</h2>
+          <p class="section-subtitle">Comparativo del conjunto no ACFFAA dentro del mismo filtro.</p>
         </div>
-        <div class="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
-          <?= number_format($partRestoPctPac, 1) ?>% PAC
-        </div>
+        <div class="stat-pill stat-pill--amber"><?= number_format($partRestoPctPac, 1) ?>% PAC</div>
       </div>
 
       <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-          <div class="text-xs uppercase tracking-wide text-slate-400">PAC registrados</div>
-          <div class="mt-2 text-3xl font-semibold tracking-tight text-slate-900">
-            <?= $partRestoPac ?>
-          </div>
-          <div class="mt-2 text-sm text-slate-500">
-            Participación en cantidad: <span class="font-semibold text-slate-700"><?= number_format($partRestoPctPac, 1) ?>%</span>
+        <div class="soft-mini-card">
+          <div class="soft-mini-card__label">PAC registrados</div>
+          <div class="soft-mini-card__value"><?= $partRestoPac ?></div>
+          <div class="soft-mini-card__foot">
+            Participación en cantidad:
+            <span class="font-semibold text-slate-700"><?= number_format($partRestoPctPac, 1) ?>%</span>
           </div>
         </div>
 
-        <div class="rounded-2xl border border-amber-100 bg-amber-50 p-4">
-          <div class="text-xs uppercase tracking-wide text-amber-600">Monto estimado</div>
-          <div class="mt-2 text-2xl font-semibold tracking-tight text-amber-900">
-            <?= fmt_money_dashboard($partRestoMonto) ?>
-          </div>
-          <div class="mt-2 text-sm text-amber-700/80">
-            Participación en monto: <span class="font-semibold"><?= number_format($partRestoPctMonto, 1) ?>%</span>
+        <div class="soft-mini-card soft-mini-card--amber">
+          <div class="soft-mini-card__label">Monto estimado</div>
+          <div class="soft-mini-card__value"><?= fmt_money_dashboard($partRestoMonto) ?></div>
+          <div class="soft-mini-card__foot">
+            Participación en monto:
+            <span class="font-semibold"><?= number_format($partRestoPctMonto, 1) ?>%</span>
           </div>
         </div>
       </div>
 
-      <div class="mt-5 space-y-3">
+      <div class="mt-5 space-y-4">
         <div>
           <div class="mb-2 flex items-center justify-between gap-3">
             <div class="text-sm font-medium text-slate-700">Participación por PAC</div>
@@ -532,20 +649,18 @@ foreach ($tendenciaMes as $item) {
           </div>
         </div>
       </div>
-    </section>
-  </div>
+    </article>
+  </section>
 
-  <div class="grid grid-cols-1 gap-4 xl:grid-cols-2 2xl:grid-cols-4">
-
-    <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.06)]">
-      <div class="flex items-start justify-between gap-3">
+  <!-- CONTROL -->
+  <section class="grid grid-cols-1 gap-4 xl:grid-cols-2 2xl:grid-cols-4">
+    <article class="section-card">
+      <div class="section-head">
         <div>
-          <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Ranking</div>
-          <h2 class="mt-1 text-lg font-semibold tracking-tight text-slate-900">Top dependencias</h2>
+          <div class="section-kicker">Ranking</div>
+          <h2 class="section-title">Top dependencias</h2>
         </div>
-        <div class="rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">
-          Top 5
-        </div>
+        <div class="stat-pill stat-pill--amber">Top 5</div>
       </div>
 
       <div class="mt-5 space-y-3">
@@ -557,38 +672,32 @@ foreach ($tendenciaMes as $item) {
             $monto  = (float)($item['monto'] ?? 0);
             $width  = $maxMontoDep > 0 ? round(($monto / $maxMontoDep) * 100, 1) : 0;
             ?>
-            <div class="rounded-2xl border border-slate-100 bg-slate-50/70 p-3">
+            <div class="rank-card">
               <div class="flex items-center gap-3">
-                <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-bold text-amber-700">
-                  <?= $i + 1 ?>
-                </div>
+                <div class="rank-card__index"><?= $i + 1 ?></div>
                 <div class="min-w-0 flex-1">
                   <div class="truncate text-sm font-semibold text-slate-800"><?= htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8') ?></div>
                   <div class="mt-1 text-xs text-slate-500"><?= $total ?> PAC · <?= fmt_money_dashboard($monto) ?></div>
                 </div>
               </div>
-              <div class="mt-3 h-2 overflow-hidden rounded-full bg-amber-100">
-                <div class="h-full rounded-full bg-amber-500" style="width: <?= min($width, 100) ?>%;"></div>
+              <div class="rank-card__bar">
+                <div class="rank-card__bar-fill rank-card__bar-fill--amber" style="width: <?= min($width, 100) ?>%;"></div>
               </div>
             </div>
           <?php endforeach; ?>
         <?php else: ?>
-          <div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm text-slate-500">
-            Sin datos para mostrar.
-          </div>
+          <div class="empty-state-card">Sin datos para mostrar.</div>
         <?php endif; ?>
       </div>
-    </section>
+    </article>
 
-    <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.06)]">
-      <div class="flex items-start justify-between gap-3">
+    <article class="section-card">
+      <div class="section-head">
         <div>
-          <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Control</div>
-          <h2 class="mt-1 text-lg font-semibold tracking-tight text-slate-900">Alertas gerenciales</h2>
+          <div class="section-kicker">Control</div>
+          <h2 class="section-title">Alertas gerenciales</h2>
         </div>
-        <div class="rounded-full bg-rose-50 px-3 py-1 text-xs font-medium text-rose-700">
-          Atención
-        </div>
+        <div class="stat-pill stat-pill--rose">Atención</div>
       </div>
 
       <div class="mt-5 space-y-3">
@@ -606,18 +715,16 @@ foreach ($tendenciaMes as $item) {
             </div>
           <?php endforeach; ?>
         <?php else: ?>
-          <div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm text-slate-500">
-            Sin alertas.
-          </div>
+          <div class="empty-state-card">Sin alertas.</div>
         <?php endif; ?>
       </div>
-    </section>
+    </article>
 
-    <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.06)] 2xl:col-span-2">
-      <div class="flex items-start justify-between gap-3">
+    <article class="section-card 2xl:col-span-2">
+      <div class="section-head">
         <div>
-          <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Control</div>
-          <h2 class="mt-1 text-lg font-semibold tracking-tight text-slate-900">Top OBAC</h2>
+          <div class="section-kicker">Control</div>
+          <h2 class="section-title">Top OBAC</h2>
         </div>
       </div>
 
@@ -629,27 +736,373 @@ foreach ($tendenciaMes as $item) {
             $monto  = (float)($item['monto'] ?? 0);
             $width  = $maxMontoObac > 0 ? round(($monto / $maxMontoObac) * 100, 1) : 0;
             ?>
-            <div class="rounded-2xl border border-slate-100 bg-slate-50/70 p-3">
+            <div class="rank-card">
               <div class="mb-1 flex items-center justify-between gap-3">
                 <div class="truncate text-sm font-medium text-slate-700"><?= ($i + 1) . '. ' . htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8') ?></div>
                 <div class="text-xs text-slate-500"><?= fmt_money_dashboard($monto) ?></div>
               </div>
-              <div class="h-2 overflow-hidden rounded-full bg-blue-100">
-                <div class="h-full rounded-full bg-blue-600" style="width: <?= min($width, 100) ?>%;"></div>
+              <div class="rank-card__bar">
+                <div class="rank-card__bar-fill rank-card__bar-fill--blue" style="width: <?= min($width, 100) ?>%;"></div>
               </div>
             </div>
           <?php endforeach; ?>
         <?php else: ?>
-          <div class="text-sm text-slate-500">Sin datos.</div>
+          <div class="empty-state-card">Sin datos.</div>
         <?php endif; ?>
       </div>
-    </section>
-
-  </div>
-
+    </article>
+  </section>
 </div>
 
 <style>
+  .dashboard-shell {
+    --dash-border: rgba(148, 163, 184, .18);
+    --dash-shadow: 0 16px 40px rgba(15, 23, 42, .06);
+  }
+
+  .hero-premium {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(226, 232, 240, .9);
+    border-radius: 32px;
+    padding: 28px;
+    background:
+      radial-gradient(circle at top left, rgba(255,255,255,.98), rgba(248,250,252,.95) 42%, rgba(241,245,249,.98) 100%);
+    box-shadow:
+      0 18px 48px rgba(15,23,42,.06),
+      inset 0 1px 0 rgba(255,255,255,.85);
+  }
+
+  .hero-premium__glow {
+    position: absolute;
+    border-radius: 999px;
+    filter: blur(38px);
+    pointer-events: none;
+    opacity: .55;
+  }
+
+  .hero-premium__glow--one {
+    top: -60px;
+    right: -30px;
+    width: 180px;
+    height: 180px;
+    background: rgba(59, 130, 246, .16);
+  }
+
+  .hero-premium__glow--two {
+    bottom: -70px;
+    left: 30%;
+    width: 200px;
+    height: 200px;
+    background: rgba(16, 185, 129, .12);
+  }
+
+  .hero-mini-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    width: min(100%, 420px);
+  }
+
+  .hero-mini-kpi-card {
+    border: 1px solid rgba(226, 232, 240, .95);
+    background: rgba(255,255,255,.78);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    padding: 18px 16px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9);
+  }
+
+  .hero-mini-kpi-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: rgb(148 163 184);
+  }
+
+  .hero-mini-kpi-value {
+    margin-top: 10px;
+    font-size: 28px;
+    line-height: 1.05;
+    font-weight: 700;
+    letter-spacing: -.03em;
+    color: rgb(15 23 42);
+  }
+
+  .hero-mini-kpi-value--money {
+    font-size: 22px;
+  }
+
+  .hero-mini-kpi-sub {
+    margin-top: 6px;
+    font-size: 12px;
+    color: rgb(100 116 139);
+  }
+
+  .section-card {
+    border-radius: 28px;
+    border: 1px solid rgba(148,163,184,.18);
+    background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,250,252,.96));
+    box-shadow: 0 16px 40px rgba(15,23,42,.06);
+    padding: 22px;
+  }
+
+  .section-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .section-head--border {
+    margin: -22px -22px 18px;
+    padding: 22px 22px 18px;
+    border-bottom: 1px solid rgba(226, 232, 240, .95);
+    background: linear-gradient(180deg, rgba(255,255,255,.9), rgba(248,250,252,.92));
+  }
+
+  .section-kicker {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: rgb(148 163 184);
+  }
+
+  .section-title {
+    margin-top: 6px;
+    font-size: 22px;
+    line-height: 1.08;
+    font-weight: 700;
+    letter-spacing: -.02em;
+    color: rgb(15 23 42);
+  }
+
+  .section-subtitle {
+    margin-top: 7px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: rgb(100 116 139);
+  }
+
+  .metric-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 28px;
+    border: 1px solid rgba(148,163,184,.18);
+    background:
+      radial-gradient(circle at top right, rgba(255,255,255,.96), rgba(248,250,252,.94) 52%, rgba(241,245,249,.98));
+    box-shadow: 0 16px 40px rgba(15,23,42,.06);
+    padding: 24px 22px;
+  }
+
+  .metric-card--dark {
+    background:
+      linear-gradient(135deg, rgba(15,23,42,.98), rgba(30,41,59,.96));
+    border-color: rgba(30,41,59,.9);
+    box-shadow: 0 18px 38px rgba(15,23,42,.18);
+  }
+
+  .metric-card__label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: rgb(148 163 184);
+  }
+
+  .metric-card__value {
+    margin-top: 12px;
+    font-size: 32px;
+    line-height: 1.02;
+    font-weight: 700;
+    letter-spacing: -.035em;
+    color: rgb(15 23 42);
+    word-break: break-word;
+  }
+
+  .metric-card--dark .metric-card__value,
+  .metric-card--dark .metric-card__sub {
+    color: white;
+  }
+
+  .metric-card--dark .metric-card__label {
+    color: rgba(226,232,240,.72);
+  }
+
+  .metric-card__sub {
+    margin-top: 8px;
+    font-size: 13px;
+    color: rgb(100 116 139);
+  }
+
+  .soft-mini-card {
+    border-radius: 22px;
+    border: 1px solid rgba(226,232,240,.95);
+    background: rgba(248,250,252,.88);
+    padding: 16px;
+  }
+
+  .soft-mini-card--emerald {
+    border-color: rgba(167,243,208,.95);
+    background: rgba(236,253,245,.95);
+  }
+
+  .soft-mini-card--amber {
+    border-color: rgba(253,230,138,.95);
+    background: rgba(255,251,235,.95);
+  }
+
+  .soft-mini-card--blue {
+    border-color: rgba(191,219,254,.95);
+    background: rgba(239,246,255,.95);
+  }
+
+  .soft-mini-card__label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: rgb(148 163 184);
+  }
+
+  .soft-mini-card__value {
+    margin-top: 10px;
+    font-size: 28px;
+    line-height: 1.06;
+    font-weight: 700;
+    letter-spacing: -.03em;
+    color: rgb(15 23 42);
+  }
+
+  .soft-mini-card__foot {
+    margin-top: 10px;
+    font-size: 13px;
+    color: rgb(100 116 139);
+  }
+
+  .stat-pill {
+    flex-shrink: 0;
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+  }
+
+  .stat-pill--emerald {
+    background: rgba(16,185,129,.10);
+    color: rgb(5 150 105);
+    border-color: rgba(16,185,129,.16);
+  }
+
+  .stat-pill--blue {
+    background: rgba(37,99,235,.08);
+    color: rgb(29 78 216);
+    border-color: rgba(37,99,235,.12);
+  }
+
+  .stat-pill--amber {
+    background: rgba(245,158,11,.08);
+    color: rgb(180 83 9);
+    border-color: rgba(245,158,11,.14);
+  }
+
+  .stat-pill--rose {
+    background: rgba(244,63,94,.08);
+    color: rgb(190 24 93);
+    border-color: rgba(244,63,94,.12);
+  }
+
+  .premium-table {
+    width: 100%;
+    min-width: 640px;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 14px;
+  }
+
+  .premium-table thead th {
+    padding: 14px 14px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: rgb(100 116 139);
+    border-bottom: 1px solid rgba(226, 232, 240, .95);
+    background: rgba(248,250,252,.72);
+  }
+
+  .premium-table tbody td {
+    padding: 14px;
+    color: rgb(51 65 85);
+    border-bottom: 1px solid rgba(241,245,249,.95);
+  }
+
+  .premium-table tbody tr:hover td {
+    background: rgba(248,250,252,.72);
+  }
+
+  .premium-table tbody tr.is-total td {
+    background: rgba(248,250,252,.92);
+    font-weight: 700;
+    color: rgb(15 23 42);
+  }
+
+  .rank-card {
+    border-radius: 20px;
+    border: 1px solid rgba(241,245,249,.95);
+    background: rgba(248,250,252,.84);
+    padding: 14px;
+  }
+
+  .rank-card__index {
+    display: flex;
+    width: 34px;
+    height: 34px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: rgba(251,191,36,.18);
+    color: rgb(180 83 9);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .rank-card__bar {
+    height: 8px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(226,232,240,.95);
+    margin-top: 12px;
+  }
+
+  .rank-card__bar-fill {
+    height: 100%;
+    border-radius: 999px;
+  }
+
+  .rank-card__bar-fill--amber {
+    background: rgb(245 158 11);
+  }
+
+  .rank-card__bar-fill--blue {
+    background: rgb(37 99 235);
+  }
+
+  .empty-state-card {
+    border-radius: 20px;
+    border: 1px dashed rgba(203,213,225,.95);
+    background: rgba(248,250,252,.8);
+    padding: 18px;
+    font-size: 14px;
+    color: rgb(100 116 139);
+  }
+
   .premium-chart-card {
     position: relative;
     overflow: hidden;
@@ -770,18 +1223,47 @@ foreach ($tendenciaMes as $item) {
       0 10px 24px rgba(15, 23, 42, .04);
   }
 
+  @media (max-width: 1024px) {
+    .hero-mini-kpi-grid {
+      width: 100%;
+    }
+  }
+
   @media (max-width: 768px) {
+    .hero-premium,
+    .section-card,
+    .metric-card,
     .premium-chart-card {
-      padding: 18px 16px 14px;
       border-radius: 24px;
+      padding: 18px 16px;
     }
 
+    .section-head--border {
+      margin: -18px -16px 16px;
+      padding: 18px 16px 16px;
+    }
+
+    .section-title,
     .premium-title {
       font-size: 18px;
     }
 
+    .section-subtitle,
     .premium-subtitle {
       font-size: 12px;
+    }
+
+    .metric-card__value {
+      font-size: 26px;
+    }
+
+    .soft-mini-card__value,
+    .hero-mini-kpi-value {
+      font-size: 24px;
+    }
+
+    .hero-mini-kpi-value--money {
+      font-size: 18px;
     }
 
     .premium-chart-wrap-donut,
@@ -795,7 +1277,8 @@ foreach ($tendenciaMes as $item) {
       padding: 14px 10px 10px;
     }
 
-    .premium-chart-head {
+    .premium-chart-head,
+    .section-head {
       flex-direction: column;
       align-items: flex-start;
     }
@@ -815,9 +1298,7 @@ foreach ($tendenciaMes as $item) {
       const meta = chart.getDatasetMeta(0);
       if (!meta || !meta.data || !meta.data.length) return;
 
-      const {
-        ctx
-      } = chart;
+      const { ctx } = chart;
       const x = meta.data[0].x;
       const y = meta.data[0].y;
 
@@ -840,18 +1321,6 @@ foreach ($tendenciaMes as $item) {
   };
 
   Chart.register(centerTextPlugin);
-
-  const chartColors = {
-    slate: ['#334155', '#475569', '#64748b', '#94a3b8', '#cbd5e1', '#e2e8f0'],
-
-    blue: ['#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe', '#dbeafe', '#eff6ff'],
-
-    emerald: ['#10b981', '#34d399', '#6ee7b7', '#a7f3d0', '#d1fae5', '#ecfdf5'],
-
-    violet: ['#8b5cf6', '#a78bfa', '#c4b5fd', '#ddd6fe', '#ede9fe', '#f5f3ff'],
-
-    mixed: ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#06b6d4', '#f472b6', '#94a3b8', '#cbd5e1']
-  };
 
   const moneyFormatter = (value) => {
     return 'S/ ' + Number(value || 0).toLocaleString('es-PE', {
@@ -885,9 +1354,6 @@ foreach ($tendenciaMes as $item) {
 
   const sumArray = (arr) => arr.reduce((acc, n) => acc + Number(n || 0), 0);
 
-  const estadoLabels = <?= json_encode($chartEstadoLabels, JSON_UNESCAPED_UNICODE) ?>;
-  const estadoTotals = <?= json_encode($chartEstadoTotals, JSON_UNESCAPED_UNICODE) ?>;
-
   const obacLabels = <?= json_encode($chartObacLabels, JSON_UNESCAPED_UNICODE) ?>;
   const obacMontos = <?= json_encode($chartObacMontos, JSON_UNESCAPED_UNICODE) ?>;
 
@@ -905,12 +1371,10 @@ foreach ($tendenciaMes as $item) {
   const participacionMontos = <?= json_encode($chartParticipacionMontos, JSON_UNESCAPED_UNICODE) ?>;
   const participacionTotales = <?= json_encode($chartParticipacionTotales, JSON_UNESCAPED_UNICODE) ?>;
 
-  const totalEstado = sumArray(estadoTotals);
   const totalMercado = sumArray(mercadoTotals);
   const totalModalidad = sumArray(modalidadTotals);
   const totalParticipacionMonto = sumArray(participacionMontos);
 
-  const maxEstadoIndex = estadoTotals.length ? estadoTotals.indexOf(Math.max(...estadoTotals)) : -1;
   const maxMercadoIndex = mercadoTotals.length ? mercadoTotals.indexOf(Math.max(...mercadoTotals)) : -1;
   const maxModalidadIndex = modalidadTotals.length ? modalidadTotals.indexOf(Math.max(...modalidadTotals)) : -1;
 
@@ -1147,14 +1611,14 @@ foreach ($tendenciaMes as $item) {
     const pieCanvas = document.getElementById('chartParticipacionPie');
 
     const pieColors = [
-      '#7CC6FE', // azul suave
-      '#A78BFA', // violeta suave
-      '#6EE7B7', // verde mint
-      '#F9A8D4', // rosado suave
-      '#FCD34D', // amarillo suave
-      '#FDBA74', // naranja suave
-      '#67E8F9', // cyan suave
-      '#C4B5FD' // lavanda
+      '#7CC6FE',
+      '#A78BFA',
+      '#6EE7B7',
+      '#F9A8D4',
+      '#FCD34D',
+      '#FDBA74',
+      '#67E8F9',
+      '#C4B5FD'
     ];
 
     new Chart(pieCanvas, {
@@ -1203,9 +1667,9 @@ foreach ($tendenciaMes as $item) {
                 const data = chart.data;
                 return data.labels.map((label, i) => {
                   const value = Number(data.datasets[0].data[i] || 0);
-                  const pct = totalParticipacionMonto > 0 ?
-                    ((value / totalParticipacionMonto) * 100).toFixed(1) :
-                    '0.0';
+                  const pct = totalParticipacionMonto > 0
+                    ? ((value / totalParticipacionMonto) * 100).toFixed(1)
+                    : '0.0';
 
                   return {
                     text: `${label} · ${pct}%`,
@@ -1239,9 +1703,9 @@ foreach ($tendenciaMes as $item) {
             textStrokeColor: 'rgba(255,255,255,.92)',
             textStrokeWidth: 3,
             formatter: (value, ctx) => {
-              const pct = totalParticipacionMonto > 0 ?
-                ((Number(value || 0) / totalParticipacionMonto) * 100) :
-                0;
+              const pct = totalParticipacionMonto > 0
+                ? ((Number(value || 0) / totalParticipacionMonto) * 100)
+                : 0;
 
               const pac = participacionTotales[ctx.dataIndex] || 0;
 
@@ -1275,9 +1739,7 @@ foreach ($tendenciaMes as $item) {
       plugins: [{
         id: 'softShadowPie',
         beforeDatasetDraw(chart) {
-          const {
-            ctx
-          } = chart;
+          const { ctx } = chart;
           ctx.save();
           ctx.shadowColor = 'rgba(0,0,0,0.12)';
           ctx.shadowBlur = 18;

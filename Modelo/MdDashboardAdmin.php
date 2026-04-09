@@ -94,63 +94,63 @@ class MdDashboardAdmin
         return $st->fetchAll(PDO::FETCH_ASSOC);
     }
 
-public static function obtenerResumenPorMercado(array $filtros = []): array
-{
-    $db = db();
+    public static function obtenerResumenPorMercado(array $filtros = []): array
+    {
+        $db = db();
 
-    $sql = "
-        SELECT
-            tm.nombre AS nombre,
-            COUNT(*) AS total,
-            COALESCE(SUM(p.estimado), 0) AS monto
-        FROM pac p
-        INNER JOIN tipo_mercado tm ON tm.id = p.tipo_mercado
-        WHERE 1=1
-    ";
+        $sql = "
+            SELECT
+                tm.nombre AS nombre,
+                COUNT(*) AS total,
+                COALESCE(SUM(p.estimado), 0) AS monto
+            FROM pac p
+            INNER JOIN tipo_mercado tm ON tm.id = p.tipo_mercado
+            WHERE 1=1
+        ";
 
-    $params = self::buildWhere($sql, $filtros);
+        $params = self::buildWhere($sql, $filtros);
 
-    $sql .= "
-        AND tm.nombre IS NOT NULL
-        AND TRIM(tm.nombre) <> ''
-        GROUP BY tm.nombre
-        ORDER BY monto DESC, total DESC, nombre ASC
-    ";
+        $sql .= "
+            AND tm.nombre IS NOT NULL
+            AND TRIM(tm.nombre) <> ''
+            GROUP BY tm.nombre
+            ORDER BY monto DESC, total DESC, nombre ASC
+        ";
 
-    $st = $db->prepare($sql);
-    $st->execute($params);
+        $st = $db->prepare($sql);
+        $st->execute($params);
 
-    return $st->fetchAll(PDO::FETCH_ASSOC);
-}
+        return $st->fetchAll(PDO::FETCH_ASSOC);
+    }
 
-public static function obtenerResumenPorModalidad(array $filtros = []): array
-{
-    $db = db();
+    public static function obtenerResumenPorModalidad(array $filtros = []): array
+    {
+        $db = db();
 
-    $sql = "
-        SELECT
-            m.nombre AS nombre,
-            COUNT(*) AS total,
-            COALESCE(SUM(p.estimado), 0) AS monto
-        FROM pac p
-        INNER JOIN modalidad m ON m.id = p.modalidad
-        WHERE 1=1
-    ";
+        $sql = "
+            SELECT
+                m.nombre AS nombre,
+                COUNT(*) AS total,
+                COALESCE(SUM(p.estimado), 0) AS monto
+            FROM pac p
+            INNER JOIN modalidad m ON m.id = p.modalidad
+            WHERE 1=1
+        ";
 
-    $params = self::buildWhere($sql, $filtros);
+        $params = self::buildWhere($sql, $filtros);
 
-    $sql .= "
-        AND m.nombre IS NOT NULL
-        AND TRIM(m.nombre) <> ''
-        GROUP BY m.nombre
-        ORDER BY monto DESC, total DESC, nombre ASC
-    ";
+        $sql .= "
+            AND m.nombre IS NOT NULL
+            AND TRIM(m.nombre) <> ''
+            GROUP BY m.nombre
+            ORDER BY monto DESC, total DESC, nombre ASC
+        ";
 
-    $st = $db->prepare($sql);
-    $st->execute($params);
+        $st = $db->prepare($sql);
+        $st->execute($params);
 
-    return $st->fetchAll(PDO::FETCH_ASSOC);
-}
+        return $st->fetchAll(PDO::FETCH_ASSOC);
+    }
 
     public static function obtenerTendenciaMensual(array $filtros = []): array
     {
@@ -402,58 +402,31 @@ public static function obtenerResumenPorModalidad(array $filtros = []): array
         return $st->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    private static function buildWhere(string &$sql, array $filtros = []): array
-    {
-        $params = [];
-
-        if (!empty($filtros['periodo'])) {
-            $sql .= " AND p.periodo = :periodo";
-            $params[':periodo'] = (int)$filtros['periodo'];
-        }
-
-        if (isset($filtros['ejecucion']) && $filtros['ejecucion'] !== '' && $filtros['ejecucion'] !== '0') {
-            $sql .= " AND p.ejecucion = :ejecucion";
-            $params[':ejecucion'] = (int)$filtros['ejecucion'];
-        }
-
-        if (!empty($filtros['obac'])) {
-            $sql .= " AND p.obac = :obac";
-            $params[':obac'] = (int)$filtros['obac'];
-        }
-
-        if (!empty($filtros['estado'])) {
-            $sql .= " AND p.estado = :estado";
-            $params[':estado'] = (int)$filtros['estado'];
-        }
-
-        return $params;
-    }
-
     public static function obtenerParticipacionSectorDefensa(array $filtros = []): array
     {
         $db = db();
 
         $sql = "
-        SELECT
-            CASE
-                WHEN p.ejecucion = 4 THEN 'ACFFAA'
-                ELSE 'RESTO'
-            END AS grupo,
-            COUNT(*) AS total_pac,
-            COALESCE(SUM(p.estimado), 0) AS total_monto
-        FROM pac p
-        WHERE 1=1
-    ";
+            SELECT
+                CASE
+                    WHEN p.ejecucion = 4 THEN 'ACFFAA'
+                    ELSE 'RESTO'
+                END AS grupo,
+                COUNT(*) AS total_pac,
+                COALESCE(SUM(p.estimado), 0) AS total_monto
+            FROM pac p
+            WHERE 1=1
+        ";
 
         $params = self::buildWhere($sql, $filtros);
 
         $sql .= "
-        GROUP BY
-            CASE
-                WHEN p.ejecucion = 4 THEN 'ACFFAA'
-                ELSE 'RESTO'
-            END
-    ";
+            GROUP BY
+                CASE
+                    WHEN p.ejecucion = 4 THEN 'ACFFAA'
+                    ELSE 'RESTO'
+                END
+        ";
 
         $st = $db->prepare($sql);
         $st->execute($params);
@@ -500,31 +473,256 @@ public static function obtenerResumenPorModalidad(array $filtros = []): array
         $db = db();
 
         $sql = "
-        SELECT
-            CASE
-                WHEN p.ejecucion = 4 THEN 'ACFFAA'
-                ELSE 'OBAC'
-            END AS nombre,
-            COUNT(*) AS total,
-            COALESCE(SUM(p.estimado), 0) AS monto
-        FROM pac p
-        WHERE 1=1
-    ";
+            SELECT
+                CASE
+                    WHEN p.ejecucion = 4 THEN 'ACFFAA'
+                    ELSE 'OBAC'
+                END AS nombre,
+                COUNT(*) AS total,
+                COALESCE(SUM(p.estimado), 0) AS monto
+            FROM pac p
+            WHERE 1=1
+        ";
 
         $params = self::buildWhere($sql, $filtros);
 
         $sql .= "
-        GROUP BY
-            CASE
-                WHEN p.ejecucion = 4 THEN 'ACFFAA'
-                ELSE 'OBAC' 
-            END
-        ORDER BY monto DESC, total DESC, nombre ASC
-    ";
+            GROUP BY
+                CASE
+                    WHEN p.ejecucion = 4 THEN 'ACFFAA'
+                    ELSE 'OBAC'
+                END
+            ORDER BY monto DESC, total DESC, nombre ASC
+        ";
 
         $st = $db->prepare($sql);
         $st->execute($params);
 
         return $st->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // NUEVO: tablas resumen estilo imagen
+public static function obtenerResumenListasGenerales(array $filtros = []): array
+{
+    $db = db();
+
+    $sql = "
+        SELECT
+            COALESCE(l.nombre, 'SIN LISTA') AS lista,
+
+            SUM(
+                CASE
+                    WHEN UPPER(TRIM(COALESCE(tm.nombre, ''))) LIKE '%NACIONAL%' THEN 1
+                    ELSE 0
+                END
+            ) AS individuales_cantidad,
+
+            SUM(
+                CASE
+                    WHEN UPPER(TRIM(COALESCE(tm.nombre, ''))) LIKE '%NACIONAL%' THEN COALESCE(p.estimado, 0)
+                    ELSE 0
+                END
+            ) AS individuales_monto,
+
+            SUM(
+                CASE
+                    WHEN UPPER(TRIM(COALESCE(tm.nombre, ''))) LIKE '%NACIONAL%' THEN 0
+                    ELSE 1
+                END
+            ) AS corporativos_cantidad,
+
+            SUM(
+                CASE
+                    WHEN UPPER(TRIM(COALESCE(tm.nombre, ''))) LIKE '%NACIONAL%' THEN 0
+                    ELSE COALESCE(p.estimado, 0)
+                END
+            ) AS corporativos_monto,
+
+            COUNT(*) AS total_cantidad,
+            COALESCE(SUM(p.estimado), 0) AS total_monto
+
+        FROM pac p
+        LEFT JOIN listas l ON l.id = p.lista
+        LEFT JOIN tipo_mercado tm ON tm.id = p.tipo_mercado
+        WHERE 1=1
+    ";
+
+    $params = self::buildWhere($sql, $filtros);
+
+    $sql .= "
+        GROUP BY COALESCE(l.nombre, 'SIN LISTA')
+        ORDER BY
+            CASE
+                WHEN UPPER(COALESCE(l.nombre, '')) LIKE '%NACIONAL%' THEN 1
+                WHEN UPPER(COALESCE(l.nombre, '')) LIKE '%LCMN%' THEN 1
+                ELSE 2
+            END,
+            total_monto DESC,
+            total_cantidad DESC,
+            lista ASC
+    ";
+
+    $st = $db->prepare($sql);
+    $st->execute($params);
+    $rows = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+    $resultado = [];
+    $totales = [
+        'lista' => 'TOTAL',
+        'individuales_cantidad' => 0,
+        'individuales_monto'    => 0.0,
+        'corporativos_cantidad' => 0,
+        'corporativos_monto'    => 0.0,
+        'total_cantidad'        => 0,
+        'total_monto'           => 0.0,
+        'is_total'              => true,
+    ];
+
+    foreach ($rows as $row) {
+        $item = [
+            'lista' => (string)($row['lista'] ?? 'SIN LISTA'),
+            'individuales_cantidad' => (int)($row['individuales_cantidad'] ?? 0),
+            'individuales_monto'    => (float)($row['individuales_monto'] ?? 0),
+            'corporativos_cantidad' => (int)($row['corporativos_cantidad'] ?? 0),
+            'corporativos_monto'    => (float)($row['corporativos_monto'] ?? 0),
+            'total_cantidad'        => (int)($row['total_cantidad'] ?? 0),
+            'total_monto'           => (float)($row['total_monto'] ?? 0),
+        ];
+
+        $totales['individuales_cantidad'] += $item['individuales_cantidad'];
+        $totales['individuales_monto']    += $item['individuales_monto'];
+        $totales['corporativos_cantidad'] += $item['corporativos_cantidad'];
+        $totales['corporativos_monto']    += $item['corporativos_monto'];
+        $totales['total_cantidad']        += $item['total_cantidad'];
+        $totales['total_monto']           += $item['total_monto'];
+
+        $resultado[] = $item;
+    }
+
+    $resultado[] = $totales;
+
+    return $resultado;
+}
+
+    // NUEVO: detalle por mercado separando individuales/corporativos
+public static function obtenerResumenTipoCompraPorMercado(array $filtros = []): array
+{
+    $db = db();
+
+    $sql = "
+        SELECT
+            COALESCE(tm.nombre, 'SIN MERCADO') AS mercado,
+            SUM(
+                CASE
+                    WHEN UPPER(TRIM(COALESCE(tm.nombre, ''))) LIKE '%NACIONAL%' THEN 1
+                    ELSE 0
+                END
+            ) AS individuales_cantidad,
+            SUM(
+                CASE
+                    WHEN UPPER(TRIM(COALESCE(tm.nombre, ''))) LIKE '%NACIONAL%' THEN COALESCE(p.estimado, 0)
+                    ELSE 0
+                END
+            ) AS individuales_monto,
+            SUM(
+                CASE
+                    WHEN UPPER(TRIM(COALESCE(tm.nombre, ''))) LIKE '%NACIONAL%' THEN 0
+                    ELSE 1
+                END
+            ) AS corporativos_cantidad,
+            SUM(
+                CASE
+                    WHEN UPPER(TRIM(COALESCE(tm.nombre, ''))) LIKE '%NACIONAL%' THEN 0
+                    ELSE COALESCE(p.estimado, 0)
+                END
+            ) AS corporativos_monto,
+            COUNT(*) AS total_cantidad,
+            COALESCE(SUM(p.estimado), 0) AS total_monto
+        FROM pac p
+        LEFT JOIN tipo_mercado tm ON tm.id = p.tipo_mercado
+        WHERE 1=1
+    ";
+
+    $params = self::buildWhere($sql, $filtros);
+
+    $sql .= "
+        GROUP BY COALESCE(tm.nombre, 'SIN MERCADO')
+        ORDER BY
+            CASE
+                WHEN UPPER(COALESCE(tm.nombre, '')) LIKE '%NACIONAL%' THEN 1
+                ELSE 2
+            END,
+            total_monto DESC,
+            total_cantidad DESC,
+            mercado ASC
+    ";
+
+    $st = $db->prepare($sql);
+    $st->execute($params);
+    $rows = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+    $resultado = [];
+    $totales = [
+        'mercado' => 'TOTAL',
+        'individuales_cantidad' => 0,
+        'individuales_monto'    => 0.0,
+        'corporativos_cantidad' => 0,
+        'corporativos_monto'    => 0.0,
+        'total_cantidad'        => 0,
+        'total_monto'           => 0.0,
+        'is_total'              => true,
+    ];
+
+    foreach ($rows as $row) {
+        $item = [
+            'mercado' => (string)($row['mercado'] ?? 'SIN MERCADO'),
+            'individuales_cantidad' => (int)($row['individuales_cantidad'] ?? 0),
+            'individuales_monto'    => (float)($row['individuales_monto'] ?? 0),
+            'corporativos_cantidad' => (int)($row['corporativos_cantidad'] ?? 0),
+            'corporativos_monto'    => (float)($row['corporativos_monto'] ?? 0),
+            'total_cantidad'        => (int)($row['total_cantidad'] ?? 0),
+            'total_monto'           => (float)($row['total_monto'] ?? 0),
+        ];
+
+        $totales['individuales_cantidad'] += $item['individuales_cantidad'];
+        $totales['individuales_monto']    += $item['individuales_monto'];
+        $totales['corporativos_cantidad'] += $item['corporativos_cantidad'];
+        $totales['corporativos_monto']    += $item['corporativos_monto'];
+        $totales['total_cantidad']        += $item['total_cantidad'];
+        $totales['total_monto']           += $item['total_monto'];
+
+        $resultado[] = $item;
+    }
+
+    $resultado[] = $totales;
+
+    return $resultado;
+}
+
+    private static function buildWhere(string &$sql, array $filtros = []): array
+    {
+        $params = [];
+
+        if (!empty($filtros['periodo'])) {
+            $sql .= " AND p.periodo = :periodo";
+            $params[':periodo'] = (int)$filtros['periodo'];
+        }
+
+        if (isset($filtros['ejecucion']) && $filtros['ejecucion'] !== '' && $filtros['ejecucion'] !== '0') {
+            $sql .= " AND p.ejecucion = :ejecucion";
+            $params[':ejecucion'] = (int)$filtros['ejecucion'];
+        }
+
+        if (!empty($filtros['obac'])) {
+            $sql .= " AND p.obac = :obac";
+            $params[':obac'] = (int)$filtros['obac'];
+        }
+
+        if (!empty($filtros['estado'])) {
+            $sql .= " AND p.estado = :estado";
+            $params[':estado'] = (int)$filtros['estado'];
+        }
+
+        return $params;
     }
 }
