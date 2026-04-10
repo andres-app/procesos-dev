@@ -294,4 +294,25 @@ class CtrPacAdmin
             exit;
         }
     }
+
+    public static function form(): void
+    {
+        $id = (int)($_GET['id'] ?? 0);
+
+        $pac = $id > 0 ? MdPacAdmin::obtener($id) : [];
+
+        $estados       = MdPacAdmin::listarEstados();
+        $obacs         = MdPacAdmin::listarObac();
+        $fuentes       = MdPacAdmin::listarFuente();
+        $selecciones   = MdPacAdmin::listarSeleccion();
+        $periodos      = MdPacAdmin::listarPeriodo();
+        $listas        = MdPacAdmin::listarListas();
+        $entidades     = MdPacAdmin::listarEntidades();
+        $modalidades   = MdPacAdmin::listarModalidades();
+        $dependencias  = MdPacAdmin::listarDependencias();
+        $tipos_mercado = MdPacAdmin::listarTiposMercado();
+        $rubros        = MdPacAdmin::listarRubros();
+
+        require_once __DIR__ . '/../Vista/modulos/admin/pac_form.php';
+    }
 }

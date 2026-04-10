@@ -134,6 +134,12 @@ if ($module === 'admin') {
         exit;
     }
 
+    if ($subRoute === 'pac_form') {
+        require_once __DIR__ . '/../Controlador/CtrPacAdmin.php';
+        CtrPacAdmin::form();
+        exit;
+    }
+
     if ($subRoute === 'pac_guardar') {
         require_once __DIR__ . '/../Controlador/CtrPacAdmin.php';
         CtrPacAdmin::guardar();
@@ -188,7 +194,7 @@ if ($module === 'admin') {
         exit;
     }
 
-        if ($subRoute === 'procesos_editar') {
+    if ($subRoute === 'procesos_editar') {
         require_once __DIR__ . '/../Controlador/CtrProcesoAdmin.php';
         CtrProcesoAdmin::editar();
         exit;

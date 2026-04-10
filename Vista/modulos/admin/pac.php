@@ -102,12 +102,11 @@ $totalSum = $sumP + $sumNP;
         Importación masiva
       </button>
 
-      <button
-        id="btnNew"
-        type="button"
+      <a
+        href="<?= BASE_URL ?>/admin/pac_form"
         class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-3 py-2 text-[13px] font-medium text-white transition hover:bg-slate-800">
         + Nuevo PAC
-      </button>
+      </a>
     </div>
   </div>
 
@@ -406,34 +405,11 @@ $totalSum = $sumP + $sumNP;
                       <div
                         class="absolute right-0 top-[42px] z-30 hidden min-w-[170px] rounded-2xl border border-slate-200 bg-white p-1.5 shadow-[0_20px_45px_rgba(15,23,42,.12)]"
                         data-menu>
-                        <button
-                          type="button"
-                          class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13px] font-semibold text-slate-900 transition hover:bg-slate-100"
-                          onclick="openEdit(
-                  <?= (int)$r['id'] ?>,
-                  '<?= h($r['nopac']) ?>',
-                  '<?= h($r['pn'] ?? 'NP') ?>',
-                  '<?= h($r['estado']) ?>',
-                  '<?= h($r['obac'] ?? '') ?>',
-                  '<?= h($r['seleccion'] ?? '') ?>',
-                  '<?= h($r['fuente'] ?? '') ?>',
-                  '<?= h($r['descripcion']) ?>',
-                  '<?= h($r['estimado']) ?>',
-                  '<?= h($r['periodo'] ?? '') ?>',
-                  '<?= h($r['lista'] ?? '') ?>',
-                  '<?= h($r['ejecucion'] ?? '') ?>',
-                  '<?= h($r['modalidad'] ?? '') ?>',
-                  '<?= h($r['dependencia'] ?? '') ?>',
-                  '<?= h($r['mesconvoca'] ?? '') ?>',
-                  '<?= h($r['certificado'] ?? '') ?>',
-                  '<?= h($r['tipo_mercado'] ?? '') ?>',
-                  '<?= h($r['cantidad'] ?? '') ?>',
-                  '<?= h($r['rubro'] ?? '') ?>',
-                  '<?= h($r['inversiones'] ?? '') ?>'
-                )">
+                        <a
+                          href="<?= BASE_URL ?>/admin/pac_form?id=<?= (int)$r['id'] ?>"
+                          class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13px] font-semibold text-slate-900 transition hover:bg-slate-100">
                           ✏️ Editar
-                        </button>
-
+                        </a>
                         <button
                           type="button"
                           class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13px] font-semibold text-rose-600 transition hover:bg-rose-50"
@@ -575,7 +551,356 @@ $totalSum = $sumP + $sumNP;
     </div>
   </div>
 
-  <!-- El resto de modales y JS se mantiene igual -->
+  <!-- Modal nuevo / editar PAC -->
+  <div id="modalForm" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-900/40" onclick="closeModal('modalForm')"></div>
+
+    <div class="relative flex w-full max-w-5xl flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-soft">
+      <div class="border-b border-slate-200 px-5 py-4">
+        <div class="text-xs uppercase tracking-wide text-slate-400">PAC</div>
+        <div id="modalTitle" class="mt-1 text-2xl font-semibold text-slate-900">Nuevo PAC</div>
+        <div class="mt-1 text-sm text-slate-500">Completa la información del PAC.</div>
+      </div>
+
+      <div class="max-h-[85vh] overflow-y-auto">
+        <div class="grid grid-cols-1 gap-0 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <!-- Formulario -->
+          <div class="px-5 py-5">
+            <input type="hidden" id="pac_id">
+
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <label class="mb-1.5 block text-xs text-slate-500">N° PAC *</label>
+                <input
+                  id="pac_nopac"
+                  type="text"
+                  class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200"
+                  placeholder="Ej. 0024">
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-xs text-slate-500">P / NP</label>
+                <select
+                  id="pac_pn"
+                  class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
+                  <option value="P">P</option>
+                  <option value="NP" selected>NP</option>
+                </select>
+              </div>
+
+              <div class="md:col-span-2">
+                <label class="mb-1.5 block text-xs text-slate-500">Descripción *</label>
+                <textarea
+                  id="pac_desc"
+                  rows="4"
+                  class="w-full rounded-2xl border border-slate-200 bg-white px-3.5 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200"
+                  placeholder="Descripción del PAC"></textarea>
+                <div class="mt-1 text-right text-xs text-slate-400">
+                  <span id="descCountResume">0</span> caracteres
+                </div>
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-xs text-slate-500">OBAC *</label>
+                <select
+                  id="pac_obac"
+                  class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
+                  <option value="">Seleccionar</option>
+                  <?php foreach ($obacs as $o): ?>
+                    <option value="<?= (int)$o['id'] ?>"><?= h($o['nombre']) ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-xs text-slate-500">Estado</label>
+                <select
+                  id="pac_estado"
+                  class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
+                  <option value="">Seleccionar</option>
+                  <?php foreach ($estados as $es): ?>
+                    <option value="<?= (int)$es['id'] ?>"><?= h($es['nombre']) ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-xs text-slate-500">Fuente</label>
+                <select
+                  id="pac_fuente"
+                  class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
+                  <option value="">Seleccionar</option>
+                  <?php foreach ($fuentes as $f): ?>
+                    <option value="<?= (int)$f['id'] ?>"><?= h($f['nombre']) ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-xs text-slate-500">Selección</label>
+                <select
+                  id="pac_seleccion"
+                  class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
+                  <option value="">Seleccionar</option>
+                  <?php foreach ($selecciones as $s): ?>
+                    <option value="<?= (int)$s['id'] ?>"><?= h($s['nombre']) ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-xs text-slate-500">Periodo</label>
+                <select
+                  id="pac_periodo"
+                  class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
+                  <option value="">Seleccionar</option>
+                  <?php foreach ($periodos as $p): ?>
+                    <option value="<?= (int)$p['id'] ?>"><?= h($p['nombre']) ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-xs text-slate-500">Lista</label>
+                <select
+                  id="pac_lista"
+                  class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
+                  <option value="">Seleccionar</option>
+                  <?php foreach ($listas as $l): ?>
+                    <option value="<?= (int)$l['id'] ?>"><?= h($l['nombre']) ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-xs text-slate-500">Ejecución</label>
+                <select
+                  id="pac_ejecucion"
+                  class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
+                  <option value="">Seleccionar</option>
+                  <?php foreach ($entidades as $e): ?>
+                    <option value="<?= (int)$e['id'] ?>"><?= h($e['nombre']) ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-xs text-slate-500">Modalidad</label>
+                <select
+                  id="pac_modalidad"
+                  class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
+                  <option value="">Seleccionar</option>
+                  <?php foreach ($modalidades as $m): ?>
+                    <option value="<?= (int)$m['id'] ?>"><?= h($m['nombre']) ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-xs text-slate-500">Dependencia</label>
+                <select
+                  id="pac_dependencia"
+                  class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
+                  <option value="">Seleccionar</option>
+                  <?php foreach ($dependencias as $d): ?>
+                    <option value="<?= (int)$d['id'] ?>"><?= h($d['nombre']) ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-xs text-slate-500">Mes convocatoria</label>
+                <input
+                  id="pac_mes_convocatoria"
+                  type="text"
+                  class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm uppercase text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200"
+                  placeholder="Ej. MARZO">
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-xs text-slate-500">Tipo de mercado</label>
+                <select
+                  id="pac_tipo_mercado"
+                  class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
+                  <option value="">Seleccionar</option>
+                  <?php foreach ($tipos_mercado as $tm): ?>
+                    <option value="<?= (int)$tm['id'] ?>"><?= h($tm['nombre']) ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-xs text-slate-500">Rubro</label>
+                <select
+                  id="pac_rubro"
+                  class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
+                  <option value="">Seleccionar</option>
+                  <?php foreach ($rubros as $r): ?>
+                    <option value="<?= (int)$r['id'] ?>"><?= h($r['nombre']) ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-xs text-slate-500">Cantidad</label>
+                <input
+                  id="pac_cantidad"
+                  type="number"
+                  min="0"
+                  class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200"
+                  placeholder="0">
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-xs text-slate-500">Estimado</label>
+                <input
+                  id="pac_estimado"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200"
+                  placeholder="0.00">
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-xs text-slate-500">Certificado</label>
+                <input
+                  id="pac_certificado"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200"
+                  placeholder="0.00">
+              </div>
+
+              <div class="md:col-span-2">
+                <label class="mb-1.5 block text-xs text-slate-500">Inversiones</label>
+                <input
+                  id="pac_inversiones"
+                  type="text"
+                  class="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200"
+                  placeholder="Ej. CUI 123456">
+              </div>
+            </div>
+          </div>
+
+          <!-- Resumen lateral -->
+          <div class="border-t border-slate-200 bg-slate-50 px-5 py-5 lg:border-l lg:border-t-0">
+            <div class="rounded-3xl border border-slate-200 bg-white p-4">
+              <div class="text-xs uppercase tracking-wide text-slate-400">Resumen</div>
+
+              <div class="mt-4">
+                <div class="text-xs text-slate-500">Monto estimado</div>
+                <div id="sum_estimado" class="mt-1 text-2xl font-semibold text-slate-900">S/ 0.00</div>
+              </div>
+
+              <div class="mt-4">
+                <div class="text-xs text-slate-500">Descripción</div>
+                <div class="mt-1 text-sm text-slate-700">
+                  <span id="descCount">0</span> caracteres
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 text-xs text-slate-400">
+              Campos con * son obligatorios.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-col-reverse gap-2 border-t border-slate-200 px-5 py-4 sm:flex-row sm:justify-end">
+        <button
+          type="button"
+          class="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm text-slate-700 transition hover:bg-slate-50"
+          onclick="closeModal('modalForm')">
+          Cancelar
+        </button>
+
+        <button
+          id="btnSavePac"
+          type="button"
+          class="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
+          onclick="fakeSave()">
+          Guardar PAC
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal importación -->
+  <div id="modalImport" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-900/40" onclick="closeModal('modalImport')"></div>
+
+    <div class="relative w-full max-w-2xl overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-soft">
+      <div class="border-b border-slate-200 px-5 py-4">
+        <div class="text-xs uppercase tracking-wide text-slate-400">PAC</div>
+        <div class="mt-1 text-2xl font-semibold text-slate-900">Importación masiva</div>
+        <div class="mt-1 text-sm text-slate-500">Carga un archivo CSV para registrar PACs.</div>
+      </div>
+
+      <div class="space-y-4 px-5 py-5">
+        <input id="csv_file" type="file" accept=".csv" class="block w-full text-sm text-slate-700">
+        <div id="csvFileName" class="text-sm text-slate-500">Ningún archivo seleccionado</div>
+
+        <a
+          href="<?= BASE_URL ?>/admin/pac_descargar_plantilla_csv"
+          class="inline-flex items-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-100">
+          Descargar plantilla CSV
+        </a>
+
+        <div id="importResult" class="hidden rounded-2xl border px-4 py-3 text-sm"></div>
+      </div>
+
+      <div class="flex flex-col-reverse gap-2 border-t border-slate-200 px-5 py-4 sm:flex-row sm:justify-end">
+        <button
+          type="button"
+          class="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm text-slate-700 transition hover:bg-slate-50"
+          onclick="closeModal('modalImport')">
+          Cancelar
+        </button>
+
+        <button
+          id="btnSendImport"
+          type="button"
+          class="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
+          onclick="importCsvPac()">
+          Importar CSV
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal eliminar -->
+  <div id="modalDelete" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-900/40" onclick="closeModal('modalDelete')"></div>
+
+    <div class="relative w-full max-w-md overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-soft">
+      <div class="px-5 py-5">
+        <div class="text-xs uppercase tracking-wide text-rose-400">Eliminar</div>
+        <div class="mt-1 text-xl font-semibold text-slate-900">¿Deseas eliminar este PAC?</div>
+        <div class="mt-2 text-sm text-slate-500">
+          Se eliminará el PAC <span id="delPac" class="font-semibold text-slate-800"></span>.
+        </div>
+      </div>
+
+      <div class="flex flex-col-reverse gap-2 border-t border-slate-200 px-5 py-4 sm:flex-row sm:justify-end">
+        <button
+          type="button"
+          class="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm text-slate-700 transition hover:bg-slate-50"
+          onclick="closeModal('modalDelete')">
+          Cancelar
+        </button>
+
+        <button
+          type="button"
+          class="inline-flex items-center justify-center rounded-2xl bg-rose-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-rose-700"
+          onclick="fakeDelete()">
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <style>
@@ -975,10 +1300,16 @@ $totalSum = $sumP + $sumNP;
       sumEstimadoEl.textContent = fmtMoney(estEl?.value || '0');
     }
 
+    const d = descEl?.value || '';
+
     const descCountEl = $('descCount');
     if (descCountEl) {
-      const d = descEl?.value || '';
       descCountEl.textContent = String(d.length);
+    }
+
+    const descCountResumeEl = $('descCountResume');
+    if (descCountResumeEl) {
+      descCountResumeEl.textContent = String(d.length);
     }
   }
 
@@ -1008,6 +1339,39 @@ $totalSum = $sumP + $sumNP;
   });
 
   $('btnNew')?.addEventListener('click', () => {
+    const requiredIds = [
+      'modalForm',
+      'modalTitle',
+      'pac_id',
+      'pac_nopac',
+      'pac_pn',
+      'pac_estado',
+      'pac_fuente',
+      'pac_desc',
+      'pac_obac',
+      'pac_seleccion',
+      'pac_lista',
+      'pac_modalidad',
+      'pac_tipo_mercado',
+      'pac_rubro',
+      'pac_ejecucion',
+      'pac_dependencia',
+      'pac_mes_convocatoria',
+      'pac_periodo',
+      'pac_cantidad',
+      'pac_estimado',
+      'pac_certificado',
+      'pac_inversiones'
+    ];
+
+    const faltantes = requiredIds.filter(id => !$(id));
+
+    if (faltantes.length) {
+      console.error('Faltan elementos del modal PAC:', faltantes);
+      alert('Falta cargar el modal de Nuevo PAC en la vista.');
+      return;
+    }
+
     $('modalTitle').textContent = 'Nuevo PAC';
     $('pac_id').value = '';
     $('pac_nopac').value = '';
@@ -1029,6 +1393,7 @@ $totalSum = $sumP + $sumNP;
     $('pac_estimado').value = '';
     $('pac_certificado').value = '';
     $('pac_inversiones').value = '';
+
     openModal('modalForm');
   });
 
@@ -1342,8 +1707,13 @@ $totalSum = $sumP + $sumNP;
   window.importCsvPac = importCsvPac;
 
   function fakeDelete() {
-    showToast('Eliminado correctamente.', 'success', 'Correcto');
-    closeModal('modalDelete');
+    const id = $('modalDelete')?.dataset?.id || '';
+    if (!id) {
+      showToast('No se pudo identificar el PAC a eliminar.', 'error', 'Error');
+      return;
+    }
+
+    window.location.href = '<?= BASE_URL ?>/admin/pac_eliminar?id=' + encodeURIComponent(id);
   }
   window.fakeDelete = fakeDelete;
 
