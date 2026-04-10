@@ -829,25 +829,80 @@ $totalSum = $sumP + $sumNP;
   </div>
 
   <!-- Modal importación -->
-  <div id="modalImport" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
-    <div class="absolute inset-0 bg-slate-900/40" onclick="closeModal('modalImport')"></div>
+  <div id="modalImport" class="fixed inset-0 z-50 hidden items-start justify-center overflow-y-auto p-4 pt-8">
+    <div class="absolute inset-0 bg-slate-900/45" onclick="closeModal('modalImport')"></div>
 
-    <div class="relative w-full max-w-2xl overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-soft">
-      <div class="border-b border-slate-200 px-5 py-4">
-        <div class="text-xs uppercase tracking-wide text-slate-400">PAC</div>
-        <div class="mt-1 text-2xl font-semibold text-slate-900">Importación masiva</div>
-        <div class="mt-1 text-sm text-slate-500">Carga un archivo CSV para registrar PACs.</div>
+    <div class="relative w-full max-w-2xl overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,.18)]">
+      <div class="border-b border-slate-200 bg-[linear-gradient(135deg,#f8fbff_0%,#ffffff_60%,#f8fafc_100%)] px-5 py-4">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <div class="text-[11px] font-semibold uppercase tracking-[.18em] text-blue-600">
+              PAC · Importación masiva
+            </div>
+            <h3 class="mt-1 text-xl font-semibold tracking-tight text-slate-900">
+              Cargar archivo CSV
+            </h3>
+            <p class="mt-1 text-sm text-slate-500">
+              Importa varios PAC usando la plantilla oficial.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onclick="closeModal('modalImport')"
+            class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50 hover:text-slate-800">
+            ✕
+          </button>
+        </div>
       </div>
 
-      <div class="space-y-4 px-5 py-5">
-        <input id="csv_file" type="file" accept=".csv" class="block w-full text-sm text-slate-700">
-        <div id="csvFileName" class="text-sm text-slate-500">Ningún archivo seleccionado</div>
+      <div class="space-y-4 px-5 py-4">
+        <div class="rounded-[22px] border border-dashed border-slate-300 bg-slate-50 p-3">
+          <label for="csv_file" class="block cursor-pointer">
+            <div class="flex flex-col items-center justify-center rounded-[18px] border border-slate-200 bg-white px-5 py-5 text-center transition hover:border-blue-300 hover:bg-blue-50/40">
+              <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+                <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" aria-hidden="true">
+                  <path d="M12 16V5m0 0-4 4m4-4 4 4M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </div>
 
-        <a
-          href="<?= BASE_URL ?>/admin/pac_descargar_plantilla_csv"
-          class="inline-flex items-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-100">
-          Descargar plantilla CSV
-        </a>
+              <div class="mt-3 text-base font-semibold text-slate-900">
+                Selecciona tu archivo CSV
+              </div>
+
+              <div class="mt-1 text-sm text-slate-500">
+                Haz clic aquí para buscar el archivo en tu equipo
+              </div>
+
+              <div class="mt-3 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-medium text-slate-500">
+                Formato permitido: .CSV
+              </div>
+            </div>
+          </label>
+
+          <input id="csv_file" type="file" accept=".csv" class="hidden">
+
+          <div class="mt-3 rounded-2xl border border-slate-200 bg-white px-4 py-2.5">
+            <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+              Archivo seleccionado
+            </div>
+            <div id="csvFileName" class="mt-1 text-sm text-slate-600">
+              Ningún archivo seleccionado
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+          <a
+            href="<?= BASE_URL ?>/admin/pac_plantilla_csv"
+            class="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800">
+            Descargar plantilla CSV
+          </a>
+
+          <div class="inline-flex items-center rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm text-emerald-700">
+            Usa primero la plantilla para respetar columnas y formato.
+          </div>
+        </div>
 
         <div id="importResult" class="hidden rounded-2xl border px-4 py-3 text-sm"></div>
       </div>
@@ -863,7 +918,7 @@ $totalSum = $sumP + $sumNP;
         <button
           id="btnSendImport"
           type="button"
-          class="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
+          class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700"
           onclick="importCsvPac()">
           Importar CSV
         </button>
@@ -1220,6 +1275,15 @@ $totalSum = $sumP + $sumNP;
     opacity: .88;
   }
 
+  .pac-page #modalImport {
+    align-items: flex-start !important;
+  }
+
+  .pac-page #csvFileName.has-file {
+    color: rgb(15 23 42);
+    font-weight: 600;
+  }
+
   @media (max-width: 1024px) {
     .pac-page table.dataTable tbody td:nth-child(3) {
       min-width: 300px;
@@ -1411,7 +1475,17 @@ $totalSum = $sumP + $sumNP;
 
   $('csv_file')?.addEventListener('change', (e) => {
     const file = e.target.files?.[0];
-    $('csvFileName').textContent = file ? file.name : 'Ningún archivo seleccionado';
+    const fileNameEl = $('csvFileName');
+
+    if (!fileNameEl) return;
+
+    if (file) {
+      fileNameEl.textContent = file.name;
+      fileNameEl.classList.add('has-file');
+    } else {
+      fileNameEl.textContent = 'Ningún archivo seleccionado';
+      fileNameEl.classList.remove('has-file');
+    }
   });
 
   function openEdit(

@@ -156,37 +156,55 @@ class CtrPacAdmin
         exit;
     }
 
-    public static function descargarPlantillaCsv(): void
-    {
-        header('Content-Type: text/csv; charset=UTF-8');
-        header('Content-Disposition: attachment; filename="plantilla_pac.csv"');
-        echo "\xEF\xBB\xBF";
+public static function descargarPlantillaCsv(): void
+{
+    if (ob_get_length()) {
+        ob_end_clean();
+    }
 
-        $out = fopen('php://output', 'w');
+    header('Content-Type: text/csv; charset=UTF-8');
+    header('Content-Disposition: attachment; filename="plantilla_pac.csv"');
+    header('Pragma: no-cache');
+    header('Expires: 0');
 
-        fputcsv($out, [
-            'nopac',
-            'pn',
-            'descripcion',
-            'obac',
-            'fuente',
-            'estado',
-            'estimado soles',
-            'seleccion',
-            'lista',
-            'modalidad',
-            'tipo_mercado',
-            'rubro',
-            'ejecucion',
-            'dependencia',
-            'mesconvoca',
-            'periodo',
-            'cantidad',
-            'certificado',
-            'inversiones'
-        ], ';');
+    $out = fopen('php://output', 'w');
 
-        fputcsv($out, [
+    if ($out === false) {
+        http_response_code(500);
+        exit('No se pudo generar la plantilla CSV.');
+    }
+
+    // BOM para que Excel abra bien tildes y ñ
+    fwrite($out, "\xEF\xBB\xBF");
+
+    $delimiter = ';';
+
+    // Encabezados exactos de la plantilla
+    fputcsv($out, [
+        'nopac',
+        'pn',
+        'descripcion',
+        'obac',
+        'fuente',
+        'estado',
+        'estimado soles',
+        'seleccion',
+        'lista',
+        'modalidad',
+        'tipo_mercado',
+        'rubro',
+        'ejecucion',
+        'dependencia',
+        'mesconvoca',
+        'periodo',
+        'cantidad',
+        'certificado',
+        'inversiones'
+    ], $delimiter);
+
+    // Filas ejemplo como la plantilla anterior
+    $rows = [
+        [
             '800',
             'P',
             'EJEMPLO MASIVO FAP',
@@ -206,11 +224,100 @@ class CtrPacAdmin
             '1',
             '316800.00',
             'CUI 123456'
-        ], ';');
+        ],
+        [
+            '900',
+            'NP',
+            'EJEMPLO MASIVO CCFFAA',
+            'CCFFAA',
+            'RDR',
+            'OBSERVADO',
+            '85000.00',
+            'COMPARACION DE PRECIOS',
+            'LCMN',
+            'INDIVIDUAL',
+            'EXTRANJERO',
+            'BIEN',
+            'CCFFAA',
+            '',
+            'ABRIL',
+            '2026',
+            '1',
+            '0.00',
+            'CUI 123456'
+        ],
+        [
+            '901',
+            'P',
+            'EJEMPLO MASIVO EP',
+            'EP',
+            'RD',
+            'SOLICITADO',
+            '120000.00',
+            'LICITACION PUBLICA',
+            'LGCE',
+            'CORPORATIVO',
+            'NACIONAL',
+            'OBRA',
+            'EP',
+            '',
+            'MAYO',
+            '2026',
+            '2',
+            '50000.00',
+            'CUI 123456'
+        ],
+        [
+            '902',
+            'NP',
+            'EJEMPLO MASIVO MGP',
+            'MGP',
+            'ROOC',
+            'SUBSANADO',
+            '45500.00',
+            'SUBASTA INVERSA ELECTRONICA',
+            'LGCS',
+            'INDIVIDUAL',
+            'NACIONAL',
+            'SERVICIO',
+            'MGP',
+            '',
+            'JUNIO',
+            '2026',
+            '3',
+            '20000.00',
+            'CUI 123456'
+        ],
+        [
+            '903',
+            'P',
+            'EJEMPLO MASIVO CONIDA',
+            'CONIDA',
+            'D y T',
+            'ESTUDIO DE MERCADO',
+            '78000.00',
+            'CONTRATACION DIRECTA',
+            'LCME',
+            'INDIVIDUAL',
+            'EXTRANJERO',
+            'BIEN',
+            'CONIDA',
+            '',
+            'JULIO',
+            '2026',
+            '1',
+            '0.00',
+            'CUI 123456'
+        ],
+    ];
 
-        fclose($out);
-        exit;
+    foreach ($rows as $row) {
+        fputcsv($out, $row, $delimiter);
     }
+
+    fclose($out);
+    exit;
+}
 
     public static function importarCsv(): void
     {
