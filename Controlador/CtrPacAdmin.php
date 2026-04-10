@@ -5,19 +5,20 @@ require_once __DIR__ . '/../Modelo/MdActividadPac.php';
 
 class CtrPacAdmin
 {
+    private const MODALIDAD_EXCLUIDA_ID = 4;
+
     public static function index(): void
     {
-        $tieneParametros = !empty($_GET);
-
         $filtros = [
-            'q'           => $_GET['q'] ?? '',
-            'pn'          => $_GET['pn'] ?? '',
-            'estado'      => $_GET['estado'] ?? '',
-            'periodo'     => $_GET['periodo'] ?? '',
-            'obac'        => $_GET['obac'] ?? '',
-            'ejecucion'   => isset($_GET['ejecucion']) ? ($_GET['ejecucion'] === '0' ? '0' : $_GET['ejecucion']) : '4',
-            'inversiones' => $_GET['inversiones'] ?? '',
-            'vraem'       => $_GET['vraem'] ?? '',
+            'q'                  => $_GET['q'] ?? '',
+            'pn'                 => $_GET['pn'] ?? '',
+            'estado'             => $_GET['estado'] ?? '',
+            'periodo'            => $_GET['periodo'] ?? '',
+            'obac'               => $_GET['obac'] ?? '',
+            'ejecucion'          => isset($_GET['ejecucion']) ? ($_GET['ejecucion'] === '0' ? '0' : $_GET['ejecucion']) : '4',
+            'inversiones'        => $_GET['inversiones'] ?? '',
+            'vraem'              => $_GET['vraem'] ?? '',
+            'modalidad_excluida' => $_GET['modalidad_excluida'] ?? '',
         ];
 
         $pacs = MdPacAdmin::listar($filtros);
@@ -33,6 +34,8 @@ class CtrPacAdmin
         $dependencias  = MdPacAdmin::listarDependencias();
         $tipos_mercado = MdPacAdmin::listarTiposMercado();
         $rubros        = MdPacAdmin::listarRubros();
+
+        $modalidadExcluidaId = self::MODALIDAD_EXCLUIDA_ID;
 
         require_once __DIR__ . '/../Vista/modulos/admin/pac.php';
     }
@@ -60,26 +63,26 @@ class CtrPacAdmin
 
         try {
             $data = [
-                'id'           => $_POST['id'] ?? null,
-                'nopac'        => $_POST['nopac'] ?? '',
-                'pn'           => $_POST['pn'] ?? 'NP',
-                'estado'       => $_POST['estado'] ?? null,
-                'descripcion'  => $_POST['descripcion'] ?? '',
-                'obac'         => $_POST['obac'] ?? null,
-                'seleccion'    => $_POST['seleccion'] ?? null,
-                'fuente'       => $_POST['fuente'] ?? null,
-                'estimado'     => $_POST['estimado'] ?? 0,
-                'periodo'      => $_POST['periodo'] ?? null,
-                'lista'        => $_POST['lista'] ?? null,
-                'ejecucion'    => $_POST['ejecucion'] ?? null,
-                'modalidad'    => $_POST['modalidad'] ?? null,
-                'dependencia'  => $_POST['dependencia'] ?? null,
-                'mesconvoca'   => $_POST['mesconvoca'] ?? null,
-                'certificado'  => $_POST['certificado'] ?? 0,
-                'tipo_mercado' => $_POST['tipo_mercado'] ?? null,
-                'cantidad'     => $_POST['cantidad'] ?? 0,
-                'rubro'        => $_POST['rubro'] ?? null,
-                'inversiones' => $_POST['inversiones'] ?? '',
+                'id'            => $_POST['id'] ?? null,
+                'nopac'         => $_POST['nopac'] ?? '',
+                'pn'            => $_POST['pn'] ?? 'NP',
+                'estado'        => $_POST['estado'] ?? null,
+                'descripcion'   => $_POST['descripcion'] ?? '',
+                'obac'          => $_POST['obac'] ?? null,
+                'seleccion'     => $_POST['seleccion'] ?? null,
+                'fuente'        => $_POST['fuente'] ?? null,
+                'estimado'      => $_POST['estimado'] ?? 0,
+                'periodo'       => $_POST['periodo'] ?? null,
+                'lista'         => $_POST['lista'] ?? null,
+                'ejecucion'     => $_POST['ejecucion'] ?? null,
+                'modalidad'     => $_POST['modalidad'] ?? null,
+                'dependencia'   => $_POST['dependencia'] ?? null,
+                'mesconvoca'    => $_POST['mesconvoca'] ?? null,
+                'certificado'   => $_POST['certificado'] ?? 0,
+                'tipo_mercado'  => $_POST['tipo_mercado'] ?? null,
+                'cantidad'      => $_POST['cantidad'] ?? 0,
+                'rubro'         => $_POST['rubro'] ?? null,
+                'inversiones'   => $_POST['inversiones'] ?? '',
             ];
 
             $id = !empty($data['id']) ? (int)$data['id'] : null;
@@ -161,7 +164,6 @@ class CtrPacAdmin
 
         $out = fopen('php://output', 'w');
 
-        // Encabezado
         fputcsv($out, [
             'nopac',
             'pn',
@@ -184,7 +186,6 @@ class CtrPacAdmin
             'inversiones'
         ], ';');
 
-        // Ejemplo 1
         fputcsv($out, [
             '800',
             'P',
@@ -204,98 +205,6 @@ class CtrPacAdmin
             '2026',
             '1',
             '316800.00',
-            'CUI 123456'
-        ], ';');
-
-        // Ejemplo 2
-        fputcsv($out, [
-            '900',
-            'NP',
-            'EJEMPLO MASIVO CCFFAA',
-            'CCFFAA',
-            'RDR',
-            'OBSERVADO',
-            '85000.00',
-            'COMPARACION DE PRECIOS',
-            'LCMN',
-            'INDIVIDUAL',
-            'EXTRANJERO',
-            'BIEN',
-            'CCFFAA',
-            '',
-            'ABRIL',
-            '2026',
-            '1',
-            '0.00',
-            'CUI 123456'
-        ], ';');
-
-        // Ejemplo 3
-        fputcsv($out, [
-            '901',
-            'P',
-            'EJEMPLO MASIVO EP',
-            'EP',
-            'RD',
-            'SOLICITADO',
-            '120000.00',
-            'LICITACION PUBLICA',
-            'LGCE',
-            'CORPORATIVO',
-            'NACIONAL',
-            'OBRA',
-            'EP',
-            '',
-            'MAYO',
-            '2026',
-            '2',
-            '50000.00',
-            'CUI 123456'
-        ], ';');
-
-        // Ejemplo 4
-        fputcsv($out, [
-            '902',
-            'NP',
-            'EJEMPLO MASIVO MGP',
-            'MGP',
-            'ROOC',
-            'SUBSANADO',
-            '45500.00',
-            'SUBASTA INVERSA ELECTRONICA',
-            'LGCS',
-            'INDIVIDUAL',
-            'NACIONAL',
-            'SERVICIO',
-            'MGP',
-            '',
-            'JUNIO',
-            '2026',
-            '3',
-            '20000.00',
-            'CUI 123456'
-        ], ';');
-
-        // Ejemplo 5
-        fputcsv($out, [
-            '903',
-            'P',
-            'EJEMPLO MASIVO CONIDA',
-            'CONIDA',
-            'D y T',
-            'ESTUDIO DE MERCADO',
-            '78000.00',
-            'CONTRATACION DIRECTA',
-            'LCME',
-            'INDIVIDUAL',
-            'EXTRANJERO',
-            'BIEN',
-            'CONIDA',
-            '',
-            'JULIO',
-            '2026',
-            '1',
-            '0.00',
             'CUI 123456'
         ], ';');
 

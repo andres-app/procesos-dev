@@ -8,6 +8,8 @@ class MdPacAdmin
     {
         $db = db();
 
+        $modalidadExcluidaId = 4;
+
         $sql = "
     SELECT
         p.id,
@@ -47,7 +49,9 @@ class MdPacAdmin
         COALESCE(ta_ult.nombre, est.nombre, '')  AS estado_nombre,
         COALESCE(ta_ult.estado, est.nombre, '')  AS estado_codigo,
         ap_ult.fecha AS estado_fecha
+
     FROM pac p
+
     LEFT JOIN estado est       ON est.id = p.estado
     LEFT JOIN entidad e        ON e.id = p.obac
     LEFT JOIN fuente f         ON f.id = p.fuente
@@ -77,6 +81,10 @@ class MdPacAdmin
 
         $params = [];
 
+        // =========================
+        // FILTROS BASE
+        // =========================
+
         if (!empty($filtros['pn'])) {
             $sql .= " AND p.pn = :pn";
             $params[':pn'] = strtoupper(trim((string)$filtros['pn']));
@@ -105,12 +113,18 @@ class MdPacAdmin
             e.nombre LIKE :q OR
             est.nombre LIKE :q OR
             ta_ult.nombre LIKE :q OR
-            ta_ult.estado LIKE :q
+            ta_ult.estado LIKE :q OR
+            m.nombre LIKE :q
         )";
             $params[':q'] = "%{$q}%";
         }
 
+        // =========================
+        // FILTRO ACFFAA / EJECUCIÓN
+        // =========================
+
         if (isset($filtros['ejecucion']) && $filtros['ejecucion'] !== '' && $filtros['ejecucion'] !== '0') {
+
             $ej = $filtros['ejecucion'];
 
             if (ctype_digit((string)$ej)) {
@@ -122,16 +136,36 @@ class MdPacAdmin
             }
         }
 
-        // FILTRO: solo PAC con campo inversiones lleno
+        // =========================
+        // FILTROS FUNCIONALES
+        // =========================
+
         if (!empty($filtros['inversiones'])) {
             $sql .= " AND p.inversiones IS NOT NULL AND TRIM(p.inversiones) <> ''";
         }
 
-        // FILTRO: descripción que contenga VRAEM
         if (!empty($filtros['vraem'])) {
             $sql .= " AND UPPER(p.descripcion) LIKE :vraem";
             $params[':vraem'] = '%VRAEM%';
         }
+
+        // =========================
+        // LÓGICA CLAVE (IMPORTANTE)
+        // =========================
+
+        if (!empty($filtros['modalidad_excluida'])) {
+            // SOLO EXCLUIDOS
+            $sql .= " AND p.modalidad = :modalidad_excluida";
+            $params[':modalidad_excluida'] = $modalidadExcluidaId;
+        } else {
+            // OCULTAR EXCLUIDOS EN TODO LO DEMÁS
+            $sql .= " AND (p.modalidad IS NULL OR p.modalidad <> :modalidad_excluida_hide)";
+            $params[':modalidad_excluida_hide'] = $modalidadExcluidaId;
+        }
+
+        // =========================
+        // ORDEN FINAL
+        // =========================
 
         $sql .= " ORDER BY p.created_at DESC, p.id DESC";
 
