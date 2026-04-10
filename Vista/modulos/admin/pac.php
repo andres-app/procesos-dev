@@ -304,7 +304,7 @@ $totalSum = $sumP + $sumNP;
       class="inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition <?= $todosActivo
                                                                                                           ? 'border-slate-300 bg-slate-900 text-white'
                                                                                                           : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900' ?>">
-      Todos
+      TODOS
     </a>
   </div>
 
@@ -1312,8 +1312,8 @@ $totalSum = $sumP + $sumNP;
       responsive: false,
       pageLength: 10,
       lengthMenu: [
-        [10, 25, 50, 100],
-        [10, 25, 50, 100]
+        [10, 25, 50, 100, -1],
+        [10, 25, 50, 100, 'Todos']
       ],
       order: [
         [0, 'asc']
@@ -1333,7 +1333,10 @@ $totalSum = $sumP + $sumNP;
           next: '›',
           previous: '‹'
         },
-        processing: 'Procesando...'
+        buttons: {
+          excel: 'Excel',
+          pdf: 'PDF'
+        }
       },
       columnDefs: [{
         targets: 8,
@@ -1341,9 +1344,34 @@ $totalSum = $sumP + $sumNP;
         searchable: false,
         className: 'text-right'
       }],
-      dom: "<'top'<'dataTables_length'l><'dataTables_filter'f>>" +
+      dom: "<'top flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between'\
+      <'flex flex-col sm:flex-row sm:items-center gap-2'\
+        <'dataTables_length'l>\
+        <'dt-buttons-wrap'B>\
+      >\
+      <'dataTables_filter'f>\
+    >" +
         "rt" +
         "<'bottom'<'dataTables_info'i><'dataTables_paginate'p>>",
+      buttons: [{
+          extend: 'excelHtml5',
+          text: 'Excel',
+          title: 'PAC_registrados',
+          exportOptions: {
+            columns: [0, 1, 2, 3, 4, 5, 6, 7]
+          }
+        },
+        {
+          extend: 'pdfHtml5',
+          text: 'PDF',
+          title: 'PAC_registrados',
+          orientation: 'landscape',
+          pageSize: 'A4',
+          exportOptions: {
+            columns: [0, 1, 2, 3, 4, 5, 6, 7]
+          }
+        }
+      ],
       initComplete: function() {
         const wrapper = $table.closest('.dataTables_wrapper');
 
