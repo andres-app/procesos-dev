@@ -26,7 +26,7 @@ class CtrDashboardAdmin
         $comparativo      = MdDashboardAdmin::obtenerComparativoFinanciero($filtros);
         $pacCriticos      = MdDashboardAdmin::obtenerPacCriticos($filtros, 8);
         $participacion    = MdDashboardAdmin::obtenerParticipacionSectorDefensa($filtros);
-        $participacionPie = MdDashboardAdmin::obtenerParticipacionPie($filtros);
+        $participacionPie = MdDashboardAdmin::obtenerParticipacionPie([]);
 
         // NUEVO
         $resumenListas  = MdDashboardAdmin::obtenerResumenListasGenerales($filtros);

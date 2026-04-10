@@ -175,44 +175,12 @@ foreach (($tendenciaMes ?? []) as $item) {
         </div>
 
         <h1 class="mt-4 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-          Dashboard PAC
+          Dashboard Principal
         </h1>
 
-        <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-[15px]">
-          Lectura ejecutiva de la programación anual de contrataciones, con foco en cobertura financiera,
-          participación sectorial, distribución de mercado y alertas gerenciales.
-        </p>
-
         <div class="mt-5 flex flex-wrap items-center gap-2">
-          <a
-            href="<?= htmlspecialchars(buildDashboardFilterUrl(['ejecucion' => 4]), ENT_QUOTES, 'UTF-8') ?>"
-            class="inline-flex items-center rounded-full border px-3.5 py-2 text-xs font-semibold transition <?= $ejecucionActual === '4'
-                                                                                                              ? 'border-rose-300 bg-rose-600 text-white shadow-[0_8px_20px_rgba(225,29,72,.22)]'
-                                                                                                              : 'border-slate-200 bg-white/85 text-slate-700 hover:border-rose-200 hover:text-rose-700' ?>">
-            ACFFAA
-          </a>
-
-          <a
-            href="<?= htmlspecialchars(buildDashboardFilterUrl(['ejecucion' => 0]), ENT_QUOTES, 'UTF-8') ?>"
-            class="inline-flex items-center rounded-full border px-3.5 py-2 text-xs font-semibold transition <?= $ejecucionActual === '0'
-                                                                                                              ? 'border-slate-300 bg-slate-900 text-white shadow-[0_8px_20px_rgba(15,23,42,.20)]'
-                                                                                                              : 'border-slate-200 bg-white/85 text-slate-700 hover:border-slate-300 hover:text-slate-900' ?>">
-            Todos
-          </a>
-        </div>
-      </div>
-
-      <div class="hero-mini-kpi-grid">
-        <div class="hero-mini-kpi-card">
-          <div class="hero-mini-kpi-label">PAC</div>
-          <div class="hero-mini-kpi-value"><?= (int)($kpis['total_pac'] ?? 0) ?></div>
-          <div class="hero-mini-kpi-sub">Registros</div>
-        </div>
-
-        <div class="hero-mini-kpi-card">
-          <div class="hero-mini-kpi-label">Estimado</div>
-          <div class="hero-mini-kpi-value hero-mini-kpi-value--money"><?= fmt_money_dashboard($kpis['total_estimado'] ?? 0) ?></div>
-          <div class="hero-mini-kpi-sub">Monto total</div>
+          <a href="<?= htmlspecialchars(buildDashboardFilterUrl(['ejecucion' => 4]), ENT_QUOTES, 'UTF-8') ?>" class="inline-flex items-center rounded-full border px-3.5 py-2 text-xs font-semibold transition <?= $ejecucionActual === '4' ? 'border-rose-300 bg-rose-600 text-white shadow-[0_8px_20px_rgba(225,29,72,.22)]' : 'border-slate-200 bg-white/85 text-slate-700 hover:border-rose-200 hover:text-rose-700' ?>"> ACFFAA </a>
+          <a href="<?= htmlspecialchars(buildDashboardFilterUrl(['ejecucion' => 0]), ENT_QUOTES, 'UTF-8') ?>" class="inline-flex items-center rounded-full border px-3.5 py-2 text-xs font-semibold transition <?= $ejecucionActual === '0' ? 'border-slate-300 bg-slate-900 text-white shadow-[0_8px_20px_rgba(15,23,42,.20)]' : 'border-slate-200 bg-white/85 text-slate-700 hover:border-slate-300 hover:text-slate-900' ?>"> Todos </a>
         </div>
       </div>
     </div>
@@ -301,71 +269,6 @@ foreach (($tendenciaMes ?? []) as $item) {
       <div class="metric-card__label">PAC con inversión</div>
       <div class="metric-card__value"><?= (int)($kpis['total_con_inversion'] ?? 0) ?></div>
       <div class="metric-card__sub">Registros con inversiones</div>
-    </article>
-  </section>
-
-  <!-- RESUMEN FINANCIERO -->
-  <section class="grid grid-cols-1 gap-4 xl:grid-cols-3">
-    <article class="section-card xl:col-span-2">
-      <div class="section-head">
-        <div>
-          <div class="section-kicker">Cobertura</div>
-          <h2 class="section-title">Estimado vs certificado</h2>
-          <p class="section-subtitle">Relación entre programación estimada y cobertura financiera registrada.</p>
-        </div>
-
-        <div class="stat-pill stat-pill--emerald">
-          <?= $coberturaPct ?>%
-        </div>
-      </div>
-
-      <div class="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <div class="soft-mini-card">
-          <div class="soft-mini-card__label">Estimado</div>
-          <div class="soft-mini-card__value"><?= fmt_money_dashboard($comparativo['total_estimado'] ?? 0) ?></div>
-        </div>
-
-        <div class="soft-mini-card soft-mini-card--emerald">
-          <div class="soft-mini-card__label">Certificado</div>
-          <div class="soft-mini-card__value"><?= fmt_money_dashboard($comparativo['total_certificado'] ?? 0) ?></div>
-        </div>
-
-        <div class="soft-mini-card soft-mini-card--amber">
-          <div class="soft-mini-card__label">Brecha</div>
-          <div class="soft-mini-card__value"><?= fmt_money_dashboard($comparativo['brecha'] ?? 0) ?></div>
-        </div>
-      </div>
-
-      <div class="mt-6">
-        <div class="mb-2 flex items-center justify-between gap-3">
-          <div class="text-sm font-medium text-slate-700">Nivel de cobertura financiera</div>
-          <div class="text-sm font-semibold text-slate-900"><?= $coberturaPct ?>%</div>
-        </div>
-        <div class="h-4 overflow-hidden rounded-full bg-slate-200">
-          <div class="h-full rounded-full bg-emerald-600 transition-all" style="width: <?= min($coberturaPct, 100) ?>%;"></div>
-        </div>
-      </div>
-    </article>
-
-    <article class="section-card">
-      <div class="section-head">
-        <div>
-          <div class="section-kicker">Estado financiero</div>
-          <h2 class="section-title">PAC certificados</h2>
-        </div>
-      </div>
-
-      <div class="mt-5 space-y-4">
-        <div class="soft-mini-card soft-mini-card--emerald">
-          <div class="soft-mini-card__label">Con certificado</div>
-          <div class="soft-mini-card__value"><?= (int)($comparativo['pac_con_certificado'] ?? 0) ?></div>
-        </div>
-
-        <div class="soft-mini-card soft-mini-card--amber">
-          <div class="soft-mini-card__label">Sin certificado</div>
-          <div class="soft-mini-card__value"><?= (int)($comparativo['pac_sin_certificado'] ?? 0) ?></div>
-        </div>
-      </div>
     </article>
   </section>
 
@@ -767,10 +670,10 @@ foreach (($tendenciaMes ?? []) as $item) {
     border-radius: 32px;
     padding: 28px;
     background:
-      radial-gradient(circle at top left, rgba(255,255,255,.98), rgba(248,250,252,.95) 42%, rgba(241,245,249,.98) 100%);
+      radial-gradient(circle at top left, rgba(255, 255, 255, .98), rgba(248, 250, 252, .95) 42%, rgba(241, 245, 249, .98) 100%);
     box-shadow:
-      0 18px 48px rgba(15,23,42,.06),
-      inset 0 1px 0 rgba(255,255,255,.85);
+      0 18px 48px rgba(15, 23, 42, .06),
+      inset 0 1px 0 rgba(255, 255, 255, .85);
   }
 
   .hero-premium__glow {
@@ -806,11 +709,11 @@ foreach (($tendenciaMes ?? []) as $item) {
 
   .hero-mini-kpi-card {
     border: 1px solid rgba(226, 232, 240, .95);
-    background: rgba(255,255,255,.78);
+    background: rgba(255, 255, 255, .78);
     backdrop-filter: blur(10px);
     border-radius: 24px;
     padding: 18px 16px;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.9);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9);
   }
 
   .hero-mini-kpi-label {
@@ -842,9 +745,9 @@ foreach (($tendenciaMes ?? []) as $item) {
 
   .section-card {
     border-radius: 28px;
-    border: 1px solid rgba(148,163,184,.18);
-    background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,250,252,.96));
-    box-shadow: 0 16px 40px rgba(15,23,42,.06);
+    border: 1px solid rgba(148, 163, 184, .18);
+    background: linear-gradient(180deg, rgba(255, 255, 255, .98), rgba(248, 250, 252, .96));
+    box-shadow: 0 16px 40px rgba(15, 23, 42, .06);
     padding: 22px;
   }
 
@@ -859,7 +762,7 @@ foreach (($tendenciaMes ?? []) as $item) {
     margin: -22px -22px 18px;
     padding: 22px 22px 18px;
     border-bottom: 1px solid rgba(226, 232, 240, .95);
-    background: linear-gradient(180deg, rgba(255,255,255,.9), rgba(248,250,252,.92));
+    background: linear-gradient(180deg, rgba(255, 255, 255, .9), rgba(248, 250, 252, .92));
   }
 
   .section-kicker {
@@ -890,18 +793,18 @@ foreach (($tendenciaMes ?? []) as $item) {
     position: relative;
     overflow: hidden;
     border-radius: 28px;
-    border: 1px solid rgba(148,163,184,.18);
+    border: 1px solid rgba(148, 163, 184, .18);
     background:
-      radial-gradient(circle at top right, rgba(255,255,255,.96), rgba(248,250,252,.94) 52%, rgba(241,245,249,.98));
-    box-shadow: 0 16px 40px rgba(15,23,42,.06);
+      radial-gradient(circle at top right, rgba(255, 255, 255, .96), rgba(248, 250, 252, .94) 52%, rgba(241, 245, 249, .98));
+    box-shadow: 0 16px 40px rgba(15, 23, 42, .06);
     padding: 24px 22px;
   }
 
   .metric-card--dark {
     background:
-      linear-gradient(135deg, rgba(15,23,42,.98), rgba(30,41,59,.96));
-    border-color: rgba(30,41,59,.9);
-    box-shadow: 0 18px 38px rgba(15,23,42,.18);
+      linear-gradient(135deg, rgba(15, 23, 42, .98), rgba(30, 41, 59, .96));
+    border-color: rgba(30, 41, 59, .9);
+    box-shadow: 0 18px 38px rgba(15, 23, 42, .18);
   }
 
   .metric-card__label {
@@ -928,7 +831,7 @@ foreach (($tendenciaMes ?? []) as $item) {
   }
 
   .metric-card--dark .metric-card__label {
-    color: rgba(226,232,240,.72);
+    color: rgba(226, 232, 240, .72);
   }
 
   .metric-card__sub {
@@ -939,24 +842,24 @@ foreach (($tendenciaMes ?? []) as $item) {
 
   .soft-mini-card {
     border-radius: 22px;
-    border: 1px solid rgba(226,232,240,.95);
-    background: rgba(248,250,252,.88);
+    border: 1px solid rgba(226, 232, 240, .95);
+    background: rgba(248, 250, 252, .88);
     padding: 16px;
   }
 
   .soft-mini-card--emerald {
-    border-color: rgba(167,243,208,.95);
-    background: rgba(236,253,245,.95);
+    border-color: rgba(167, 243, 208, .95);
+    background: rgba(236, 253, 245, .95);
   }
 
   .soft-mini-card--amber {
-    border-color: rgba(253,230,138,.95);
-    background: rgba(255,251,235,.95);
+    border-color: rgba(253, 230, 138, .95);
+    background: rgba(255, 251, 235, .95);
   }
 
   .soft-mini-card--blue {
-    border-color: rgba(191,219,254,.95);
-    background: rgba(239,246,255,.95);
+    border-color: rgba(191, 219, 254, .95);
+    background: rgba(239, 246, 255, .95);
   }
 
   .soft-mini-card__label {
@@ -994,27 +897,27 @@ foreach (($tendenciaMes ?? []) as $item) {
   }
 
   .stat-pill--emerald {
-    background: rgba(16,185,129,.10);
+    background: rgba(16, 185, 129, .10);
     color: rgb(5 150 105);
-    border-color: rgba(16,185,129,.16);
+    border-color: rgba(16, 185, 129, .16);
   }
 
   .stat-pill--blue {
-    background: rgba(37,99,235,.08);
+    background: rgba(37, 99, 235, .08);
     color: rgb(29 78 216);
-    border-color: rgba(37,99,235,.12);
+    border-color: rgba(37, 99, 235, .12);
   }
 
   .stat-pill--amber {
-    background: rgba(245,158,11,.08);
+    background: rgba(245, 158, 11, .08);
     color: rgb(180 83 9);
-    border-color: rgba(245,158,11,.14);
+    border-color: rgba(245, 158, 11, .14);
   }
 
   .stat-pill--rose {
-    background: rgba(244,63,94,.08);
+    background: rgba(244, 63, 94, .08);
     color: rgb(190 24 93);
-    border-color: rgba(244,63,94,.12);
+    border-color: rgba(244, 63, 94, .12);
   }
 
   .premium-table {
@@ -1034,29 +937,29 @@ foreach (($tendenciaMes ?? []) as $item) {
     text-transform: uppercase;
     color: rgb(100 116 139);
     border-bottom: 1px solid rgba(226, 232, 240, .95);
-    background: rgba(248,250,252,.72);
+    background: rgba(248, 250, 252, .72);
   }
 
   .premium-table tbody td {
     padding: 14px;
     color: rgb(51 65 85);
-    border-bottom: 1px solid rgba(241,245,249,.95);
+    border-bottom: 1px solid rgba(241, 245, 249, .95);
   }
 
   .premium-table tbody tr:hover td {
-    background: rgba(248,250,252,.72);
+    background: rgba(248, 250, 252, .72);
   }
 
   .premium-table tbody tr.is-total td {
-    background: rgba(248,250,252,.92);
+    background: rgba(248, 250, 252, .92);
     font-weight: 700;
     color: rgb(15 23 42);
   }
 
   .rank-card {
     border-radius: 20px;
-    border: 1px solid rgba(241,245,249,.95);
-    background: rgba(248,250,252,.84);
+    border: 1px solid rgba(241, 245, 249, .95);
+    background: rgba(248, 250, 252, .84);
     padding: 14px;
   }
 
@@ -1067,7 +970,7 @@ foreach (($tendenciaMes ?? []) as $item) {
     align-items: center;
     justify-content: center;
     border-radius: 999px;
-    background: rgba(251,191,36,.18);
+    background: rgba(251, 191, 36, .18);
     color: rgb(180 83 9);
     font-size: 12px;
     font-weight: 800;
@@ -1077,7 +980,7 @@ foreach (($tendenciaMes ?? []) as $item) {
     height: 8px;
     border-radius: 999px;
     overflow: hidden;
-    background: rgba(226,232,240,.95);
+    background: rgba(226, 232, 240, .95);
     margin-top: 12px;
   }
 
@@ -1096,8 +999,8 @@ foreach (($tendenciaMes ?? []) as $item) {
 
   .empty-state-card {
     border-radius: 20px;
-    border: 1px dashed rgba(203,213,225,.95);
-    background: rgba(248,250,252,.8);
+    border: 1px dashed rgba(203, 213, 225, .95);
+    background: rgba(248, 250, 252, .8);
     padding: 18px;
     font-size: 14px;
     color: rgb(100 116 139);
@@ -1230,6 +1133,7 @@ foreach (($tendenciaMes ?? []) as $item) {
   }
 
   @media (max-width: 768px) {
+
     .hero-premium,
     .section-card,
     .metric-card,
@@ -1298,7 +1202,9 @@ foreach (($tendenciaMes ?? []) as $item) {
       const meta = chart.getDatasetMeta(0);
       if (!meta || !meta.data || !meta.data.length) return;
 
-      const { ctx } = chart;
+      const {
+        ctx
+      } = chart;
       const x = meta.data[0].x;
       const y = meta.data[0].y;
 
@@ -1667,9 +1573,9 @@ foreach (($tendenciaMes ?? []) as $item) {
                 const data = chart.data;
                 return data.labels.map((label, i) => {
                   const value = Number(data.datasets[0].data[i] || 0);
-                  const pct = totalParticipacionMonto > 0
-                    ? ((value / totalParticipacionMonto) * 100).toFixed(1)
-                    : '0.0';
+                  const pct = totalParticipacionMonto > 0 ?
+                    ((value / totalParticipacionMonto) * 100).toFixed(1) :
+                    '0.0';
 
                   return {
                     text: `${label} · ${pct}%`,
@@ -1703,9 +1609,9 @@ foreach (($tendenciaMes ?? []) as $item) {
             textStrokeColor: 'rgba(255,255,255,.92)',
             textStrokeWidth: 3,
             formatter: (value, ctx) => {
-              const pct = totalParticipacionMonto > 0
-                ? ((Number(value || 0) / totalParticipacionMonto) * 100)
-                : 0;
+              const pct = totalParticipacionMonto > 0 ?
+                ((Number(value || 0) / totalParticipacionMonto) * 100) :
+                0;
 
               const pac = participacionTotales[ctx.dataIndex] || 0;
 
@@ -1739,7 +1645,9 @@ foreach (($tendenciaMes ?? []) as $item) {
       plugins: [{
         id: 'softShadowPie',
         beforeDatasetDraw(chart) {
-          const { ctx } = chart;
+          const {
+            ctx
+          } = chart;
           ctx.save();
           ctx.shadowColor = 'rgba(0,0,0,0.12)';
           ctx.shadowBlur = 18;
