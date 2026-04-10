@@ -815,6 +815,86 @@ $totalSum = $sumP + $sumNP;
     color: rgb(148 163 184) !important;
   }
 
+  .pac-page .dt-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .pac-page .dt-buttons-wrap {
+    display: flex;
+    align-items: center;
+  }
+
+  .pac-page .dt-button,
+  .pac-page button.dt-button,
+  .pac-page div.dt-button,
+  .pac-page a.dt-button {
+    min-height: 42px;
+    border-radius: 14px !important;
+    border: 1px solid rgba(203, 213, 225, .9) !important;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, .96) 0%, rgba(248, 250, 252, .96) 100%) !important;
+    color: rgb(15 23 42) !important;
+    padding: 0 14px !important;
+    margin: 0 !important;
+    box-shadow:
+      0 1px 2px rgba(15, 23, 42, .04),
+      0 8px 24px rgba(15, 23, 42, .06);
+    transition: all .18s ease !important;
+  }
+
+  .pac-page .dt-button:hover,
+  .pac-page button.dt-button:hover,
+  .pac-page div.dt-button:hover,
+  .pac-page a.dt-button:hover {
+    border-color: rgba(148, 163, 184, .95) !important;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(241, 245, 249, 1) 100%) !important;
+    color: rgb(15 23 42) !important;
+    box-shadow:
+      0 1px 2px rgba(15, 23, 42, .05),
+      0 12px 28px rgba(15, 23, 42, .10);
+    transform: translateY(-1px);
+  }
+
+  .pac-page .dt-button:active,
+  .pac-page button.dt-button:active,
+  .pac-page div.dt-button:active,
+  .pac-page a.dt-button:active {
+    transform: translateY(0);
+    box-shadow:
+      0 1px 2px rgba(15, 23, 42, .04),
+      0 6px 16px rgba(15, 23, 42, .08);
+  }
+
+  .pac-page .dt-button:focus,
+  .pac-page button.dt-button:focus,
+  .pac-page div.dt-button:focus,
+  .pac-page a.dt-button:focus {
+    outline: none !important;
+    box-shadow:
+      0 0 0 4px rgba(148, 163, 184, .14),
+      0 8px 24px rgba(15, 23, 42, .08) !important;
+  }
+
+  .pac-page .dt-btn-inner {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -.01em;
+  }
+
+  .pac-page .dt-btn-icon {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+    opacity: .88;
+  }
+
   @media (max-width: 1024px) {
     .pac-page table.dataTable tbody td:nth-child(3) {
       min-width: 300px;
@@ -1355,7 +1435,14 @@ $totalSum = $sumP + $sumNP;
         "<'bottom'<'dataTables_info'i><'dataTables_paginate'p>>",
       buttons: [{
           extend: 'excelHtml5',
-          text: 'Excel',
+          text: `
+      <span class="dt-btn-inner">
+        <svg viewBox="0 0 24 24" class="dt-btn-icon" aria-hidden="true">
+          <path fill="currentColor" d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zm0 1.5L18.5 8H14zM9.7 16.8l1.55-2.3-1.45-2.3h1.52l.77 1.35.8-1.35h1.47l-1.47 2.28 1.57 2.32h-1.54l-.88-1.4-.89 1.4z"/>
+        </svg>
+        <span>Excel</span>
+      </span>
+    `,
           title: 'PAC_registrados',
           exportOptions: {
             columns: [0, 1, 2, 3, 4, 5, 6, 7]
@@ -1363,7 +1450,14 @@ $totalSum = $sumP + $sumNP;
         },
         {
           extend: 'pdfHtml5',
-          text: 'PDF',
+          text: `
+      <span class="dt-btn-inner">
+        <svg viewBox="0 0 24 24" class="dt-btn-icon" aria-hidden="true">
+          <path fill="currentColor" d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zm0 1.5L18.5 8H14zM8.8 16.8v-4.6h2.08c1.02 0 1.72.66 1.72 1.6 0 .96-.7 1.62-1.72 1.62h-.82v1.4zm1.26-2.46h.63c.4 0 .67-.24.67-.56 0-.34-.27-.56-.67-.56h-.63zm3.36 2.46v-4.6h1.88c1.38 0 2.28.9 2.28 2.3s-.9 2.3-2.28 2.3zm1.26-1.08h.46c.68 0 1.1-.45 1.1-1.22s-.42-1.22-1.1-1.22h-.46zm3.52 1.08v-4.6h3.08v1.05h-1.82v.78h1.64v1.02h-1.64v1.75z"/>
+        </svg>
+        <span>PDF</span>
+      </span>
+    `,
           title: 'PAC_registrados',
           orientation: 'landscape',
           pageSize: 'A4',
