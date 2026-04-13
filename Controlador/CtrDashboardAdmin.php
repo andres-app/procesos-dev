@@ -28,6 +28,14 @@ class CtrDashboardAdmin
             'estado'    => $_GET['estado'] ?? '',
         ];
 
+        /*
+         * Estos filtros son para métricas comparativas/globales.
+         * Ignoran SOLO el filtro rápido de ejecución (ACFFAA / Todos),
+         * pero sí respetan periodo, obac y estado si el usuario los selecciona.
+         */
+        $filtrosComparativos = $filtros;
+        $filtrosComparativos['ejecucion'] = '0';
+
         $kpis                  = MdDashboardAdmin::obtenerKpisGenerales($filtros);
         $porEstado             = MdDashboardAdmin::obtenerResumenPorEstado($filtros);
         $porObac               = MdDashboardAdmin::obtenerResumenPorObac($filtros);
@@ -39,8 +47,14 @@ class CtrDashboardAdmin
         $alertas               = MdDashboardAdmin::obtenerAlertasGerenciales($filtros);
         $comparativo           = MdDashboardAdmin::obtenerComparativoFinanciero($filtros);
         $pacCriticos           = MdDashboardAdmin::obtenerPacCriticos($filtros, 8);
-        $participacion         = MdDashboardAdmin::obtenerParticipacionSectorDefensa($filtros);
-        $participacionPie      = MdDashboardAdmin::obtenerParticipacionPie([]);
+
+        /*
+         * Estas vistas NO deben quedar sesgadas por el filtro rápido ACFFAA.
+         * Se calculan sobre el universo comparativo.
+         */
+        $participacion         = MdDashboardAdmin::obtenerParticipacionSectorDefensa($filtrosComparativos);
+        $participacionPie      = MdDashboardAdmin::obtenerParticipacionPie($filtrosComparativos);
+
         $resumenListas         = MdDashboardAdmin::obtenerResumenListasGenerales($filtros);
         $resumenMercadoDetalle = MdDashboardAdmin::obtenerResumenTipoCompraPorMercado($filtros);
 
