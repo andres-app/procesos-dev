@@ -1,7 +1,5 @@
 <?php
-// Vista/modulos/admin/reportes.php (MAQUETA / SIN BD)
-// Módulo: Reportes (solo cards / sin data)
-// Apple-like UI + responsive desktop
+// Vista/modulos/admin/reportes.php
 $titulo = 'Reportes';
 $active = 'reportes';
 require __DIR__ . '/../../layout/admin_layout.php';
@@ -125,8 +123,7 @@ function pill($txt, $tone = 'slate')
                         </a>
 
                         <a class="btn btn-primary w-full text-center"
-                            href="<?= BASE_URL ?>/admin/export_pdf/<?= h($r['key']) ?>"
-                            target="_blank" rel="noopener">
+                            href="<?= BASE_URL ?>/admin/export_pdf/<?= h($r['key']) ?>">
                             Exportar PDF
                         </a>
                     </div>
@@ -160,7 +157,7 @@ function pill($txt, $tone = 'slate')
                 <div class="text-xs text-slate-500">Acciones</div>
                 <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <a id="pv_excel" class="btn btn-ghost border border-slate-200 bg-white w-full text-center" href="#">Exportar Excel</a>
-                    <a id="pv_pdf" class="btn btn-primary w-full text-center" href="#" target="_blank" rel="noopener">Exportar PDF</a>
+                    <a id="pv_pdf" class="btn btn-primary w-full text-center" href="#">Exportar PDF</a>
                 </div>
             </div>
 

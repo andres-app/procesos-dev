@@ -1,4 +1,5 @@
 <?php
+// Vista/modulos/reportes/derivados.php
 $titulo = 'Derivados | Reportes';
 $appName = 'Seguimiento de procesos';
 $usuario = 'Andres';

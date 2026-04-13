@@ -1,30 +1,54 @@
 <?php
+// Vista/modulos/admin/exports/pdf.php
 require_once __DIR__ . '/../../../../Config/config.php';
+require_once __DIR__ . '/../../../../vendor/tcpdf/tcpdf.php';
 
-// viene desde router: $type = $parts[2] ?? 'estado';
 $type = $type ?? ($_GET['type'] ?? 'estado');
-?>
-<!doctype html>
-<html lang="es">
-<head>
-  <meta charset="utf-8">
-  <title>Reporte <?= htmlspecialchars($type) ?></title>
-  <style>
-    body{ font-family: Arial, Helvetica, sans-serif; margin:20px; color:#0f172a; }
-    .box{ border:1px solid #e2e8f0; border-radius:12px; padding:14px; }
-    @media print{ .no-print{ display:none; } body{ margin:0; } }
-  </style>
-</head>
-<body>
-  <div class="no-print" style="margin-bottom:12px;">
-    <button onclick="window.print()">Imprimir / Guardar como PDF</button>
-  </div>
+$type = preg_replace('/[^a-zA-Z0-9_-]/', '', (string)$type);
 
-  <h2>Reporte (maqueta)</h2>
-  <div class="box">
-    <div><b>Tipo:</b> <?= htmlspecialchars($type) ?></div>
-    <div><b>Generado:</b> <?= date('d/m/Y H:i') ?></div>
-    <div style="margin-top:10px; color:#64748b;">Aquí irá el contenido real cuando conectes BD.</div>
-  </div>
-</body>
-</html>
+if ($type === '') {
+    $type = 'estado';
+}
+
+$pdf = new TCPDF('L', 'mm', 'A4', true, 'UTF-8', false);
+
+$pdf->SetCreator('Sistema');
+$pdf->SetAuthor('Andres');
+$pdf->SetTitle('Reporte ' . $type);
+$pdf->SetSubject('Reporte ' . $type);
+
+$pdf->setPrintHeader(false);
+$pdf->setPrintFooter(false);
+
+$pdf->SetMargins(10, 10, 10);
+$pdf->SetAutoPageBreak(true, 10);
+$pdf->SetFont('helvetica', '', 11);
+$pdf->AddPage();
+
+$html = '
+<h2>Reporte: ' . htmlspecialchars($type, ENT_QUOTES, 'UTF-8') . '</h2>
+<br>
+<table border="1" cellpadding="5">
+    <tr style="background-color:#f2f2f2;">
+        <th>N° PAC</th>
+        <th>Descripción</th>
+        <th>Estado</th>
+        <th>Estimado</th>
+    </tr>
+    <tr>
+        <td>001</td>
+        <td>Ejemplo PAC</td>
+        <td>PUBLICADO</td>
+        <td>S/ 10,000</td>
+    </tr>
+</table>
+';
+
+$pdf->writeHTML($html, true, false, true, false, '');
+
+if (ob_get_length()) {
+    ob_end_clean();
+}
+
+$pdf->Output('reporte_' . $type . '.pdf', 'D');
+exit;
