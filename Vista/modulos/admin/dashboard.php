@@ -188,14 +188,14 @@ foreach (($tendenciaMes ?? []) as $item) {
 
   <!-- FILTROS -->
   <section class="section-card">
-    <div class="section-head">
+    <div class="section-head mb-5">
       <div>
         <div class="section-kicker">Filtros</div>
         <h2 class="section-title">Control de vista</h2>
       </div>
     </div>
 
-    <form method="GET" class="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_1fr_1fr_auto]">
+    <form method="GET" class="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1fr_1fr_auto]">
       <select
         name="periodo"
         class="h-12 rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
