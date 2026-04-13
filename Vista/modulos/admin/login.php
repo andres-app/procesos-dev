@@ -1,21 +1,6 @@
 <?php
-// Vista/modulos/admin/login.php
-$err = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  $u = trim($_POST['user'] ?? '');
-  $p = (string)($_POST['pass'] ?? '');
-
-  // Recomendado: variables de entorno en servidor
-  $ADMIN_USER = getenv('ADMIN_USER') ?: 'admin';
-  $ADMIN_PASS = getenv('ADMIN_PASS') ?: 'admin123';
-
-  if (hash_equals($ADMIN_USER, $u) && hash_equals($ADMIN_PASS, $p)) {
-    $_SESSION['admin_user'] = $u;
-    header("Location: /public/admin/dashboard");
-    exit;
-  }
-  $err = 'Usuario o contraseña incorrectos.';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
 }
 ?>
 <!doctype html>
@@ -33,20 +18,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <h1 class="text-2xl font-semibold">Acceso Administrador</h1>
     </div>
 
-    <?php if ($err): ?>
+    <?php if (!empty($err)): ?>
       <div class="mb-4 text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-xl p-3">
-        <?= htmlspecialchars($err) ?>
+        <?= htmlspecialchars($err, ENT_QUOTES, 'UTF-8') ?>
       </div>
     <?php endif; ?>
 
     <form method="post" class="space-y-4">
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1">Usuario</label>
-        <input name="user" value="admin" class="w-full rounded-xl border border-slate-200 px-3 py-2" required>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Usuario o correo</label>
+        <input
+          name="user"
+          value="<?= htmlspecialchars($_POST['user'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+          class="w-full rounded-xl border border-slate-200 px-3 py-2"
+          required
+        >
       </div>
+
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1">Contraseña</label>
-        <input type="password" value="admin123" name="pass" class="w-full rounded-xl border border-slate-200 px-3 py-2" required>
+        <input
+          type="password"
+          name="pass"
+          class="w-full rounded-xl border border-slate-200 px-3 py-2"
+          required
+        >
       </div>
 
       <button class="w-full rounded-xl bg-slate-900 text-white py-2.5 font-medium hover:bg-slate-800">
