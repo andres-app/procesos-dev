@@ -703,30 +703,45 @@ class MdDashboardAdmin
         return $resultado;
     }
 
-    private static function buildWhere(string &$sql, array $filtros = []): array
-    {
-        $params = [];
+private static function buildWhere(string &$sql, array $filtros = []): array
+{
+    $params = [];
 
-        if (!empty($filtros['periodo'])) {
-            $sql .= " AND p.periodo = :periodo";
-            $params[':periodo'] = (int)$filtros['periodo'];
-        }
+    // Excluir siempre los EXCLUIDOS por estado
+    $sql .= "
+        AND (
+            p.estado IS NULL
+            OR p.estado NOT IN (
+                SELECT id
+                FROM estado
+                WHERE UPPER(TRIM(COALESCE(nombre, ''))) LIKE '%EXCLUID%'
+            )
+        )
+    ";
 
-        if (isset($filtros['ejecucion']) && $filtros['ejecucion'] !== '' && $filtros['ejecucion'] !== '0') {
-            $sql .= " AND p.ejecucion = :ejecucion";
-            $params[':ejecucion'] = (int)$filtros['ejecucion'];
-        }
+    // Excluir siempre modalidad 4 (EXCLUIDOS)
+    $sql .= " AND COALESCE(p.modalidad, 0) <> 4";
 
-        if (!empty($filtros['obac'])) {
-            $sql .= " AND p.obac = :obac";
-            $params[':obac'] = (int)$filtros['obac'];
-        }
-
-        if (!empty($filtros['estado'])) {
-            $sql .= " AND p.estado = :estado";
-            $params[':estado'] = (int)$filtros['estado'];
-        }
-
-        return $params;
+    if (!empty($filtros['periodo'])) {
+        $sql .= " AND p.periodo = :periodo";
+        $params[':periodo'] = (int)$filtros['periodo'];
     }
+
+    if (isset($filtros['ejecucion']) && $filtros['ejecucion'] !== '' && $filtros['ejecucion'] !== '0') {
+        $sql .= " AND p.ejecucion = :ejecucion";
+        $params[':ejecucion'] = (int)$filtros['ejecucion'];
+    }
+
+    if (!empty($filtros['obac'])) {
+        $sql .= " AND p.obac = :obac";
+        $params[':obac'] = (int)$filtros['obac'];
+    }
+
+    if (!empty($filtros['estado'])) {
+        $sql .= " AND p.estado = :estado";
+        $params[':estado'] = (int)$filtros['estado'];
+    }
+
+    return $params;
+}
 }
