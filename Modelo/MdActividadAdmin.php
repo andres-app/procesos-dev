@@ -124,19 +124,56 @@ class MdActividadAdmin
         $db = db();
 
         $sql = "
-            SELECT id, nombre
-            FROM tipos_actividad
-            WHERE UPPER(modulo) = UPPER(:modulo)
-            ORDER BY id ASC
-        ";
+        SELECT
+            id,
+            nombre,
+            estado,
+            estado_id,
+            modulo
+        FROM tipos_actividad
+        WHERE UPPER(TRIM(modulo)) = UPPER(TRIM(:modulo))
+        ORDER BY id ASC
+    ";
 
         $st = $db->prepare($sql);
         $st->execute([
-            ':modulo' => trim($modulo)
+            ':modulo' => $modulo
         ]);
 
         return $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
+
+    public static function listarPorPac(int $pacId): array
+{
+    $db = db();
+
+    $sql = "
+        SELECT
+            ap.id,
+            ap.pac_id,
+            ap.tipo_actividad_id,
+            ap.fecha,
+            ap.comentario,
+            ap.created_at,
+            ap.updated_at,
+            COALESCE(ta.nombre, '') AS tipo_actividad_nombre,
+            COALESCE(ta.estado, '') AS tipo_actividad_estado,
+            COALESCE(ta.modulo, '') AS tipo_actividad_modulo
+        FROM actividades_pac ap
+        INNER JOIN tipos_actividad ta
+            ON ta.id = ap.tipo_actividad_id
+        WHERE ap.pac_id = :pac_id
+          AND UPPER(TRIM(ta.modulo)) = 'PAC'
+        ORDER BY ap.fecha ASC, ap.id ASC
+    ";
+
+    $st = $db->prepare($sql);
+    $st->execute([
+        ':pac_id' => $pacId
+    ]);
+
+    return $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
+}
 
     public static function obtenerTipoIdPorNombre(string $nombre, string $modulo = 'PROCESO', ?PDO $db = null): ?int
     {
