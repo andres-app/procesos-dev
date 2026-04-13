@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 ini_set('display_errors', '1');
@@ -77,6 +78,18 @@ if ($module === 'admin') {
     if ($subRoute === 'login') {
         require_once __DIR__ . '/../Controlador/CtrUsuariosAdmin.php';
         CtrUsuariosAdmin::login();
+        exit;
+    }
+
+    if ($subRoute === 'verify-2fa') {
+        require_once __DIR__ . '/../Controlador/CtrUsuariosAdmin.php';
+        CtrUsuariosAdmin::verify2fa();
+        exit;
+    }
+
+    if ($subRoute === 'setup-2fa') {
+        require_once __DIR__ . '/../Controlador/CtrUsuariosAdmin.php';
+        CtrUsuariosAdmin::setup2fa();
         exit;
     }
 
