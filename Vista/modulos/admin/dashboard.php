@@ -1200,6 +1200,35 @@ foreach (($tendenciaMes ?? []) as $item) {
     font-weight: 600;
   }
 
+  /* Fila TOTAL destacada */
+  .premium-table--clean tbody tr.is-total td {
+    background: linear-gradient(180deg,
+        rgba(15, 23, 42, 0.03),
+        rgba(15, 23, 42, 0.06));
+    border-top: 1px solid rgba(148, 163, 184, 0.35);
+    font-weight: 700;
+  }
+
+  /* Refuerza el texto TOTAL */
+  .premium-table--clean tbody tr.is-total .table-row-title {
+    color: rgb(15 23 42);
+    letter-spacing: 0.02em;
+  }
+
+  /* Número total más fuerte */
+  .premium-table--clean tbody tr.is-total .table-row-number {
+    font-size: 20px;
+    font-weight: 800;
+    color: rgb(15 23 42);
+  }
+
+  /* Monto total más visible */
+  .premium-table--clean tbody tr.is-total .table-row-money {
+    font-size: 12px;
+    font-weight: 700;
+    color: rgb(30 41 59);
+  }
+
   @media (max-width: 768px) {
 
     .premium-table--clean thead th,
@@ -1728,11 +1757,9 @@ foreach (($tendenciaMes ?? []) as $item) {
           },
           centerTextPlugin: {
             line1: totalParticipacionMonto > 0 ?
-              percentFormatter(participacionMontos[maxParticipacionIndex] || 0, totalParticipacionMonto) :
-              '0%',
+              percentFormatter(participacionMontos[maxParticipacionIndex] || 0, totalParticipacionMonto) : '0%',
             line2: maxParticipacionIndex >= 0 ?
-              participacionLabels[maxParticipacionIndex] :
-              'SIN DATOS'
+              participacionLabels[maxParticipacionIndex] : 'SIN DATOS'
           }
         }
       }
