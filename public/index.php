@@ -253,6 +253,21 @@ $routes = [
         CtrUsuario::login();
     },
 
+    'verify-2fa' => static function (): void {
+        require_once __DIR__ . '/../Controlador/CtrUsuario.php';
+        CtrUsuario::verify2fa();
+    },
+
+    'setup-2fa' => static function (): void {
+        require_once __DIR__ . '/../Controlador/CtrUsuario.php';
+        CtrUsuario::setup2fa();
+    },
+
+    'logout' => static function (): void {
+        require_once __DIR__ . '/../Controlador/CtrUsuario.php';
+        CtrUsuario::logout();
+    },
+
     'dashboard' => static function (): void {
         require_file(__DIR__ . '/../Vista/modulos/dashboard.php');
     },

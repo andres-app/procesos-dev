@@ -1,8 +1,12 @@
 <?php
+require_once __DIR__ . '/../../Controlador/CtrUsuario.php';
+CtrUsuario::requireLogin();
+
 /* Vista/modulos/dashboard.php */
 $titulo = 'Inicio | Procesos';
 $appName = 'Seguimiento de Procesos';
-$usuario = 'Andres';
+$usuario = $_SESSION['user_name'] ?? 'Usuario';
+
 require __DIR__ . '/../layout/header.php';
 ?>
 
@@ -63,12 +67,10 @@ require __DIR__ . '/../layout/header.php';
     max-width: 430px;
     min-height: 100%;
     margin: 0 auto;
-
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-auto-rows: 1fr;
     gap: 14px;
-
     flex: 1 1 auto;
   }
 
@@ -76,24 +78,18 @@ require __DIR__ . '/../layout/header.php';
     height: 100%;
     min-height: 150px;
     border-radius: 24px;
-
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 10px;
-
     text-align: center;
     text-decoration: none;
-
     position: relative;
     overflow: hidden;
-
     background: #FFFFFF;
     border: 1px solid #E5E7EB;
-
     box-shadow: 0 10px 25px rgba(0, 0, 0, .08);
-
     transition: transform .12s ease, box-shadow .12s ease;
     -webkit-tap-highlight-color: transparent;
   }
@@ -102,9 +98,11 @@ require __DIR__ . '/../layout/header.php';
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg,
-        rgba(255, 255, 255, .16),
-        rgba(255, 255, 255, 0) 48%);
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, .16),
+      rgba(255, 255, 255, 0) 48%
+    );
     pointer-events: none;
   }
 

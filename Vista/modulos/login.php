@@ -1,10 +1,7 @@
 <?php
-require_once __DIR__ . '/../../Config/config.php';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  // aquí iría tu validación real (sesión, etc.)
-  header("Location: " . BASE_URL . "/dashboard");
-  exit;
+// Vista/modulos/login.php
+if (session_status() === PHP_SESSION_NONE) {
+  session_start();
 }
 ?>
 <!DOCTYPE html>
@@ -31,7 +28,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </script>
 
   <style>
-    /* ===== PRELOADER (login) ===== */
     .preloader {
       position: fixed;
       inset: 0;
@@ -81,7 +77,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <body class="min-h-screen bg-gray-100 flex items-center justify-center px-4">
 
-  <!-- PRELOADER -->
   <div id="preloader" class="preloader" aria-hidden="true">
     <div class="loader-card" role="status" aria-live="polite">
       <div class="spinner"></div>
@@ -102,12 +97,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <form id="loginForm" method="POST" class="p-8 space-y-6" autocomplete="on">
 
+      <?php if (!empty($err)): ?>
+        <div class="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-xl p-3">
+          <?= htmlspecialchars($err, ENT_QUOTES, 'UTF-8') ?>
+        </div>
+      <?php endif; ?>
+
       <div>
-        <label class="text-sm text-gray-500 font-medium">Usuario</label>
+        <label class="text-sm text-gray-500 font-medium">Usuario o correo</label>
         <input
           type="text"
-          name="usuario"
-          value="admin"
+          name="user"
+          value="<?= htmlspecialchars($_POST['user'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
           class="w-full mt-2 h-12 px-4 rounded-xl border border-gray-300 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#D4AF37] transition"
           required />
       </div>
@@ -116,8 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <label class="text-sm text-gray-500 font-medium">Contraseña</label>
         <input
           type="password"
-          name="password"
-          value="123123"
+          name="pass"
           class="w-full mt-2 h-12 px-4 rounded-xl border border-gray-300 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#D4AF37] transition"
           required />
       </div>
@@ -128,6 +128,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         class="w-full h-12 rounded-xl bg-[#C9A227] text-gray-900 font-semibold text-lg hover:brightness-105 active:scale-95 transition shadow-md">
         Iniciar sesión
       </button>
+
+      <div class="text-center text-xs text-gray-500">
+        ¿Primera vez?
+        <a href="<?= BASE_URL ?>/setup-2fa" class="font-semibold text-[#6B1C26] hover:underline">
+          Configura tu autenticador
+        </a>
+      </div>
 
     </form>
 
@@ -146,25 +153,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       if (!form || !preloader) return;
 
       form.addEventListener('submit', (e) => {
-        // si el browser bloquea el submit por required, no mostramos loader
         if (!form.checkValidity()) return;
 
-        // muestra preloader inmediatamente
         preloader.classList.add('show');
         preloader.setAttribute('aria-hidden', 'false');
 
-        // evita doble submit
         if (btn) {
           btn.disabled = true;
           btn.classList.add('opacity-80', 'cursor-not-allowed');
         }
 
-        // deja que pinte el overlay antes de navegar
         e.preventDefault();
         requestAnimationFrame(() => form.submit());
       });
 
-      // por si el usuario vuelve con "Atrás", ocultar overlay
       window.addEventListener('pageshow', () => {
         preloader.classList.remove('show');
         preloader.setAttribute('aria-hidden', 'true');
