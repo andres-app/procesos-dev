@@ -501,40 +501,39 @@ class MdDashboardAdmin
         return $st->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // NUEVO: tablas resumen estilo imagen
-public static function obtenerResumenListasGenerales(array $filtros = []): array
-{
-    $db = db();
+    public static function obtenerResumenListasGenerales(array $filtros = []): array
+    {
+        $db = db();
 
-    $sql = "
+        $sql = "
         SELECT
             COALESCE(l.nombre, 'SIN LISTA') AS lista,
 
             SUM(
                 CASE
-                    WHEN UPPER(TRIM(COALESCE(tm.nombre, ''))) LIKE '%NACIONAL%' THEN 1
+                    WHEN p.modalidad = 2 THEN 1
                     ELSE 0
                 END
             ) AS individuales_cantidad,
 
             SUM(
                 CASE
-                    WHEN UPPER(TRIM(COALESCE(tm.nombre, ''))) LIKE '%NACIONAL%' THEN COALESCE(p.estimado, 0)
+                    WHEN p.modalidad = 2 THEN COALESCE(p.estimado, 0)
                     ELSE 0
                 END
             ) AS individuales_monto,
 
             SUM(
                 CASE
-                    WHEN UPPER(TRIM(COALESCE(tm.nombre, ''))) LIKE '%NACIONAL%' THEN 0
-                    ELSE 1
+                    WHEN p.modalidad = 1 THEN 1
+                    ELSE 0
                 END
             ) AS corporativos_cantidad,
 
             SUM(
                 CASE
-                    WHEN UPPER(TRIM(COALESCE(tm.nombre, ''))) LIKE '%NACIONAL%' THEN 0
-                    ELSE COALESCE(p.estimado, 0)
+                    WHEN p.modalidad = 1 THEN COALESCE(p.estimado, 0)
+                    ELSE 0
                 END
             ) AS corporativos_monto,
 
@@ -543,161 +542,166 @@ public static function obtenerResumenListasGenerales(array $filtros = []): array
 
         FROM pac p
         LEFT JOIN listas l ON l.id = p.lista
-        LEFT JOIN tipo_mercado tm ON tm.id = p.tipo_mercado
         WHERE 1=1
     ";
 
-    $params = self::buildWhere($sql, $filtros);
+        $params = self::buildWhere($sql, $filtros);
 
-    $sql .= "
+        $sql .= "
+        AND p.modalidad IN (1, 2)
         GROUP BY COALESCE(l.nombre, 'SIN LISTA')
         ORDER BY
             CASE
-                WHEN UPPER(COALESCE(l.nombre, '')) LIKE '%NACIONAL%' THEN 1
-                WHEN UPPER(COALESCE(l.nombre, '')) LIKE '%LCMN%' THEN 1
-                ELSE 2
+                WHEN UPPER(COALESCE(l.nombre, '')) = 'LCMN' THEN 1
+                WHEN UPPER(COALESCE(l.nombre, '')) = 'LGCS' THEN 2
+                WHEN UPPER(COALESCE(l.nombre, '')) = 'LGCE' THEN 3
+                WHEN UPPER(COALESCE(l.nombre, '')) = 'LCME' THEN 4
+                ELSE 99
             END,
-            total_monto DESC,
-            total_cantidad DESC,
             lista ASC
     ";
 
-    $st = $db->prepare($sql);
-    $st->execute($params);
-    $rows = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        $st = $db->prepare($sql);
+        $st->execute($params);
+        $rows = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
-    $resultado = [];
-    $totales = [
-        'lista' => 'TOTAL',
-        'individuales_cantidad' => 0,
-        'individuales_monto'    => 0.0,
-        'corporativos_cantidad' => 0,
-        'corporativos_monto'    => 0.0,
-        'total_cantidad'        => 0,
-        'total_monto'           => 0.0,
-        'is_total'              => true,
-    ];
-
-    foreach ($rows as $row) {
-        $item = [
-            'lista' => (string)($row['lista'] ?? 'SIN LISTA'),
-            'individuales_cantidad' => (int)($row['individuales_cantidad'] ?? 0),
-            'individuales_monto'    => (float)($row['individuales_monto'] ?? 0),
-            'corporativos_cantidad' => (int)($row['corporativos_cantidad'] ?? 0),
-            'corporativos_monto'    => (float)($row['corporativos_monto'] ?? 0),
-            'total_cantidad'        => (int)($row['total_cantidad'] ?? 0),
-            'total_monto'           => (float)($row['total_monto'] ?? 0),
+        $resultado = [];
+        $totales = [
+            'lista' => 'TOTAL',
+            'individuales_cantidad' => 0,
+            'individuales_monto'    => 0.0,
+            'corporativos_cantidad' => 0,
+            'corporativos_monto'    => 0.0,
+            'total_cantidad'        => 0,
+            'total_monto'           => 0.0,
+            'is_total'              => true,
         ];
 
-        $totales['individuales_cantidad'] += $item['individuales_cantidad'];
-        $totales['individuales_monto']    += $item['individuales_monto'];
-        $totales['corporativos_cantidad'] += $item['corporativos_cantidad'];
-        $totales['corporativos_monto']    += $item['corporativos_monto'];
-        $totales['total_cantidad']        += $item['total_cantidad'];
-        $totales['total_monto']           += $item['total_monto'];
+        foreach ($rows as $row) {
+            $item = [
+                'lista' => (string)($row['lista'] ?? 'SIN LISTA'),
+                'individuales_cantidad' => (int)($row['individuales_cantidad'] ?? 0),
+                'individuales_monto'    => (float)($row['individuales_monto'] ?? 0),
+                'corporativos_cantidad' => (int)($row['corporativos_cantidad'] ?? 0),
+                'corporativos_monto'    => (float)($row['corporativos_monto'] ?? 0),
+                'total_cantidad'        => (int)($row['total_cantidad'] ?? 0),
+                'total_monto'           => (float)($row['total_monto'] ?? 0),
+            ];
 
-        $resultado[] = $item;
+            $totales['individuales_cantidad'] += $item['individuales_cantidad'];
+            $totales['individuales_monto']    += $item['individuales_monto'];
+            $totales['corporativos_cantidad'] += $item['corporativos_cantidad'];
+            $totales['corporativos_monto']    += $item['corporativos_monto'];
+            $totales['total_cantidad']        += $item['total_cantidad'];
+            $totales['total_monto']           += $item['total_monto'];
+
+            $resultado[] = $item;
+        }
+
+        $resultado[] = $totales;
+
+        return $resultado;
     }
 
-    $resultado[] = $totales;
+    public static function obtenerResumenTipoCompraPorMercado(array $filtros = []): array
+    {
+        $db = db();
 
-    return $resultado;
-}
-
-    // NUEVO: detalle por mercado separando individuales/corporativos
-public static function obtenerResumenTipoCompraPorMercado(array $filtros = []): array
-{
-    $db = db();
-
-    $sql = "
+        $sql = "
         SELECT
             COALESCE(tm.nombre, 'SIN MERCADO') AS mercado,
+
             SUM(
                 CASE
-                    WHEN UPPER(TRIM(COALESCE(tm.nombre, ''))) LIKE '%NACIONAL%' THEN 1
+                    WHEN p.modalidad = 2 THEN 1
                     ELSE 0
                 END
             ) AS individuales_cantidad,
+
             SUM(
                 CASE
-                    WHEN UPPER(TRIM(COALESCE(tm.nombre, ''))) LIKE '%NACIONAL%' THEN COALESCE(p.estimado, 0)
+                    WHEN p.modalidad = 2 THEN COALESCE(p.estimado, 0)
                     ELSE 0
                 END
             ) AS individuales_monto,
+
             SUM(
                 CASE
-                    WHEN UPPER(TRIM(COALESCE(tm.nombre, ''))) LIKE '%NACIONAL%' THEN 0
-                    ELSE 1
+                    WHEN p.modalidad = 1 THEN 1
+                    ELSE 0
                 END
             ) AS corporativos_cantidad,
+
             SUM(
                 CASE
-                    WHEN UPPER(TRIM(COALESCE(tm.nombre, ''))) LIKE '%NACIONAL%' THEN 0
-                    ELSE COALESCE(p.estimado, 0)
+                    WHEN p.modalidad = 1 THEN COALESCE(p.estimado, 0)
+                    ELSE 0
                 END
             ) AS corporativos_monto,
+
             COUNT(*) AS total_cantidad,
             COALESCE(SUM(p.estimado), 0) AS total_monto
+
         FROM pac p
         LEFT JOIN tipo_mercado tm ON tm.id = p.tipo_mercado
         WHERE 1=1
     ";
 
-    $params = self::buildWhere($sql, $filtros);
+        $params = self::buildWhere($sql, $filtros);
 
-    $sql .= "
+        $sql .= "
+        AND p.modalidad IN (1, 2)
         GROUP BY COALESCE(tm.nombre, 'SIN MERCADO')
         ORDER BY
             CASE
-                WHEN UPPER(COALESCE(tm.nombre, '')) LIKE '%NACIONAL%' THEN 1
-                ELSE 2
+                WHEN UPPER(COALESCE(tm.nombre, '')) = 'NACIONAL' THEN 1
+                WHEN UPPER(COALESCE(tm.nombre, '')) = 'EXTRANJERO' THEN 2
+                ELSE 99
             END,
-            total_monto DESC,
-            total_cantidad DESC,
             mercado ASC
     ";
 
-    $st = $db->prepare($sql);
-    $st->execute($params);
-    $rows = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        $st = $db->prepare($sql);
+        $st->execute($params);
+        $rows = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
-    $resultado = [];
-    $totales = [
-        'mercado' => 'TOTAL',
-        'individuales_cantidad' => 0,
-        'individuales_monto'    => 0.0,
-        'corporativos_cantidad' => 0,
-        'corporativos_monto'    => 0.0,
-        'total_cantidad'        => 0,
-        'total_monto'           => 0.0,
-        'is_total'              => true,
-    ];
-
-    foreach ($rows as $row) {
-        $item = [
-            'mercado' => (string)($row['mercado'] ?? 'SIN MERCADO'),
-            'individuales_cantidad' => (int)($row['individuales_cantidad'] ?? 0),
-            'individuales_monto'    => (float)($row['individuales_monto'] ?? 0),
-            'corporativos_cantidad' => (int)($row['corporativos_cantidad'] ?? 0),
-            'corporativos_monto'    => (float)($row['corporativos_monto'] ?? 0),
-            'total_cantidad'        => (int)($row['total_cantidad'] ?? 0),
-            'total_monto'           => (float)($row['total_monto'] ?? 0),
+        $resultado = [];
+        $totales = [
+            'mercado' => 'TOTAL',
+            'individuales_cantidad' => 0,
+            'individuales_monto'    => 0.0,
+            'corporativos_cantidad' => 0,
+            'corporativos_monto'    => 0.0,
+            'total_cantidad'        => 0,
+            'total_monto'           => 0.0,
+            'is_total'              => true,
         ];
 
-        $totales['individuales_cantidad'] += $item['individuales_cantidad'];
-        $totales['individuales_monto']    += $item['individuales_monto'];
-        $totales['corporativos_cantidad'] += $item['corporativos_cantidad'];
-        $totales['corporativos_monto']    += $item['corporativos_monto'];
-        $totales['total_cantidad']        += $item['total_cantidad'];
-        $totales['total_monto']           += $item['total_monto'];
+        foreach ($rows as $row) {
+            $item = [
+                'mercado' => (string)($row['mercado'] ?? 'SIN MERCADO'),
+                'individuales_cantidad' => (int)($row['individuales_cantidad'] ?? 0),
+                'individuales_monto'    => (float)($row['individuales_monto'] ?? 0),
+                'corporativos_cantidad' => (int)($row['corporativos_cantidad'] ?? 0),
+                'corporativos_monto'    => (float)($row['corporativos_monto'] ?? 0),
+                'total_cantidad'        => (int)($row['total_cantidad'] ?? 0),
+                'total_monto'           => (float)($row['total_monto'] ?? 0),
+            ];
 
-        $resultado[] = $item;
+            $totales['individuales_cantidad'] += $item['individuales_cantidad'];
+            $totales['individuales_monto']    += $item['individuales_monto'];
+            $totales['corporativos_cantidad'] += $item['corporativos_cantidad'];
+            $totales['corporativos_monto']    += $item['corporativos_monto'];
+            $totales['total_cantidad']        += $item['total_cantidad'];
+            $totales['total_monto']           += $item['total_monto'];
+
+            $resultado[] = $item;
+        }
+
+        $resultado[] = $totales;
+
+        return $resultado;
     }
-
-    $resultado[] = $totales;
-
-    return $resultado;
-}
 
     private static function buildWhere(string &$sql, array $filtros = []): array
     {

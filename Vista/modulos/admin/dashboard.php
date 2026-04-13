@@ -284,7 +284,7 @@ foreach (($tendenciaMes ?? []) as $item) {
       </div>
 
       <div class="overflow-x-auto">
-        <table class="premium-table">
+        <table class="premium-table premium-table--clean">
           <thead>
             <tr>
               <th>Listas</th>
@@ -297,24 +297,37 @@ foreach (($tendenciaMes ?? []) as $item) {
             <?php foreach (($resumenListas ?? []) as $row): ?>
               <?php $isTotal = !empty($row['is_total']); ?>
               <tr class="<?= $isTotal ? 'is-total' : '' ?>">
-                <td><?= htmlspecialchars((string)($row['lista'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></td>
-                <td class="text-center">
-                  <?= fmt_resumen_pac_dashboard(
-                    (int)($row['individuales_cantidad'] ?? 0),
-                    (float)($row['individuales_monto'] ?? 0)
-                  ) ?>
+                <td>
+                  <div class="table-row-title">
+                    <?= htmlspecialchars((string)($row['lista'] ?? '-'), ENT_QUOTES, 'UTF-8') ?>
+                  </div>
                 </td>
+
                 <td class="text-center">
-                  <?= fmt_resumen_pac_dashboard(
-                    (int)($row['corporativos_cantidad'] ?? 0),
-                    (float)($row['corporativos_monto'] ?? 0)
-                  ) ?>
+                  <div class="table-row-number">
+                    <?= (int)($row['individuales_cantidad'] ?? 0) ?>
+                  </div>
+                  <div class="table-row-money">
+                    <?= fmt_money_dashboard((float)($row['individuales_monto'] ?? 0)) ?>
+                  </div>
                 </td>
+
                 <td class="text-center">
-                  <?= fmt_resumen_pac_dashboard(
-                    (int)($row['total_cantidad'] ?? 0),
-                    (float)($row['total_monto'] ?? 0)
-                  ) ?>
+                  <div class="table-row-number">
+                    <?= (int)($row['corporativos_cantidad'] ?? 0) ?>
+                  </div>
+                  <div class="table-row-money">
+                    <?= fmt_money_dashboard((float)($row['corporativos_monto'] ?? 0)) ?>
+                  </div>
+                </td>
+
+                <td class="text-center">
+                  <div class="table-row-number table-row-number--total">
+                    <?= (int)($row['total_cantidad'] ?? 0) ?>
+                  </div>
+                  <div class="table-row-money table-row-money--total">
+                    <?= fmt_money_dashboard((float)($row['total_monto'] ?? 0)) ?>
+                  </div>
                 </td>
               </tr>
             <?php endforeach; ?>
@@ -333,7 +346,7 @@ foreach (($tendenciaMes ?? []) as $item) {
       </div>
 
       <div class="overflow-x-auto">
-        <table class="premium-table">
+        <table class="premium-table premium-table--clean">
           <thead>
             <tr>
               <th>Mercado</th>
@@ -346,24 +359,37 @@ foreach (($tendenciaMes ?? []) as $item) {
             <?php foreach (($resumenMercadoDetalle ?? []) as $row): ?>
               <?php $isTotal = !empty($row['is_total']); ?>
               <tr class="<?= $isTotal ? 'is-total' : '' ?>">
-                <td><?= htmlspecialchars((string)($row['mercado'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></td>
-                <td class="text-center">
-                  <?= fmt_resumen_pac_dashboard(
-                    (int)($row['individuales_cantidad'] ?? 0),
-                    (float)($row['individuales_monto'] ?? 0)
-                  ) ?>
+                <td>
+                  <div class="table-row-title">
+                    <?= htmlspecialchars((string)($row['mercado'] ?? '-'), ENT_QUOTES, 'UTF-8') ?>
+                  </div>
                 </td>
+
                 <td class="text-center">
-                  <?= fmt_resumen_pac_dashboard(
-                    (int)($row['corporativos_cantidad'] ?? 0),
-                    (float)($row['corporativos_monto'] ?? 0)
-                  ) ?>
+                  <div class="table-row-number">
+                    <?= (int)($row['individuales_cantidad'] ?? 0) ?>
+                  </div>
+                  <div class="table-row-money">
+                    <?= fmt_money_dashboard((float)($row['individuales_monto'] ?? 0)) ?>
+                  </div>
                 </td>
+
                 <td class="text-center">
-                  <?= fmt_resumen_pac_dashboard(
-                    (int)($row['total_cantidad'] ?? 0),
-                    (float)($row['total_monto'] ?? 0)
-                  ) ?>
+                  <div class="table-row-number">
+                    <?= (int)($row['corporativos_cantidad'] ?? 0) ?>
+                  </div>
+                  <div class="table-row-money">
+                    <?= fmt_money_dashboard((float)($row['corporativos_monto'] ?? 0)) ?>
+                  </div>
+                </td>
+
+                <td class="text-center">
+                  <div class="table-row-number table-row-number--total">
+                    <?= (int)($row['total_cantidad'] ?? 0) ?>
+                  </div>
+                  <div class="table-row-money table-row-money--total">
+                    <?= fmt_money_dashboard((float)($row['total_monto'] ?? 0)) ?>
+                  </div>
                 </td>
               </tr>
             <?php endforeach; ?>
@@ -1124,6 +1150,90 @@ foreach (($tendenciaMes ?? []) as $item) {
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, .8),
       0 10px 24px rgba(15, 23, 42, .04);
+  }
+
+  .premium-table--clean {
+    width: 100%;
+    min-width: 100%;
+    table-layout: fixed;
+  }
+
+  .premium-table--clean thead th {
+    padding: 14px 12px;
+  }
+
+  .premium-table--clean tbody td {
+    padding: 16px 12px;
+    vertical-align: middle;
+  }
+
+  .premium-table--clean tbody tr.is-total td {
+    background: rgba(248, 250, 252, .96);
+    font-weight: 700;
+  }
+
+  .table-row-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: rgb(15 23 42);
+    line-height: 1.35;
+  }
+
+  .table-row-number {
+    font-size: 18px;
+    line-height: 1.05;
+    font-weight: 800;
+    letter-spacing: -.02em;
+    color: rgb(15 23 42);
+  }
+
+  .table-row-number--total {
+    font-size: 20px;
+  }
+
+  .table-row-money {
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.35;
+    color: rgb(71 85 105);
+    word-break: break-word;
+  }
+
+  .table-row-money--total {
+    color: rgb(15 23 42);
+    font-weight: 600;
+  }
+
+  @media (max-width: 768px) {
+
+    .premium-table--clean thead th,
+    .premium-table--clean tbody td {
+      padding: 12px 10px;
+    }
+
+    .table-row-title {
+      font-size: 13px;
+    }
+
+    .table-row-number {
+      font-size: 16px;
+    }
+
+    .table-row-number--total {
+      font-size: 18px;
+    }
+
+    .table-row-money {
+      font-size: 11px;
+    }
+  }
+
+  .premium-table--clean thead th {
+    text-align: center;
+  }
+
+  .premium-table--clean thead th:first-child {
+    text-align: left;
   }
 
   @media (max-width: 1024px) {
