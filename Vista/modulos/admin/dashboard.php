@@ -201,7 +201,7 @@ foreach (($tendenciaMes ?? []) as $item) {
         class="h-12 rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
         <option value="">Periodo</option>
         <?php foreach (($periodos ?? []) as $p): ?>
-          <option value="<?= (int)$p['id'] ?>" <?= ((string)($_GET['periodo'] ?? '') === (string)$p['id']) ? 'selected' : '' ?>>
+          <option value="<?= (int)$p['id'] ?>" <?= ((string)($filtros['periodo'] ?? '') === (string)$p['id']) ? 'selected' : '' ?>>
             <?= htmlspecialchars($p['nombre'], ENT_QUOTES, 'UTF-8') ?>
           </option>
         <?php endforeach; ?>
