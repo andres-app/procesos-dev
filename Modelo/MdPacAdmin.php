@@ -508,6 +508,7 @@ class MdPacAdmin
     public static function obtenerResumenSituacion(?int $anio = null): array
     {
         $db = db();
+        $hoy = date('Y-m-d');
 
         $sql = "
         SELECT
@@ -544,7 +545,6 @@ class MdPacAdmin
             $params[':anio'] = (int)$anio;
         }
 
-        // ocultar excluidos
         $sql .= " AND (p.modalidad IS NULL OR p.modalidad <> 4)";
 
         $sql .= "
@@ -560,14 +560,55 @@ class MdPacAdmin
             fu.nombre,
             se.nombre
         ORDER BY
-            es.nombre ASC,
-            md.nombre ASC,
             p.id ASC
     ";
 
         $st = $db->prepare($sql);
         $st->execute($params);
         $rows = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+        $pacIds = array_values(array_filter(array_map(
+            static fn($r) => (int)($r['id'] ?? 0),
+            $rows
+        )));
+
+        $actividadesPorPac = [];
+
+        if (!empty($pacIds)) {
+            $placeholders = implode(',', array_fill(0, count($pacIds), '?'));
+
+            $sqlAct = "
+            SELECT
+                ap.id,
+                ap.pac_id,
+                ap.fecha,
+                COALESCE(ap.comentario, '') AS comentario,
+                COALESCE(ta.nombre, '') AS tipo_nombre,
+                COALESCE(ta.estado, '') AS tipo_estado
+            FROM actividades_pac ap
+            LEFT JOIN tipos_actividad ta
+                ON ta.id = ap.tipo_actividad_id
+            WHERE ap.pac_id IN ($placeholders)
+            ORDER BY ap.pac_id ASC, ap.fecha ASC, ap.id ASC
+        ";
+
+            $stAct = $db->prepare($sqlAct);
+            $stAct->execute($pacIds);
+            $acts = $stAct->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+            foreach ($acts as $a) {
+                $pacId = (int)($a['pac_id'] ?? 0);
+                if ($pacId <= 0) {
+                    continue;
+                }
+
+                if (!isset($actividadesPorPac[$pacId])) {
+                    $actividadesPorPac[$pacId] = [];
+                }
+
+                $actividadesPorPac[$pacId][] = $a;
+            }
+        }
 
         $detalle = [];
         $subtotales = [];
@@ -595,6 +636,7 @@ class MdPacAdmin
         $detallePlano = [];
 
         foreach ($rows as $r) {
+            $pacId = (int)($r['id'] ?? 0);
             $estado = (string)($r['estado_nombre'] ?? '');
             $fase = self::normalizarFaseResumen($estado);
 
@@ -667,12 +709,70 @@ class MdPacAdmin
 
             $valorObac[$obac] += $estimado;
 
+            $actividadesPac = $actividadesPorPac[$pacId] ?? [];
+
+            $historialPartes = [];
+            $situacion = '';
+
+            $actividadVigente = null;
+            $actividadVigenteFecha = null;
+            $actividadVigenteId = 0;
+
+            foreach ($actividadesPac as $a) {
+                $fecha = trim((string)($a['fecha'] ?? ''));
+                $tipoNombre = trim((string)($a['tipo_nombre'] ?? ''));
+                $comentario = trim((string)($a['comentario'] ?? ''));
+
+                $textoHistorial = '';
+                if ($tipoNombre !== '') {
+                    $textoHistorial .= $tipoNombre;
+                }
+                if ($comentario !== '') {
+                    $textoHistorial .= ($textoHistorial !== '' ? ': ' : '') . $comentario;
+                }
+                if ($fecha !== '') {
+                    $textoHistorial .= ($textoHistorial !== '' ? ' del ' : '') . self::formatearFechaReporte($fecha);
+                }
+
+                if ($textoHistorial !== '') {
+                    $historialPartes[] = $textoHistorial . '.';
+                }
+
+                if ($fecha !== '' && $fecha <= $hoy) {
+                    $aid = (int)($a['id'] ?? 0);
+
+                    if (
+                        $actividadVigente === null ||
+                        $fecha > $actividadVigenteFecha ||
+                        ($fecha === $actividadVigenteFecha && $aid > $actividadVigenteId)
+                    ) {
+                        $actividadVigente = $a;
+                        $actividadVigenteFecha = $fecha;
+                        $actividadVigenteId = $aid;
+                    }
+                }
+            }
+
+            if ($actividadVigente !== null) {
+                $tipoNombre = trim((string)($actividadVigente['tipo_nombre'] ?? ''));
+                $comentario = trim((string)($actividadVigente['comentario'] ?? ''));
+                $fecha = trim((string)($actividadVigente['fecha'] ?? ''));
+
+                $situacion = $tipoNombre;
+                if ($comentario !== '') {
+                    $situacion .= ($situacion !== '' ? ' ' : '') . $comentario;
+                }
+                if ($fecha !== '') {
+                    $situacion .= ($situacion !== '' ? ' DEL ' : '') . self::formatearFechaReporte($fecha);
+                }
+            }
+
             if (!isset($detallePlano[$fase][$modalidad])) {
                 $detallePlano[$fase][$modalidad] = [];
             }
 
             $detallePlano[$fase][$modalidad][] = [
-                'id'          => (int)($r['id'] ?? 0),
+                'id'          => $pacId,
                 'nopac'       => (string)($r['nopac'] ?? ''),
                 'obac'        => (string)($r['obac_nombre'] ?? ''),
                 'descripcion' => (string)($r['descripcion'] ?? ''),
@@ -680,9 +780,9 @@ class MdPacAdmin
                 'fpc'         => (string)($r['mesconvoca'] ?? ''),
                 'estado'      => $estado,
                 'ff'          => (string)($r['fuente_nombre'] ?? ''),
-                'tp'          => (string)($r['seleccion_nombre'] ?? ''),
-                'situacion'   => '',
-                'historial'   => '',
+                'tp'          => self::abreviarSeleccionReporte((string)($r['seleccion_nombre'] ?? '')),
+                'situacion'   => $situacion,
+                'historial'   => implode("\n", $historialPartes),
                 'procesos'    => $procesos,
             ];
         }
@@ -805,6 +905,42 @@ class MdPacAdmin
         }
 
         return null;
+    }
+
+    private static function formatearFechaReporte(string $fecha): string
+    {
+        $fecha = trim($fecha);
+        if ($fecha === '') {
+            return '';
+        }
+
+        $ts = strtotime($fecha);
+        if ($ts === false) {
+            return $fecha;
+        }
+
+        return date('d/m/Y', $ts);
+    }
+
+    private static function abreviarSeleccionReporte(string $nombre): string
+    {
+        $txt = mb_strtoupper(trim($nombre), 'UTF-8');
+
+        if ($txt === '') {
+            return '';
+        }
+
+        $map = [
+            'ADJUDICACION SIMPLIFICADA'   => 'AS',
+            'COMPARACION DE PRECIOS'      => 'CPRE',
+            'CONCURSO PUBLICO'            => 'CP',
+            'LICITACION PUBLICA'          => 'LP',
+            'SUBASTA INVERSA ELECTRONICA' => 'SIE',
+            'CONTRATACION DIRECTA'        => 'CD',
+            'REGIMEN ESPECIAL'            => 'RES',
+        ];
+
+        return $map[$txt] ?? $nombre;
     }
 
     public static function importarDesdeCsv(string $tmpPath): array
