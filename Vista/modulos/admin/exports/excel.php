@@ -47,7 +47,7 @@ $spreadsheet->getProperties()
     ->setDescription('Reporte de situación de expedientes y procesos de contratación');
 
 $sheet = $spreadsheet->getActiveSheet();
-$sheet->setTitle('Resumen');
+$sheet->setTitle('CUADRO-2026');
 
 /*
 |--------------------------------------------------------------------------
@@ -172,11 +172,11 @@ $styleMoney['alignment']['horizontal'] = Alignment::HORIZONTAL_RIGHT;
 | HOJA 1: RESUMEN
 |--------------------------------------------------------------------------
 */
-$sheet->setCellValue('A1', 'AGENCIA');
+$sheet->setCellValue('A1', 'ACFFAA');
 $sheet->mergeCells('A1:D1');
 $sheet->getStyle('A1:D1')->applyFromArray($styleCabeceraTopLeft);
 
-$sheet->setCellValue('H1', 'OFICINA DE PLANEAMIENTO Y PRESUPUESTO');
+$sheet->setCellValue('H1', 'OPP');
 $sheet->mergeCells('H1:J1');
 $sheet->getStyle('H1:J1')->applyFromArray($styleCabeceraTopRight);
 
@@ -308,14 +308,14 @@ foreach (range('A', 'J') as $col) {
 
 $sheet->getColumnDimension('A')->setWidth(28);
 $sheet->getColumnDimension('B')->setWidth(24);
-$sheet->getColumnDimension('C')->setWidth(10);
-$sheet->getColumnDimension('D')->setWidth(10);
-$sheet->getColumnDimension('E')->setWidth(10);
-$sheet->getColumnDimension('F')->setWidth(10);
-$sheet->getColumnDimension('G')->setWidth(10);
-$sheet->getColumnDimension('H')->setWidth(14);
-$sheet->getColumnDimension('I')->setWidth(12);
-$sheet->getColumnDimension('J')->setWidth(18);
+$sheet->getColumnDimension('C')->setWidth(12);
+$sheet->getColumnDimension('D')->setWidth(12);
+$sheet->getColumnDimension('E')->setWidth(12);
+$sheet->getColumnDimension('F')->setWidth(12);
+$sheet->getColumnDimension('G')->setWidth(12);
+$sheet->getColumnDimension('H')->setWidth(16);
+$sheet->getColumnDimension('I')->setWidth(14);
+$sheet->getColumnDimension('J')->setWidth(22);
 
 $sheet->getRowDimension(1)->setRowHeight(24);
 $sheet->getRowDimension(3)->setRowHeight(24);
@@ -454,7 +454,7 @@ $sheet3->getColumnDimension('J')->setWidth(18);
 */
 $spreadsheet->setActiveSheetIndex(0);
 
-$filename = 'reporte_resumen_' . $anio . '_' . date('Ymd_His') . '.xlsx';
+$filename = "REPORTE_ESTADO_{$anio}_" . date('d-m') . ".xlsx";
 
 if (ob_get_length()) {
     ob_end_clean();
