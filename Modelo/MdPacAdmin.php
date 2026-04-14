@@ -511,34 +511,35 @@ class MdPacAdmin
         $hoy = date('Y-m-d');
 
         $sql = "
-            SELECT
-                p.id,
-                p.nopac,
-                p.descripcion,
-                p.estimado,
-                p.mesconvoca,
-                p.acta_inclu,
-                p.inversiones,
+        SELECT
+            p.id,
+            p.nopac,
+            p.pn,
+            p.descripcion,
+            p.estimado,
+            p.mesconvoca,
+            p.acta_inclu,
+            p.inversiones,
 
-                COALESCE(ob.nombre, '') AS obac_nombre,
-                COALESCE(md.nombre, '') AS modalidad_nombre,
-                COALESCE(es.nombre, '') AS estado_nombre,
-                COALESCE(fu.nombre, '') AS fuente_nombre,
-                COALESCE(se.nombre, '') AS seleccion_nombre,
+            COALESCE(ob.nombre, '') AS obac_nombre,
+            COALESCE(md.nombre, '') AS modalidad_nombre,
+            COALESCE(es.nombre, '') AS estado_nombre,
+            COALESCE(fu.nombre, '') AS fuente_nombre,
+            COALESCE(se.nombre, '') AS seleccion_nombre,
 
-                COUNT(DISTINCT pr.id) AS total_procesos
+            COUNT(DISTINCT pr.id) AS total_procesos
 
-            FROM pac p
-            LEFT JOIN entidad ob     ON ob.id = p.obac
-            LEFT JOIN modalidad md   ON md.id = p.modalidad
-            LEFT JOIN estado es      ON es.id = p.estado
-            LEFT JOIN fuente fu      ON fu.id = p.fuente
-            LEFT JOIN seleccion se   ON se.id = p.seleccion
-            LEFT JOIN proceso_pac pp ON pp.pac_id = p.id
-            LEFT JOIN procesos pr    ON pr.id = pp.proceso_id
+        FROM pac p
+        LEFT JOIN entidad ob     ON ob.id = p.obac
+        LEFT JOIN modalidad md   ON md.id = p.modalidad
+        LEFT JOIN estado es      ON es.id = p.estado
+        LEFT JOIN fuente fu      ON fu.id = p.fuente
+        LEFT JOIN seleccion se   ON se.id = p.seleccion
+        LEFT JOIN proceso_pac pp ON pp.pac_id = p.id
+        LEFT JOIN procesos pr    ON pr.id = pp.proceso_id
 
-            WHERE 1=1
-            ";
+        WHERE 1=1
+        ";
 
         $params = [];
 
@@ -558,6 +559,7 @@ class MdPacAdmin
         GROUP BY
             p.id,
             p.nopac,
+            p.pn,
             p.descripcion,
             p.estimado,
             p.mesconvoca,
@@ -798,6 +800,7 @@ class MdPacAdmin
             $detallePlano[$fase][$tipoDetalle][] = [
                 'id'          => $pacId,
                 'nopac'       => (string)($r['nopac'] ?? ''),
+                'pn'          => (string)($r['pn'] ?? ''),
                 'obac'        => (string)($r['obac_nombre'] ?? ''),
                 'descripcion' => (string)($r['descripcion'] ?? ''),
                 'estimado'    => $estimado,

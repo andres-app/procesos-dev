@@ -342,6 +342,8 @@ foreach ($fases as $fase) {
 
     $rowF = 1;
 
+
+
     foreach (['Corporativo', 'Individual'] as $tipo) {
         if (empty($detallePlano[$fase][$tipo]) || !is_array($detallePlano[$fase][$tipo])) {
             continue;
@@ -351,39 +353,42 @@ foreach ($fases as $fase) {
         $tituloTipo = 'PROCESOS ' . $tipoTitulo . ' ' . mb_strtoupper($fase, 'UTF-8') . ' AF-' . $anio;
 
         $sheetFase->setCellValue('A' . $rowF, $tituloTipo);
-        $sheetFase->mergeCells("A{$rowF}:K{$rowF}");
-        $sheetFase->getStyle("A{$rowF}:K{$rowF}")->applyFromArray($styleTituloGrande);
-        $sheetFase->getStyle("A{$rowF}:K{$rowF}")
+        // CAMBIO: Expandimos el título hasta la columna L
+        $sheetFase->mergeCells("A{$rowF}:L{$rowF}");
+        $sheetFase->getStyle("A{$rowF}:L{$rowF}")->applyFromArray($styleTituloGrande);
+        $sheetFase->getStyle("A{$rowF}:L{$rowF}")
             ->getFill()
             ->setFillType(Fill::FILL_SOLID)
             ->getStartColor()
             ->setRGB($colorAmarillo);
-        $sheetFase->getStyle("A{$rowF}:K{$rowF}")
+        $sheetFase->getStyle("A{$rowF}:L{$rowF}")
             ->getBorders()
             ->getAllBorders()
             ->setBorderStyle(Border::BORDER_THIN);
 
         $rowF++;
 
+        // CAMBIO: Se agregó 'P/NP' en la B y se desplazaron las demás
         $headers = [
             'A' => 'N° PROC',
-            'B' => 'EXP. PAC',
-            'C' => 'OBAC',
-            'D' => 'HISTORIAL',
-            'E' => 'DESCRIPCION',
-            'F' => 'FF',
-            'G' => 'TP',
-            'H' => 'ESTIMADO SOLES',
-            'I' => 'FPC',
-            'J' => 'ESTADO',
-            'K' => 'SITUACION',
+            'B' => 'P/NP',
+            'C' => 'EXP. PAC',
+            'D' => 'OBAC',
+            'E' => 'HISTORIAL',
+            'F' => 'DESCRIPCION',
+            'G' => 'FF',
+            'H' => 'TP',
+            'I' => 'ESTIMADO SOLES',
+            'J' => 'FPC',
+            'K' => 'ESTADO',
+            'L' => 'SITUACION',
         ];
 
         foreach ($headers as $col => $text) {
             $sheetFase->setCellValue($col . $rowF, $text);
         }
 
-        $sheetFase->getStyle("A{$rowF}:K{$rowF}")->applyFromArray($styleHeader);
+        $sheetFase->getStyle("A{$rowF}:L{$rowF}")->applyFromArray($styleHeader);
         $sheetFase->getRowDimension($rowF)->setRowHeight(28);
         $rowF++;
 
@@ -391,46 +396,51 @@ foreach ($fases as $fase) {
 
         foreach ($detallePlano[$fase][$tipo] as $item) {
             $sheetFase->setCellValue('A' . $rowF, $n++);
-            $sheetFase->setCellValue('B' . $rowF, (string)($item['nopac'] ?? ''));
-            $sheetFase->setCellValue('C' . $rowF, (string)($item['obac'] ?? ''));
-            $sheetFase->setCellValue('D' . $rowF, (string)($item['historial'] ?? ''));
-            $sheetFase->setCellValue('E' . $rowF, (string)($item['descripcion'] ?? ''));
-            $sheetFase->setCellValue('F' . $rowF, (string)($item['ff'] ?? ''));
-            $sheetFase->setCellValue('G' . $rowF, (string)($item['tp'] ?? ''));
-            $sheetFase->setCellValue('H' . $rowF, safeFloat($item['estimado'] ?? 0));
-            $sheetFase->setCellValue('I' . $rowF, (string)($item['fpc'] ?? ''));
-            $sheetFase->setCellValue('J' . $rowF, (string)($item['estado'] ?? ''));
-            $sheetFase->setCellValue('K' . $rowF, (string)($item['situacion'] ?? ''));
+            // CAMBIO: Imprimir el dato de P/NP
+            $sheetFase->setCellValue('B' . $rowF, (string)($item['pn'] ?? ''));
+            $sheetFase->setCellValue('C' . $rowF, (string)($item['nopac'] ?? ''));
+            $sheetFase->setCellValue('D' . $rowF, (string)($item['obac'] ?? ''));
+            $sheetFase->setCellValue('E' . $rowF, (string)($item['historial'] ?? ''));
+            $sheetFase->setCellValue('F' . $rowF, (string)($item['descripcion'] ?? ''));
+            $sheetFase->setCellValue('G' . $rowF, (string)($item['ff'] ?? ''));
+            $sheetFase->setCellValue('H' . $rowF, (string)($item['tp'] ?? ''));
+            $sheetFase->setCellValue('I' . $rowF, safeFloat($item['estimado'] ?? 0));
+            $sheetFase->setCellValue('J' . $rowF, (string)($item['fpc'] ?? ''));
+            $sheetFase->setCellValue('K' . $rowF, (string)($item['estado'] ?? ''));
+            $sheetFase->setCellValue('L' . $rowF, (string)($item['situacion'] ?? ''));
 
-            $sheetFase->getStyle("A{$rowF}:K{$rowF}")->applyFromArray($styleCell);
+            // CAMBIO: Ajuste de estilos desplazados
+            $sheetFase->getStyle("A{$rowF}:L{$rowF}")->applyFromArray($styleCell);
 
-            $sheetFase->getStyle("A{$rowF}:C{$rowF}")->applyFromArray($styleCenter);
-            $sheetFase->getStyle("D{$rowF}:E{$rowF}")->applyFromArray($styleLeft);
-            $sheetFase->getStyle("F{$rowF}:G{$rowF}")->applyFromArray($styleCenter);
-            $sheetFase->getStyle("H{$rowF}")->applyFromArray($styleMoney);
-            $sheetFase->getStyle("I{$rowF}:J{$rowF}")->applyFromArray($styleCenter);
-            $sheetFase->getStyle("K{$rowF}")->applyFromArray($styleLeft);
+            $sheetFase->getStyle("A{$rowF}:D{$rowF}")->applyFromArray($styleCenter); // A, B, C, D
+            $sheetFase->getStyle("E{$rowF}:F{$rowF}")->applyFromArray($styleLeft);   // E, F
+            $sheetFase->getStyle("G{$rowF}:H{$rowF}")->applyFromArray($styleCenter); // G, H
+            $sheetFase->getStyle("I{$rowF}")->applyFromArray($styleMoney);           // I (Estimado)
+            $sheetFase->getStyle("J{$rowF}:K{$rowF}")->applyFromArray($styleCenter); // J, K
+            $sheetFase->getStyle("L{$rowF}")->applyFromArray($styleLeft);            // L (Situacion)
 
             $rowF++;
         }
 
-        $sheetFase->getStyle('H1:H' . max(1, $rowF))->getNumberFormat()->setFormatCode('#,##0.00');
+        // CAMBIO: El formato de moneda ahora se aplica a la columna I
+        $sheetFase->getStyle('I1:I' . max(1, $rowF))->getNumberFormat()->setFormatCode('#,##0.00');
 
         $rowF += 2;
     }
 
+    // CAMBIO: Ajuste en los anchos de columna para acomodar la nueva
     $sheetFase->getColumnDimension('A')->setWidth(8);
-    $sheetFase->getColumnDimension('B')->setWidth(10);
-    $sheetFase->getColumnDimension('C')->setWidth(8);
-    $sheetFase->getColumnDimension('D')->setWidth(38);
-    $sheetFase->getColumnDimension('E')->setWidth(38);
-    $sheetFase->getColumnDimension('F')->setWidth(8);
-    $sheetFase->getColumnDimension('G')->setWidth(8);
-    $sheetFase->getColumnDimension('H')->setWidth(16);
-    $sheetFase->getColumnDimension('I')->setWidth(8);
-    $sheetFase->getColumnDimension('J')->setWidth(14);
-    $sheetFase->getColumnDimension('K')->setWidth(36);
-
+    $sheetFase->getColumnDimension('B')->setWidth(8);  // P/NP
+    $sheetFase->getColumnDimension('C')->setWidth(10); // EXP. PAC
+    $sheetFase->getColumnDimension('D')->setWidth(8);  // OBAC
+    $sheetFase->getColumnDimension('E')->setWidth(38); // HISTORIAL
+    $sheetFase->getColumnDimension('F')->setWidth(38); // DESCRIPCION
+    $sheetFase->getColumnDimension('G')->setWidth(8);  // FF
+    $sheetFase->getColumnDimension('H')->setWidth(8);  // TP
+    $sheetFase->getColumnDimension('I')->setWidth(16); // ESTIMADO SOLES
+    $sheetFase->getColumnDimension('J')->setWidth(8);  // FPC
+    $sheetFase->getColumnDimension('K')->setWidth(14); // ESTADO
+    $sheetFase->getColumnDimension('L')->setWidth(36); // SITUACION
 }
 
 /*
