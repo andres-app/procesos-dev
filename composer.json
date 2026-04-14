@@ -1,0 +1,18 @@
+{
+    "name": "andres/procesos-dev",
+    "description": "Sistema de procesos",
+    "autoload": {
+        "psr-4": {
+            "Andres\\ProcesosDev\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Anndres",
+            "email": "silvabasauri@gmail.com"
+        }
+    ],
+    "require": {
+        "phpoffice/phpspreadsheet": "^5.6"
+    }
+}
