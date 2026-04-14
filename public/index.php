@@ -112,7 +112,7 @@ if ($module === 'admin') {
     */
     if ($subRoute === 'export_excel') {
         $type = $parts[2] ?? 'estado';
-        require_file(__DIR__ . '/../Vista/modulos/admin/exports/excel.php');
+        require_file(__DIR__ . '/../Vista/modulos/admin/exports/RptExcelEstado.php');
         exit;
     }
 
