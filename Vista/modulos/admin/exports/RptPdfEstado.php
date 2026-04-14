@@ -244,7 +244,7 @@ function renderDetalleBloque(string $fase, string $tipo, int $anio, array $items
         $situacionHtml   = $situacion !== '' ? nl2br(h($situacion)) : '&nbsp;';
 
         $html .= '
-        <tr>
+        <tr nobr="true">
             <td width="5%" style="text-align:center; vertical-align:top;">' . $n++ . '</td>
             <td width="7%" style="text-align:center; vertical-align:top;">' . $nopacHtml . '</td>
             <td width="6%" style="text-align:center; vertical-align:top;">' . $obacHtml . '</td>
@@ -410,13 +410,18 @@ foreach ($fases as $fase) {
     </table>
     <br>
     ';
-    $pdf->writeHTML($tituloFase, true, false, true, false, '');
+    $pdf->writeHTML($tituloFase, true, false, false, false, '');
 
     foreach (['Corporativo', 'Individual'] as $tipo) {
         $items = $detallePlano[$fase][$tipo] ?? [];
 
         if (empty($items) || !is_array($items)) {
             continue;
+        }
+
+        // 👇 EVITA QUE EMPIECE AL FINAL DE PÁGINA
+        if ($pdf->GetY() > 150) {
+            $pdf->AddPage();
         }
 
         $htmlBloque = renderDetalleBloque($fase, $tipo, $anio, $items);
