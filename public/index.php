@@ -118,7 +118,7 @@ if ($module === 'admin') {
 
     if ($subRoute === 'export_pdf') {
         $type = $parts[2] ?? 'estado';
-        require_file(__DIR__ . '/../Vista/modulos/admin/exports/pdf.php');
+        require_file(__DIR__ . '/../Vista/modulos/admin/exports/RptPdfEstado.php');
         exit;
     }
 

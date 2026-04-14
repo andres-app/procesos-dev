@@ -1,5 +1,5 @@
 <?php
-// Vista/modulos/admin/exports/pdf.php
+// Vista/modulos/admin/exports/RptPdfEstado.php
 declare(strict_types=1);
 
 require_once __DIR__ . '/../../../../Config/config.php';
