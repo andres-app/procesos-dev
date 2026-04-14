@@ -27,6 +27,7 @@ $subtotales         = $resumen['subtotales'] ?? [];
 $totales            = $resumen['totales'] ?? [];
 $valorObac          = $resumen['valor_estimado_obac'] ?? [];
 $modalidadesPorFase = $resumen['modalidades_por_fase'] ?? [];
+$detallePlano       = $resumen['detalle_plano'] ?? [];
 
 function safeInt($value): int
 {
@@ -326,126 +327,110 @@ $sheet->freezePane('C7');
 
 /*
 |--------------------------------------------------------------------------
-| HOJA 2: TOTALES OBAC
+| HOJAS DINÁMICAS POR FASE
 |--------------------------------------------------------------------------
 */
-$sheet2 = $spreadsheet->createSheet();
-$sheet2->setTitle('Totales OBAC');
-
-$sheet2->setCellValue('A1', 'VALOR ESTIMADO POR OBAC - AF-' . $anio);
-$sheet2->mergeCells('A1:C1');
-$sheet2->getStyle('A1:C1')->applyFromArray($styleTituloGrande);
-$sheet2->getStyle('A1:C1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB($colorAmarillo);
-$sheet2->getStyle('A1:C1')->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-
-$sheet2->setCellValue('A3', 'OBAC');
-$sheet2->setCellValue('B3', 'VALOR ESTIMADO');
-$sheet2->setCellValue('C3', 'OBSERVACIÓN');
-$sheet2->getStyle('A3:C3')->applyFromArray($styleHeader);
-
-$obacs = ['CCFFAA', 'EP', 'FAP', 'MGP', 'CONIDA'];
-$r2 = 4;
-
-foreach ($obacs as $obac) {
-    $sheet2->setCellValue('A' . $r2, $obac);
-    $sheet2->setCellValue('B' . $r2, safeFloat($valorObac[$obac] ?? 0));
-    $sheet2->setCellValue('C' . $r2, 'Monto acumulado por OBAC');
-
-    $sheet2->getStyle('A' . $r2 . ':C' . $r2)->applyFromArray($styleCell);
-    $sheet2->getStyle('A' . $r2)->applyFromArray($styleCenter);
-    $sheet2->getStyle('B' . $r2)->applyFromArray($styleMoney);
-    $sheet2->getStyle('C' . $r2)->applyFromArray($styleLeft);
-
-    $r2++;
-}
-
-$sheet2->setCellValue('A' . $r2, 'TOTAL GENERAL');
-$sheet2->mergeCells('A' . $r2 . ':B' . $r2);
-$sheet2->setCellValue('C' . $r2, array_sum([
-    safeFloat($valorObac['CCFFAA'] ?? 0),
-    safeFloat($valorObac['EP'] ?? 0),
-    safeFloat($valorObac['FAP'] ?? 0),
-    safeFloat($valorObac['MGP'] ?? 0),
-    safeFloat($valorObac['CONIDA'] ?? 0),
-]));
-
-$sheet2->getStyle('A' . $r2 . ':C' . $r2)->applyFromArray($styleSubTotal);
-$sheet2->getStyle('C4:C' . $r2)->getNumberFormat()->setFormatCode('#,##0.00');
-$sheet2->getColumnDimension('A')->setWidth(18);
-$sheet2->getColumnDimension('B')->setWidth(18);
-$sheet2->getColumnDimension('C')->setWidth(24);
-
-/*
-|--------------------------------------------------------------------------
-| HOJA 3: DETALLE PLANO
-|--------------------------------------------------------------------------
-*/
-$sheet3 = $spreadsheet->createSheet();
-$sheet3->setTitle('Detalle plano');
-
-$sheet3->setCellValue('A1', 'DETALLE PLANO DE MODALIDADES - AF-' . $anio);
-$sheet3->mergeCells('A1:J1');
-$sheet3->getStyle('A1:J1')->applyFromArray($styleTituloGrande);
-$sheet3->getStyle('A1:J1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB($colorAmarillo);
-$sheet3->getStyle('A1:J1')->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-
-$headers3 = [
-    'A3' => 'FASE',
-    'B3' => 'MODALIDAD',
-    'C3' => 'CCFFAA',
-    'D3' => 'EP',
-    'E3' => 'FAP',
-    'F3' => 'MGP',
-    'G3' => 'CONIDA',
-    'H3' => 'EXPEDIENTES',
-    'I3' => 'PROCESOS',
-    'J3' => 'ESTIMADO',
-];
-
-foreach ($headers3 as $cell => $text) {
-    $sheet3->setCellValue($cell, $text);
-}
-$sheet3->getStyle('A3:J3')->applyFromArray($styleHeader);
-
-$r3 = 4;
 foreach ($fases as $fase) {
-    $mods = $modalidadesPorFase[$fase] ?? [];
-    foreach ($mods as $modalidad) {
-        $d = $detalle[$fase][$modalidad] ?? [];
-
-        $sheet3->setCellValue('A' . $r3, (string)$fase);
-        $sheet3->setCellValue('B' . $r3, (string)$modalidad);
-        $sheet3->setCellValue('C' . $r3, safeInt($d['CCFFAA'] ?? 0));
-        $sheet3->setCellValue('D' . $r3, safeInt($d['EP'] ?? 0));
-        $sheet3->setCellValue('E' . $r3, safeInt($d['FAP'] ?? 0));
-        $sheet3->setCellValue('F' . $r3, safeInt($d['MGP'] ?? 0));
-        $sheet3->setCellValue('G' . $r3, safeInt($d['CONIDA'] ?? 0));
-        $sheet3->setCellValue('H' . $r3, safeInt($d['EXPEDIENTES'] ?? 0));
-        $sheet3->setCellValue('I' . $r3, safeInt($d['PROCESOS'] ?? 0));
-        $sheet3->setCellValue('J' . $r3, safeFloat($d['ESTIMADO'] ?? 0));
-
-        $sheet3->getStyle('A' . $r3 . ':J' . $r3)->applyFromArray($styleCell);
-        $sheet3->getStyle('A' . $r3 . ':B' . $r3)->applyFromArray($styleLeft);
-        $sheet3->getStyle('C' . $r3 . ':I' . $r3)->applyFromArray($styleCenter);
-        $sheet3->getStyle('J' . $r3)->applyFromArray($styleMoney);
-
-        $r3++;
+    if (empty($detallePlano[$fase]) || !is_array($detallePlano[$fase])) {
+        continue;
     }
+
+    $nombreHoja = mb_substr($fase, 0, 31, 'UTF-8');
+    $sheetFase = $spreadsheet->createSheet();
+    $sheetFase->setTitle($nombreHoja);
+
+    $rowF = 1;
+
+    foreach (['Corporativo', 'Individual'] as $tipo) {
+        if (empty($detallePlano[$fase][$tipo]) || !is_array($detallePlano[$fase][$tipo])) {
+            continue;
+        }
+
+        $tipoTitulo = $tipo === 'Corporativo' ? 'CORPORATIVOS' : 'INDIVIDUALES';
+        $tituloTipo = 'PROCESOS ' . $tipoTitulo . ' ' . mb_strtoupper($fase, 'UTF-8') . ' AF-' . $anio;
+
+        $sheetFase->setCellValue('A' . $rowF, $tituloTipo);
+        $sheetFase->mergeCells("A{$rowF}:K{$rowF}");
+        $sheetFase->getStyle("A{$rowF}:K{$rowF}")->applyFromArray($styleTituloGrande);
+        $sheetFase->getStyle("A{$rowF}:K{$rowF}")
+            ->getFill()
+            ->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()
+            ->setRGB($colorAmarillo);
+        $sheetFase->getStyle("A{$rowF}:K{$rowF}")
+            ->getBorders()
+            ->getAllBorders()
+            ->setBorderStyle(Border::BORDER_THIN);
+
+        $rowF++;
+
+        $headers = [
+            'A' => 'N° PROC',
+            'B' => 'EXP. PAC',
+            'C' => 'OBAC',
+            'D' => 'HISTORIAL',
+            'E' => 'DESCRIPCION',
+            'F' => 'FF',
+            'G' => 'TP',
+            'H' => 'ESTIMADO SOLES',
+            'I' => 'FPC',
+            'J' => 'ESTADO',
+            'K' => 'SITUACION',
+        ];
+
+        foreach ($headers as $col => $text) {
+            $sheetFase->setCellValue($col . $rowF, $text);
+        }
+
+        $sheetFase->getStyle("A{$rowF}:K{$rowF}")->applyFromArray($styleHeader);
+        $sheetFase->getRowDimension($rowF)->setRowHeight(28);
+        $rowF++;
+
+        $n = 1;
+
+        foreach ($detallePlano[$fase][$tipo] as $item) {
+            $sheetFase->setCellValue('A' . $rowF, $n++);
+            $sheetFase->setCellValue('B' . $rowF, (string)($item['nopac'] ?? ''));
+            $sheetFase->setCellValue('C' . $rowF, (string)($item['obac'] ?? ''));
+            $sheetFase->setCellValue('D' . $rowF, (string)($item['historial'] ?? ''));
+            $sheetFase->setCellValue('E' . $rowF, (string)($item['descripcion'] ?? ''));
+            $sheetFase->setCellValue('F' . $rowF, (string)($item['ff'] ?? ''));
+            $sheetFase->setCellValue('G' . $rowF, (string)($item['tp'] ?? ''));
+            $sheetFase->setCellValue('H' . $rowF, safeFloat($item['estimado'] ?? 0));
+            $sheetFase->setCellValue('I' . $rowF, (string)($item['fpc'] ?? ''));
+            $sheetFase->setCellValue('J' . $rowF, (string)($item['estado'] ?? ''));
+            $sheetFase->setCellValue('K' . $rowF, (string)($item['situacion'] ?? ''));
+
+            $sheetFase->getStyle("A{$rowF}:K{$rowF}")->applyFromArray($styleCell);
+
+            $sheetFase->getStyle("A{$rowF}:C{$rowF}")->applyFromArray($styleCenter);
+            $sheetFase->getStyle("D{$rowF}:E{$rowF}")->applyFromArray($styleLeft);
+            $sheetFase->getStyle("F{$rowF}:G{$rowF}")->applyFromArray($styleCenter);
+            $sheetFase->getStyle("H{$rowF}")->applyFromArray($styleMoney);
+            $sheetFase->getStyle("I{$rowF}:J{$rowF}")->applyFromArray($styleCenter);
+            $sheetFase->getStyle("K{$rowF}")->applyFromArray($styleLeft);
+
+            $rowF++;
+        }
+
+        $sheetFase->getStyle('H1:H' . max(1, $rowF))->getNumberFormat()->setFormatCode('#,##0.00');
+
+        $rowF += 2;
+    }
+
+    $sheetFase->getColumnDimension('A')->setWidth(8);
+    $sheetFase->getColumnDimension('B')->setWidth(10);
+    $sheetFase->getColumnDimension('C')->setWidth(8);
+    $sheetFase->getColumnDimension('D')->setWidth(38);
+    $sheetFase->getColumnDimension('E')->setWidth(38);
+    $sheetFase->getColumnDimension('F')->setWidth(8);
+    $sheetFase->getColumnDimension('G')->setWidth(8);
+    $sheetFase->getColumnDimension('H')->setWidth(16);
+    $sheetFase->getColumnDimension('I')->setWidth(8);
+    $sheetFase->getColumnDimension('J')->setWidth(14);
+    $sheetFase->getColumnDimension('K')->setWidth(36);
+
 }
-
-$sheet3->getStyle('J4:J' . max(4, $r3))->getNumberFormat()->setFormatCode('#,##0.00');
-$sheet3->freezePane('A4');
-
-$sheet3->getColumnDimension('A')->setWidth(28);
-$sheet3->getColumnDimension('B')->setWidth(24);
-$sheet3->getColumnDimension('C')->setWidth(10);
-$sheet3->getColumnDimension('D')->setWidth(10);
-$sheet3->getColumnDimension('E')->setWidth(10);
-$sheet3->getColumnDimension('F')->setWidth(10);
-$sheet3->getColumnDimension('G')->setWidth(10);
-$sheet3->getColumnDimension('H')->setWidth(14);
-$sheet3->getColumnDimension('I')->setWidth(12);
-$sheet3->getColumnDimension('J')->setWidth(18);
 
 /*
 |--------------------------------------------------------------------------

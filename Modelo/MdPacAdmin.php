@@ -513,22 +513,26 @@ class MdPacAdmin
         SELECT
             p.id,
             p.nopac,
+            p.descripcion,
             p.estimado,
+            p.mesconvoca,
 
             COALESCE(ob.nombre, '') AS obac_nombre,
             COALESCE(md.nombre, '') AS modalidad_nombre,
             COALESCE(es.nombre, '') AS estado_nombre,
+            COALESCE(fu.nombre, '') AS fuente_nombre,
+            COALESCE(se.nombre, '') AS seleccion_nombre,
 
             COUNT(DISTINCT pr.id) AS total_procesos
 
         FROM pac p
-
-        LEFT JOIN entidad ob ON ob.id = p.obac
-        LEFT JOIN modalidad md ON md.id = p.modalidad
-        LEFT JOIN estado es ON es.id = p.estado
-
+        LEFT JOIN entidad ob    ON ob.id = p.obac
+        LEFT JOIN modalidad md  ON md.id = p.modalidad
+        LEFT JOIN estado es     ON es.id = p.estado
+        LEFT JOIN fuente fu     ON fu.id = p.fuente
+        LEFT JOIN seleccion se  ON se.id = p.seleccion
         LEFT JOIN proceso_pac pp ON pp.pac_id = p.id
-        LEFT JOIN procesos pr ON pr.id = pp.proceso_id
+        LEFT JOIN procesos pr    ON pr.id = pp.proceso_id
 
         WHERE 1=1
     ";
@@ -540,81 +544,96 @@ class MdPacAdmin
             $params[':anio'] = (int)$anio;
         }
 
-        // EXCLUIR MODALIDAD 4 (EXCLUIDOS)
+        // ocultar excluidos
         $sql .= " AND (p.modalidad IS NULL OR p.modalidad <> 4)";
 
-        $sql .= " GROUP BY p.id";
+        $sql .= "
+        GROUP BY
+            p.id,
+            p.nopac,
+            p.descripcion,
+            p.estimado,
+            p.mesconvoca,
+            ob.nombre,
+            md.nombre,
+            es.nombre,
+            fu.nombre,
+            se.nombre
+        ORDER BY
+            es.nombre ASC,
+            md.nombre ASC,
+            p.id ASC
+    ";
 
         $st = $db->prepare($sql);
         $st->execute($params);
-        $rows = $st->fetchAll(PDO::FETCH_ASSOC);
-
-        $obacs = ['CCFFAA', 'EP', 'FAP', 'MGP', 'CONIDA'];
+        $rows = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
         $detalle = [];
         $subtotales = [];
         $totales = [
-            'CCFFAA' => 0,
-            'EP' => 0,
-            'FAP' => 0,
-            'MGP' => 0,
-            'CONIDA' => 0,
+            'CCFFAA'      => 0,
+            'EP'          => 0,
+            'FAP'         => 0,
+            'MGP'         => 0,
+            'CONIDA'      => 0,
             'EXPEDIENTES' => 0,
-            'PROCESOS' => 0,
-            'ESTIMADO' => 0,
+            'PROCESOS'    => 0,
+            'ESTIMADO'    => 0.0,
         ];
 
         $valorObac = [
-            'CCFFAA' => 0,
-            'EP' => 0,
-            'FAP' => 0,
-            'MGP' => 0,
-            'CONIDA' => 0,
+            'CCFFAA' => 0.0,
+            'EP'     => 0.0,
+            'FAP'    => 0.0,
+            'MGP'    => 0.0,
+            'CONIDA' => 0.0,
         ];
 
         $modalidadesPorFase = [];
         $fasesDetectadas = [];
+        $detallePlano = [];
 
         foreach ($rows as $r) {
+            $estado = (string)($r['estado_nombre'] ?? '');
+            $fase = self::normalizarFaseResumen($estado);
 
-            // ===== FASE DINÁMICA =====
-            $fase = self::normalizarFaseResumen((string)$r['estado_nombre']);
-            if ($fase === null) continue;
+            if ($fase === null) {
+                continue;
+            }
 
-            // ===== MODALIDAD =====
-            $modalidad = self::normalizarModalidadResumen((string)$r['modalidad_nombre']);
+            $modalidad = self::normalizarModalidadResumen((string)($r['modalidad_nombre'] ?? ''));
+            $obac = self::normalizarObacResumen((string)($r['obac_nombre'] ?? ''));
 
-            // ===== OBAC =====
-            $obac = self::normalizarObacResumen((string)$r['obac_nombre']);
-            if (!$obac) continue;
+            if ($obac === null) {
+                continue;
+            }
 
-            $estimado = (float)$r['estimado'];
-            $procesos = (int)$r['total_procesos'];
+            $estimado = (float)($r['estimado'] ?? 0);
+            $procesos = (int)($r['total_procesos'] ?? 0);
 
-            // ===== REGISTRAR FASE =====
             if (!in_array($fase, $fasesDetectadas, true)) {
                 $fasesDetectadas[] = $fase;
             }
 
-            // ===== MODALIDADES DINÁMICAS =====
             if (!isset($modalidadesPorFase[$fase])) {
                 $modalidadesPorFase[$fase] = [];
             }
+
             if (!in_array($modalidad, $modalidadesPorFase[$fase], true)) {
                 $modalidadesPorFase[$fase][] = $modalidad;
             }
 
-            // ===== DETALLE =====
             if (!isset($detalle[$fase][$modalidad])) {
                 $detalle[$fase][$modalidad] = [
-                    'CCFFAA' => 0,
-                    'EP' => 0,
-                    'FAP' => 0,
-                    'MGP' => 0,
-                    'CONIDA' => 0,
+                    'CCFFAA'      => 0,
+                    'EP'          => 0,
+                    'FAP'         => 0,
+                    'MGP'         => 0,
+                    'CONIDA'      => 0,
                     'EXPEDIENTES' => 0,
-                    'PROCESOS' => 0,
-                    'ESTIMADO' => 0,
+                    'PROCESOS'    => 0,
+                    'ESTIMADO'    => 0.0,
                 ];
             }
 
@@ -623,17 +642,16 @@ class MdPacAdmin
             $detalle[$fase][$modalidad]['PROCESOS'] += $procesos;
             $detalle[$fase][$modalidad]['ESTIMADO'] += $estimado;
 
-            // ===== SUBTOTAL =====
             if (!isset($subtotales[$fase])) {
                 $subtotales[$fase] = [
-                    'CCFFAA' => 0,
-                    'EP' => 0,
-                    'FAP' => 0,
-                    'MGP' => 0,
-                    'CONIDA' => 0,
+                    'CCFFAA'      => 0,
+                    'EP'          => 0,
+                    'FAP'         => 0,
+                    'MGP'         => 0,
+                    'CONIDA'      => 0,
                     'EXPEDIENTES' => 0,
-                    'PROCESOS' => 0,
-                    'ESTIMADO' => 0,
+                    'PROCESOS'    => 0,
+                    'ESTIMADO'    => 0.0,
                 ];
             }
 
@@ -642,24 +660,42 @@ class MdPacAdmin
             $subtotales[$fase]['PROCESOS'] += $procesos;
             $subtotales[$fase]['ESTIMADO'] += $estimado;
 
-            // ===== TOTALES =====
             $totales[$obac]++;
             $totales['EXPEDIENTES']++;
             $totales['PROCESOS'] += $procesos;
             $totales['ESTIMADO'] += $estimado;
 
-            // ===== VALOR OBAC =====
             $valorObac[$obac] += $estimado;
+
+            if (!isset($detallePlano[$fase][$modalidad])) {
+                $detallePlano[$fase][$modalidad] = [];
+            }
+
+            $detallePlano[$fase][$modalidad][] = [
+                'id'          => (int)($r['id'] ?? 0),
+                'nopac'       => (string)($r['nopac'] ?? ''),
+                'obac'        => (string)($r['obac_nombre'] ?? ''),
+                'descripcion' => (string)($r['descripcion'] ?? ''),
+                'estimado'    => $estimado,
+                'fpc'         => (string)($r['mesconvoca'] ?? ''),
+                'estado'      => $estado,
+                'ff'          => (string)($r['fuente_nombre'] ?? ''),
+                'tp'          => (string)($r['seleccion_nombre'] ?? ''),
+                'situacion'   => '',
+                'historial'   => '',
+                'procesos'    => $procesos,
+            ];
         }
 
         return [
-            'anio' => $anio,
-            'fases_orden' => $fasesDetectadas,
+            'anio'                 => $anio,
+            'fases_orden'          => $fasesDetectadas,
             'modalidades_por_fase' => $modalidadesPorFase,
-            'detalle' => $detalle,
-            'subtotales' => $subtotales,
-            'totales' => $totales,
-            'valor_estimado_obac' => $valorObac,
+            'detalle'              => $detalle,
+            'subtotales'           => $subtotales,
+            'totales'              => $totales,
+            'valor_estimado_obac'  => $valorObac,
+            'detalle_plano'        => $detallePlano,
         ];
     }
 
@@ -671,7 +707,6 @@ class MdPacAdmin
             return null;
         }
 
-        // Normalización base
         $txt = str_replace(
             ['Á', 'É', 'Í', 'Ó', 'Ú', 'Ñ'],
             ['A', 'E', 'I', 'O', 'U', 'N'],
@@ -681,119 +716,53 @@ class MdPacAdmin
         $txt = preg_replace('/\s+/', ' ', $txt);
         $txt = trim((string)$txt);
 
-        // NO RECEPCIONADOS
+        // FASE: NO RECEPCIONADOS
         if (
+            strpos($txt, 'PUBLICADO') !== false ||
+            strpos($txt, 'PUBLICADA') !== false ||
+            strpos($txt, 'SOLICITADO') !== false ||
+            strpos($txt, 'SOLICITADA') !== false ||
             strpos($txt, 'NO RECEPC') !== false ||
-            strpos($txt, 'NORECEPC') !== false ||
-            strpos($txt, 'NO RECEPCIONADO') !== false ||
-            strpos($txt, 'NO RECEPCIONADOS') !== false
+            strpos($txt, 'NORECEPC') !== false
         ) {
-            return 'NORECEPCIONADOS';
+            return 'NO RECEPCIONADOS';
         }
 
-        // OBSERVADOS
+        // FASE: OBSERVADOS
         if (
             strpos($txt, 'OBSERVADO') !== false ||
-            strpos($txt, 'OBSERVADOS') !== false ||
-            strpos($txt, 'OBSERVADA') !== false
+            strpos($txt, 'OBSERVADA') !== false ||
+            strpos($txt, 'SUBSANADO') !== false ||
+            strpos($txt, 'SUBSANADA') !== false
         ) {
             return 'OBSERVADOS';
         }
 
-        // SUBSANADOS
+        // FASE: ESTUDIO DE MERCADO
         if (
-            strpos($txt, 'SUBSANADO') !== false ||
-            strpos($txt, 'SUBSANADOS') !== false ||
-            strpos($txt, 'SUBSANADA') !== false
-        ) {
-            return 'SUBSANADOS';
-        }
-
-        // ESTUDIO DE MERCADO
-        if (
-            (strpos($txt, 'ESTUDIO') !== false && strpos($txt, 'MERCADO') !== false) ||
-            strpos($txt, 'ESTUDIO DE MERCADO') !== false
+            strpos($txt, 'ESTUDIO DE MERCADO') !== false ||
+            (strpos($txt, 'ESTUDIO') !== false && strpos($txt, 'MERCADO') !== false)
         ) {
             return 'ESTUDIO DE MERCADO';
         }
 
-        // PROCESO DE COMPRAS
+        // FASE: PROCESO DE COMPRAS
         if (
-            strpos($txt, 'PROCESO DE COMPRA') !== false ||
             strpos($txt, 'PROCESO DE COMPRAS') !== false ||
-            strpos($txt, 'COMPRAS') !== false
+            strpos($txt, 'PROCESO DE COMPRA') !== false ||
+            strpos($txt, 'CONVOCADO') !== false ||
+            strpos($txt, 'CONVOCADA') !== false ||
+            strpos($txt, 'ADJUDICADO') !== false ||
+            strpos($txt, 'ADJUDICADA') !== false ||
+            strpos($txt, 'CONSENTIDO') !== false ||
+            strpos($txt, 'CONSENTIDA') !== false ||
+            strpos($txt, 'DESIERTO') !== false ||
+            strpos($txt, 'DESIERTA') !== false
         ) {
             return 'PROCESO DE COMPRAS';
         }
 
-        // CONVOCADOS
-        if (
-            strpos($txt, 'CONVOCADO') !== false ||
-            strpos($txt, 'CONVOCADOS') !== false ||
-            strpos($txt, 'CONVOCADA') !== false
-        ) {
-            return 'CONVOCADOS';
-        }
-
-        // ADJUDICADOS
-        if (
-            strpos($txt, 'ADJUDICADO') !== false ||
-            strpos($txt, 'ADJUDICADOS') !== false ||
-            strpos($txt, 'ADJUDICADA') !== false ||
-            strpos($txt, 'BUENA PRO') !== false
-        ) {
-            return 'ADJUDICADOS';
-        }
-
-        // CONSENTIDOS
-        if (
-            strpos($txt, 'CONSENTIDO') !== false ||
-            strpos($txt, 'CONSENTIDOS') !== false ||
-            strpos($txt, 'CONSENTIDA') !== false
-        ) {
-            return 'CONSENTIDOS';
-        }
-
-        // DESIERTOS
-        if (
-            strpos($txt, 'DESIERTO') !== false ||
-            strpos($txt, 'DESIERTOS') !== false ||
-            strpos($txt, 'DESIERTA') !== false
-        ) {
-            return 'DESIERTOS';
-        }
-
-        // ANULADOS / CANCELADOS
-        if (
-            strpos($txt, 'ANULADO') !== false ||
-            strpos($txt, 'ANULADOS') !== false ||
-            strpos($txt, 'ANULADA') !== false ||
-            strpos($txt, 'CANCELADO') !== false ||
-            strpos($txt, 'CANCELADOS') !== false ||
-            strpos($txt, 'CANCELADA') !== false
-        ) {
-            return 'ANULADOS/CANCELADOS';
-        }
-
-        // PUBLICADOS
-        if (
-            strpos($txt, 'PUBLICADO') !== false ||
-            strpos($txt, 'PUBLICADOS') !== false ||
-            strpos($txt, 'PUBLICADA') !== false
-        ) {
-            return 'PUBLICADOS';
-        }
-
-        // SOLICITADOS
-        if (
-            strpos($txt, 'SOLICITADO') !== false ||
-            strpos($txt, 'SOLICITADOS') !== false ||
-            strpos($txt, 'SOLICITADA') !== false
-        ) {
-            return 'SOLICITADOS';
-        }
-
-        return $txt;
+        return null;
     }
 
     private static function normalizarModalidadResumen(string $modalidadNombre): string
