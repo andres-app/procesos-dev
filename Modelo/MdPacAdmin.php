@@ -505,37 +505,37 @@ class MdPacAdmin
         return $st->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public static function obtenerResumenSituacion(?int $anio = null): array
+    public static function obtenerResumenSituacion(?int $anio = null, int $ejecucion = 4): array
     {
         $db = db();
         $hoy = date('Y-m-d');
 
         $sql = "
-        SELECT
-            p.id,
-            p.nopac,
-            p.descripcion,
-            p.estimado,
-            p.mesconvoca,
+    SELECT
+        p.id,
+        p.nopac,
+        p.descripcion,
+        p.estimado,
+        p.mesconvoca,
 
-            COALESCE(ob.nombre, '') AS obac_nombre,
-            COALESCE(md.nombre, '') AS modalidad_nombre,
-            COALESCE(es.nombre, '') AS estado_nombre,
-            COALESCE(fu.nombre, '') AS fuente_nombre,
-            COALESCE(se.nombre, '') AS seleccion_nombre,
+        COALESCE(ob.nombre, '') AS obac_nombre,
+        COALESCE(md.nombre, '') AS modalidad_nombre,
+        COALESCE(es.nombre, '') AS estado_nombre,
+        COALESCE(fu.nombre, '') AS fuente_nombre,
+        COALESCE(se.nombre, '') AS seleccion_nombre,
 
-            COUNT(DISTINCT pr.id) AS total_procesos
+        COUNT(DISTINCT pr.id) AS total_procesos
 
-        FROM pac p
-        LEFT JOIN entidad ob    ON ob.id = p.obac
-        LEFT JOIN modalidad md  ON md.id = p.modalidad
-        LEFT JOIN estado es     ON es.id = p.estado
-        LEFT JOIN fuente fu     ON fu.id = p.fuente
-        LEFT JOIN seleccion se  ON se.id = p.seleccion
-        LEFT JOIN proceso_pac pp ON pp.pac_id = p.id
-        LEFT JOIN procesos pr    ON pr.id = pp.proceso_id
+    FROM pac p
+    LEFT JOIN entidad ob     ON ob.id = p.obac
+    LEFT JOIN modalidad md   ON md.id = p.modalidad
+    LEFT JOIN estado es      ON es.id = p.estado
+    LEFT JOIN fuente fu      ON fu.id = p.fuente
+    LEFT JOIN seleccion se   ON se.id = p.seleccion
+    LEFT JOIN proceso_pac pp ON pp.pac_id = p.id
+    LEFT JOIN procesos pr    ON pr.id = pp.proceso_id
 
-        WHERE 1=1
+    WHERE 1=1
     ";
 
         $params = [];
@@ -545,22 +545,27 @@ class MdPacAdmin
             $params[':anio'] = (int)$anio;
         }
 
+        // SOLO ACFFAA
+        $sql .= " AND p.ejecucion = :ejecucion";
+        $params[':ejecucion'] = $ejecucion;
+
+        // NO CONSIDERAR EXCLUIDOS / MODALIDAD 4
         $sql .= " AND (p.modalidad IS NULL OR p.modalidad <> 4)";
 
         $sql .= "
-        GROUP BY
-            p.id,
-            p.nopac,
-            p.descripcion,
-            p.estimado,
-            p.mesconvoca,
-            ob.nombre,
-            md.nombre,
-            es.nombre,
-            fu.nombre,
-            se.nombre
-        ORDER BY
-            p.id ASC
+    GROUP BY
+        p.id,
+        p.nopac,
+        p.descripcion,
+        p.estimado,
+        p.mesconvoca,
+        ob.nombre,
+        md.nombre,
+        es.nombre,
+        fu.nombre,
+        se.nombre
+    ORDER BY
+        p.id ASC
     ";
 
         $st = $db->prepare($sql);
@@ -578,18 +583,18 @@ class MdPacAdmin
             $placeholders = implode(',', array_fill(0, count($pacIds), '?'));
 
             $sqlAct = "
-            SELECT
-                ap.id,
-                ap.pac_id,
-                ap.fecha,
-                COALESCE(ap.comentario, '') AS comentario,
-                COALESCE(ta.nombre, '') AS tipo_nombre,
-                COALESCE(ta.estado, '') AS tipo_estado
-            FROM actividades_pac ap
-            LEFT JOIN tipos_actividad ta
-                ON ta.id = ap.tipo_actividad_id
-            WHERE ap.pac_id IN ($placeholders)
-            ORDER BY ap.pac_id ASC, ap.fecha ASC, ap.id ASC
+        SELECT
+            ap.id,
+            ap.pac_id,
+            ap.fecha,
+            COALESCE(ap.comentario, '') AS comentario,
+            COALESCE(ta.nombre, '') AS tipo_nombre,
+            COALESCE(ta.estado, '') AS tipo_estado
+        FROM actividades_pac ap
+        LEFT JOIN tipos_actividad ta
+            ON ta.id = ap.tipo_actividad_id
+        WHERE ap.pac_id IN ($placeholders)
+        ORDER BY ap.pac_id ASC, ap.fecha ASC, ap.id ASC
         ";
 
             $stAct = $db->prepare($sqlAct);
@@ -767,11 +772,14 @@ class MdPacAdmin
                 }
             }
 
-            if (!isset($detallePlano[$fase][$modalidad])) {
-                $detallePlano[$fase][$modalidad] = [];
+            // Mantener las hojas dinámicas exactamente como las espera tu Excel/PDF
+            $tipoDetalle = self::clasificarTipoDetalleResumen((string)($r['modalidad_nombre'] ?? ''));
+
+            if (!isset($detallePlano[$fase][$tipoDetalle])) {
+                $detallePlano[$fase][$tipoDetalle] = [];
             }
 
-            $detallePlano[$fase][$modalidad][] = [
+            $detallePlano[$fase][$tipoDetalle][] = [
                 'id'          => $pacId,
                 'nopac'       => (string)($r['nopac'] ?? ''),
                 'obac'        => (string)($r['obac_nombre'] ?? ''),
@@ -789,6 +797,7 @@ class MdPacAdmin
 
         return [
             'anio'                 => $anio,
+            'ejecucion'            => $ejecucion,
             'fases_orden'          => $fasesDetectadas,
             'modalidades_por_fase' => $modalidadesPorFase,
             'detalle'              => $detalle,
@@ -798,6 +807,26 @@ class MdPacAdmin
             'detalle_plano'        => $detallePlano,
         ];
     }
+
+    private static function clasificarTipoDetalleResumen(string $modalidadNombre): string
+{
+    $txt = mb_strtoupper(trim($modalidadNombre), 'UTF-8');
+
+    $corporativos = [
+        'CORPORATIVO',
+        'CORPORATIVOS',
+        'COMPRA CORPORATIVA',
+        'COMPRAS CORPORATIVAS',
+    ];
+
+    foreach ($corporativos as $valor) {
+        if ($txt === $valor) {
+            return 'Corporativo';
+        }
+    }
+
+    return 'Individual';
+}
 
     private static function normalizarFaseResumen(string $estadoNombre): ?string
     {

@@ -19,7 +19,8 @@ if ($type !== 'resumen') {
     $type = 'resumen';
 }
 
-$resumen = MdPacAdmin::obtenerResumenSituacion($anio);
+$ejecucion = 4; // ACFFAA
+$resumen = MdPacAdmin::obtenerResumenSituacion($anio, $ejecucion);
 
 $fases              = $resumen['fases_orden'] ?? [];
 $detalle            = $resumen['detalle'] ?? [];
