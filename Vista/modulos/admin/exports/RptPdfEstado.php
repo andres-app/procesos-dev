@@ -49,27 +49,6 @@ function fmtMoney($value): string
     return number_format((float)$value, 2, '.', ',');
 }
 
-function buildCell(string $content, string $align = 'C', bool $bold = false, string $bg = '', string $color = '#111827'): string
-{
-    $style = 'text-align:' . $alignCss = (
-        $align === 'R' ? 'right' :
-        ($align === 'L' ? 'left' : 'center')
-    ) . ';';
-
-    $style .= 'vertical-align:middle;';
-    $style .= 'color:' . $color . ';';
-
-    if ($bold) {
-        $style .= 'font-weight:bold;';
-    }
-
-    if ($bg !== '') {
-        $style .= 'background-color:' . $bg . ';';
-    }
-
-    return '<td style="' . $style . '">' . $content . '</td>';
-}
-
 function renderResumenTable(
     array $fases,
     array $detalle,
@@ -80,23 +59,30 @@ function renderResumenTable(
 ): string {
     $html = '';
 
+    $wFase      = 14;
+    $wModalidad = 14;
+    $wObac      = 6;   // 5 x 6 = 30
+    $wExpPac    = 10;
+    $wProcesos  = 10;
+    $wEstimado  = 22;  // TOTAL = 14 + 14 + 30 + 10 + 10 + 22 = 100
+
     $html .= '
     <table border="1" cellpadding="4" cellspacing="0" width="100%" style="font-size:8.5pt;">
         <thead>
             <tr style="background-color:#ECEBBF; font-weight:bold; text-align:center;">
-                <th rowspan="2" width="15%">FASES</th>
-                <th rowspan="2" width="15%">MODALIDAD</th>
-                <th colspan="5" width="30%">OBAC</th>
-                <th rowspan="2" width="8%">EXP. PAC</th>
-                <th rowspan="2" width="8%">PROCESOS</th>
-                <th rowspan="2" width="16%">ESTIMADOS (SOLES)</th>
+                <th rowspan="2" width="' . $wFase . '%">FASES</th>
+                <th rowspan="2" width="' . $wModalidad . '%">MODALIDAD</th>
+                <th colspan="5" width="' . ($wObac * 5) . '%">OBAC</th>
+                <th rowspan="2" width="' . $wExpPac . '%">EXP. PAC</th>
+                <th rowspan="2" width="' . $wProcesos . '%">PROCESOS</th>
+                <th rowspan="2" width="' . $wEstimado . '%">ESTIMADOS (SOLES)</th>
             </tr>
             <tr style="background-color:#ECEBBF; font-weight:bold; text-align:center;">
-                <th width="6%">CCFFAA</th>
-                <th width="6%">EP</th>
-                <th width="6%">FAP</th>
-                <th width="6%">MGP</th>
-                <th width="6%">CONIDA</th>
+                <th width="' . $wObac . '%">CCFFAA</th>
+                <th width="' . $wObac . '%">EP</th>
+                <th width="' . $wObac . '%">FAP</th>
+                <th width="' . $wObac . '%">MGP</th>
+                <th width="' . $wObac . '%">CONIDA</th>
             </tr>
         </thead>
         <tbody>
@@ -113,50 +99,50 @@ function renderResumenTable(
             $html .= '<tr>';
 
             if ($first) {
-                $html .= '<td rowspan="' . $rowspan . '" style="text-align:left; font-weight:bold; vertical-align:middle;">' . h($fase) . '</td>';
+                $html .= '<td rowspan="' . $rowspan . '" width="' . $wFase . '%" style="text-align:left; font-weight:bold; vertical-align:middle;">' . h($fase) . '</td>';
                 $first = false;
             }
 
-            $html .= '<td style="text-align:left;">' . h((string)$modalidad) . '</td>';
-            $html .= '<td style="text-align:center;">' . safeInt($r['CCFFAA'] ?? 0) . '</td>';
-            $html .= '<td style="text-align:center;">' . safeInt($r['EP'] ?? 0) . '</td>';
-            $html .= '<td style="text-align:center;">' . safeInt($r['FAP'] ?? 0) . '</td>';
-            $html .= '<td style="text-align:center;">' . safeInt($r['MGP'] ?? 0) . '</td>';
-            $html .= '<td style="text-align:center;">' . safeInt($r['CONIDA'] ?? 0) . '</td>';
-            $html .= '<td style="text-align:center;">' . safeInt($r['EXPEDIENTES'] ?? 0) . '</td>';
-            $html .= '<td style="text-align:center;">' . safeInt($r['PROCESOS'] ?? 0) . '</td>';
-            $html .= '<td style="text-align:right;">' . fmtMoney($r['ESTIMADO'] ?? 0) . '</td>';
+            $html .= '<td width="' . $wModalidad . '%" style="text-align:left;">' . h((string)$modalidad) . '</td>';
+            $html .= '<td width="' . $wObac . '%" style="text-align:center;">' . safeInt($r['CCFFAA'] ?? 0) . '</td>';
+            $html .= '<td width="' . $wObac . '%" style="text-align:center;">' . safeInt($r['EP'] ?? 0) . '</td>';
+            $html .= '<td width="' . $wObac . '%" style="text-align:center;">' . safeInt($r['FAP'] ?? 0) . '</td>';
+            $html .= '<td width="' . $wObac . '%" style="text-align:center;">' . safeInt($r['MGP'] ?? 0) . '</td>';
+            $html .= '<td width="' . $wObac . '%" style="text-align:center;">' . safeInt($r['CONIDA'] ?? 0) . '</td>';
+            $html .= '<td width="' . $wExpPac . '%" style="text-align:center;">' . safeInt($r['EXPEDIENTES'] ?? 0) . '</td>';
+            $html .= '<td width="' . $wProcesos . '%" style="text-align:center;">' . safeInt($r['PROCESOS'] ?? 0) . '</td>';
+            $html .= '<td width="' . $wEstimado . '%" style="text-align:right;">' . fmtMoney($r['ESTIMADO'] ?? 0) . '</td>';
             $html .= '</tr>';
         }
 
         $s = $subtotales[$fase] ?? [];
 
         $html .= '
-            <tr style="background-color:#F6F1C7; font-weight:bold;">
-                <td style="text-align:left;">SUB TOTAL</td>
-                <td style="text-align:center;">' . safeInt($s['CCFFAA'] ?? 0) . '</td>
-                <td style="text-align:center;">' . safeInt($s['EP'] ?? 0) . '</td>
-                <td style="text-align:center;">' . safeInt($s['FAP'] ?? 0) . '</td>
-                <td style="text-align:center;">' . safeInt($s['MGP'] ?? 0) . '</td>
-                <td style="text-align:center;">' . safeInt($s['CONIDA'] ?? 0) . '</td>
-                <td style="text-align:center;">' . safeInt($s['EXPEDIENTES'] ?? 0) . '</td>
-                <td style="text-align:center;">' . safeInt($s['PROCESOS'] ?? 0) . '</td>
-                <td style="text-align:right;">' . fmtMoney($s['ESTIMADO'] ?? 0) . '</td>
-            </tr>
+        <tr style="background-color:#F6F1C7; font-weight:bold;">
+            <td width="' . $wModalidad . '%" style="text-align:left;">SUB TOTAL</td>
+            <td width="' . $wObac . '%" style="text-align:center;">' . safeInt($s['CCFFAA'] ?? 0) . '</td>
+            <td width="' . $wObac . '%" style="text-align:center;">' . safeInt($s['EP'] ?? 0) . '</td>
+            <td width="' . $wObac . '%" style="text-align:center;">' . safeInt($s['FAP'] ?? 0) . '</td>
+            <td width="' . $wObac . '%" style="text-align:center;">' . safeInt($s['MGP'] ?? 0) . '</td>
+            <td width="' . $wObac . '%" style="text-align:center;">' . safeInt($s['CONIDA'] ?? 0) . '</td>
+            <td width="' . $wExpPac . '%" style="text-align:center;">' . safeInt($s['EXPEDIENTES'] ?? 0) . '</td>
+            <td width="' . $wProcesos . '%" style="text-align:center;">' . safeInt($s['PROCESOS'] ?? 0) . '</td>
+            <td width="' . $wEstimado . '%" style="text-align:right;">' . fmtMoney($s['ESTIMADO'] ?? 0) . '</td>
+        </tr>
         ';
     }
 
     $html .= '
         <tr style="background-color:#DCEFE2; font-weight:bold;">
-            <td colspan="2" style="text-align:center;">TOTAL</td>
-            <td style="text-align:center;">' . safeInt($totales['CCFFAA'] ?? 0) . '</td>
-            <td style="text-align:center;">' . safeInt($totales['EP'] ?? 0) . '</td>
-            <td style="text-align:center;">' . safeInt($totales['FAP'] ?? 0) . '</td>
-            <td style="text-align:center;">' . safeInt($totales['MGP'] ?? 0) . '</td>
-            <td style="text-align:center;">' . safeInt($totales['CONIDA'] ?? 0) . '</td>
-            <td style="text-align:center;">' . safeInt($totales['EXPEDIENTES'] ?? 0) . '</td>
-            <td style="text-align:center;">' . safeInt($totales['PROCESOS'] ?? 0) . '</td>
-            <td style="text-align:right;">' . fmtMoney($totales['ESTIMADO'] ?? 0) . '</td>
+            <td colspan="2" width="' . ($wFase + $wModalidad) . '%" style="text-align:center;">TOTAL</td>
+            <td width="' . $wObac . '%" style="text-align:center;">' . safeInt($totales['CCFFAA'] ?? 0) . '</td>
+            <td width="' . $wObac . '%" style="text-align:center;">' . safeInt($totales['EP'] ?? 0) . '</td>
+            <td width="' . $wObac . '%" style="text-align:center;">' . safeInt($totales['FAP'] ?? 0) . '</td>
+            <td width="' . $wObac . '%" style="text-align:center;">' . safeInt($totales['MGP'] ?? 0) . '</td>
+            <td width="' . $wObac . '%" style="text-align:center;">' . safeInt($totales['CONIDA'] ?? 0) . '</td>
+            <td width="' . $wExpPac . '%" style="text-align:center;">' . safeInt($totales['EXPEDIENTES'] ?? 0) . '</td>
+            <td width="' . $wProcesos . '%" style="text-align:center;">' . safeInt($totales['PROCESOS'] ?? 0) . '</td>
+            <td width="' . $wEstimado . '%" style="text-align:right;">' . fmtMoney($totales['ESTIMADO'] ?? 0) . '</td>
         </tr>
     ';
 
@@ -190,6 +176,15 @@ function renderResumenTable(
     return $html;
 }
 
+/*
+|--------------------------------------------------------------------------
+| DETALLE CORREGIDO
+|--------------------------------------------------------------------------
+| La clave está en:
+| 1) repetir width en TODAS las celdas del tbody
+| 2) no dejar celdas vacías reales; usar &nbsp;
+| 3) mantener exactamente el mismo orden del thead
+*/
 function renderDetalleBloque(string $fase, string $tipo, int $anio, array $items): string
 {
     $tipoTitulo = ($tipo === 'Corporativo') ? 'CORPORATIVOS' : 'INDIVIDUALES';
@@ -228,19 +223,41 @@ function renderDetalleBloque(string $fase, string $tipo, int $anio, array $items
 
     $n = 1;
     foreach ($items as $item) {
-        $html .= '<tr>';
-        $html .= '<td style="text-align:center;">' . $n++ . '</td>';
-        $html .= '<td style="text-align:center;">' . h((string)($item['nopac'] ?? '')) . '</td>';
-        $html .= '<td style="text-align:center;">' . h((string)($item['obac'] ?? '')) . '</td>';
-        $html .= '<td style="text-align:left;">' . nl2br(h((string)($item['historial'] ?? ''))) . '</td>';
-        $html .= '<td style="text-align:left;">' . nl2br(h((string)($item['descripcion'] ?? ''))) . '</td>';
-        $html .= '<td style="text-align:center;">' . h((string)($item['ff'] ?? '')) . '</td>';
-        $html .= '<td style="text-align:center;">' . h((string)($item['tp'] ?? '')) . '</td>';
-        $html .= '<td style="text-align:right;">' . fmtMoney($item['estimado'] ?? 0) . '</td>';
-        $html .= '<td style="text-align:center;">' . h((string)($item['fpc'] ?? '')) . '</td>';
-        $html .= '<td style="text-align:center;">' . h((string)($item['estado'] ?? '')) . '</td>';
-        $html .= '<td style="text-align:left;">' . h((string)($item['situacion'] ?? '')) . '</td>';
-        $html .= '</tr>';
+        $nopac       = trim((string)($item['nopac'] ?? ''));
+        $obac        = trim((string)($item['obac'] ?? ''));
+        $historial   = trim((string)($item['historial'] ?? ''));
+        $descripcion = trim((string)($item['descripcion'] ?? ''));
+        $ff          = trim((string)($item['ff'] ?? ''));
+        $tp          = trim((string)($item['tp'] ?? ''));
+        $fpc         = trim((string)($item['fpc'] ?? ''));
+        $estado      = trim((string)($item['estado'] ?? ''));
+        $situacion   = trim((string)($item['situacion'] ?? ''));
+
+        $nopacHtml       = $nopac !== '' ? h($nopac) : '&nbsp;';
+        $obacHtml        = $obac !== '' ? h($obac) : '&nbsp;';
+        $historialHtml   = $historial !== '' ? nl2br(h($historial)) : '&nbsp;';
+        $descripcionHtml = $descripcion !== '' ? nl2br(h($descripcion)) : '&nbsp;';
+        $ffHtml          = $ff !== '' ? h($ff) : '&nbsp;';
+        $tpHtml          = $tp !== '' ? h($tp) : '&nbsp;';
+        $fpcHtml         = $fpc !== '' ? h($fpc) : '&nbsp;';
+        $estadoHtml      = $estado !== '' ? h($estado) : '&nbsp;';
+        $situacionHtml   = $situacion !== '' ? nl2br(h($situacion)) : '&nbsp;';
+
+        $html .= '
+        <tr>
+            <td width="5%" style="text-align:center; vertical-align:top;">' . $n++ . '</td>
+            <td width="7%" style="text-align:center; vertical-align:top;">' . $nopacHtml . '</td>
+            <td width="6%" style="text-align:center; vertical-align:top;">' . $obacHtml . '</td>
+            <td width="18%" style="text-align:left; vertical-align:top;">' . $historialHtml . '</td>
+            <td width="24%" style="text-align:left; vertical-align:top;">' . $descripcionHtml . '</td>
+            <td width="5%" style="text-align:center; vertical-align:top;">' . $ffHtml . '</td>
+            <td width="5%" style="text-align:center; vertical-align:top;">' . $tpHtml . '</td>
+            <td width="9%" style="text-align:right; vertical-align:top;">' . fmtMoney($item['estimado'] ?? 0) . '</td>
+            <td width="6%" style="text-align:center; vertical-align:top;">' . $fpcHtml . '</td>
+            <td width="7%" style="text-align:center; vertical-align:top;">' . $estadoHtml . '</td>
+            <td width="8%" style="text-align:left; vertical-align:top;">' . $situacionHtml . '</td>
+        </tr>
+        ';
     }
 
     if (empty($items)) {
@@ -403,7 +420,7 @@ foreach ($fases as $fase) {
         }
 
         $htmlBloque = renderDetalleBloque($fase, $tipo, $anio, $items);
-        $pdf->writeHTML($htmlBloque, true, false, true, false, '');
+        $pdf->writeHTML($htmlBloque, true, false, false, false, '');
         $pdf->Ln(3);
     }
 }
