@@ -243,10 +243,11 @@ function detailWidths(): array
 {
     return [
         'n'       => 4.0,
+        'pn'      => 5.0,
         'exp'     => 6.0,
         'obac'    => 5.0,
         'hist'    => 16.0,
-        'desc'    => 27.0,
+        'desc'    => 24.0,
         'ff'      => 4.0,
         'tp'      => 5.0,
         'est'     => 10.0,
@@ -280,6 +281,7 @@ function renderDetalleHeadHtml(): string
         <thead>
             <tr class="detail-head">
                 <th width="' . $w['n'] . '%">N° PROC</th>
+                <th width="' . $w['pn'] . '%">P/NP</th>
                 <th width="' . $w['exp'] . '%">EXP. PAC</th>
                 <th width="' . $w['obac'] . '%">OBAC</th>
                 <th width="' . $w['hist'] . '%">HISTORIAL</th>
@@ -306,6 +308,7 @@ function renderDetalleRowHtml(array $item, int $n, bool $even = false): string
         <tbody>
             <tr class="' . $cls . '">
                 <td width="' . $w['n'] . '%" class="center">' . $n . '</td>
+                <td width="' . $w['pn'] . '%" class="center">' . txt($item['pn'] ?? '') . '</td>
                 <td width="' . $w['exp'] . '%" class="center">' . txt($item['nopac'] ?? '') . '</td>
                 <td width="' . $w['obac'] . '%" class="center">' . txt($item['obac'] ?? '') . '</td>
                 <td width="' . $w['hist'] . '%" class="left">' . txtMulti($item['historial'] ?? '') . '</td>
@@ -328,7 +331,7 @@ function renderDetalleEmptyHtml(): string
     <table class="detail-table" width="100%">
         <tbody>
             <tr class="detail-empty">
-                <td colspan="11">Sin registros</td>
+                <td colspan="12">Sin registros</td>
             </tr>
         </tbody>
     </table>
@@ -486,10 +489,11 @@ function renderDetalleBloque(string $fase, string $tipo, int $anio, array $items
     // Se le da MÁS ancho a TP, ESTADO y SITUACIÓN
     // y se compacta un poco HISTORIAL / DESCRIPCIÓN
     $wN        = 4.0;
+    $wPn       = 5.0;
     $wExp      = 6.5;
     $wObac     = 5.0;
     $wHist     = 17.0;
-    $wDesc     = 24.5;
+    $wDesc     = 22.0;
     $wFf       = 4.0;
     $wTp       = 8.5;
     $wEst      = 9.5;
@@ -512,6 +516,7 @@ function renderDetalleBloque(string $fase, string $tipo, int $anio, array $items
         <thead>
             <tr class="detail-head">
                 <th width="' . $wN . '%">N° PROC</th>
+                <th width="' . $wPn . '%">P/NP</th>
                 <th width="' . $wExp . '%">EXP. PAC</th>
                 <th width="' . $wObac . '%">OBAC</th>
                 <th width="' . $wHist . '%">HISTORIAL</th>
@@ -550,6 +555,7 @@ function renderDetalleBloque(string $fase, string $tipo, int $anio, array $items
             $html .= '
             <tr class="' . $cls . '">
                 <td width="' . $wN . '%" class="center">' . $n++ . '</td>
+                <td width="' . $wPn . '%" class="center">' . txt($item['pn'] ?? '') . '</td>
                 <td width="' . $wExp . '%" class="center">' . txt($item['nopac'] ?? '') . '</td>
                 <td width="' . $wObac . '%" class="center">' . txt($item['obac'] ?? '') . '</td>
                 <td width="' . $wHist . '%" class="left">' . txtMulti($item['historial'] ?? '') . '</td>
