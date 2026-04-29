@@ -505,41 +505,45 @@ class MdPacAdmin
         return $st->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // En Modelo/MdPacAdmin.php
+
     public static function obtenerResumenSituacion(?int $anio = null, int $ejecucion = 4): array
     {
         $db = db();
         $hoy = date('Y-m-d');
 
+        // PRIMERO: Obtener todos los PACs con sus datos básicos
         $sql = "
-        SELECT
-            p.id,
-            p.nopac,
-            p.pn,
-            p.descripcion,
-            p.estimado,
-            p.mesconvoca,
-            p.acta_inclu,
-            p.inversiones,
+    SELECT
+        p.id,
+        p.nopac,
+        p.pn,
+        p.descripcion,
+        p.estimado,
+        p.mesconvoca,
+        p.acta_inclu,
+        p.inversiones,
+        p.estado AS estado_id,
 
-            COALESCE(ob.nombre, '') AS obac_nombre,
-            COALESCE(md.nombre, '') AS modalidad_nombre,
-            COALESCE(es.nombre, '') AS estado_nombre,
-            COALESCE(fu.nombre, '') AS fuente_nombre,
-            COALESCE(se.nombre, '') AS seleccion_nombre,
+        COALESCE(ob.nombre, '') AS obac_nombre,
+        COALESCE(md.nombre, '') AS modalidad_nombre,
+        COALESCE(es.nombre, '') AS estado_nombre,
+        COALESCE(fu.nombre, '') AS fuente_nombre,
+        COALESCE(se.nombre, '') AS seleccion_nombre,
 
-            COUNT(DISTINCT pr.id) AS total_procesos
+        COUNT(DISTINCT pr.id) AS total_procesos
 
-        FROM pac p
-        LEFT JOIN entidad ob     ON ob.id = p.obac
-        LEFT JOIN modalidad md   ON md.id = p.modalidad
-        LEFT JOIN estado es      ON es.id = p.estado
-        LEFT JOIN fuente fu      ON fu.id = p.fuente
-        LEFT JOIN seleccion se   ON se.id = p.seleccion
-        LEFT JOIN proceso_pac pp ON pp.pac_id = p.id
-        LEFT JOIN procesos pr    ON pr.id = pp.proceso_id
+    FROM pac p
+    LEFT JOIN entidad ob     ON ob.id = p.obac
+    LEFT JOIN modalidad md   ON md.id = p.modalidad
+    LEFT JOIN estado es      ON es.id = p.estado
+    LEFT JOIN fuente fu      ON fu.id = p.fuente
+    LEFT JOIN seleccion se   ON se.id = p.seleccion
+    LEFT JOIN proceso_pac pp ON pp.pac_id = p.id
+    LEFT JOIN procesos pr    ON pr.id = pp.proceso_id
 
-        WHERE 1=1
-        ";
+    WHERE 1=1
+    ";
 
         $params = [];
 
@@ -556,23 +560,24 @@ class MdPacAdmin
         $sql .= " AND (p.modalidad IS NULL OR p.modalidad <> 4)";
 
         $sql .= "
-        GROUP BY
-            p.id,
-            p.nopac,
-            p.pn,
-            p.descripcion,
-            p.estimado,
-            p.mesconvoca,
-            p.acta_inclu,
-            p.inversiones,
-            ob.nombre,
-            md.nombre,
-            es.nombre,
-            fu.nombre,
-            se.nombre
-        ORDER BY
-            p.id ASC
-        ";
+    GROUP BY
+        p.id,
+        p.nopac,
+        p.pn,
+        p.descripcion,
+        p.estimado,
+        p.mesconvoca,
+        p.acta_inclu,
+        p.inversiones,
+        p.estado,
+        ob.nombre,
+        md.nombre,
+        es.nombre,
+        fu.nombre,
+        se.nombre
+    ORDER BY
+        p.id ASC
+    ";
 
         $st = $db->prepare($sql);
         $st->execute($params);
@@ -583,6 +588,7 @@ class MdPacAdmin
             $rows
         )));
 
+        // SEGUNDO: Obtener TODAS las actividades de estos PACs
         $actividadesPorPac = [];
 
         if (!empty($pacIds)) {
@@ -595,7 +601,8 @@ class MdPacAdmin
             ap.fecha,
             COALESCE(ap.comentario, '') AS comentario,
             COALESCE(ta.nombre, '') AS tipo_nombre,
-            COALESCE(ta.estado, '') AS tipo_estado
+            COALESCE(ta.estado, '') AS tipo_estado,
+            ta.id AS tipo_actividad_id
         FROM actividades_pac ap
         LEFT JOIN tipos_actividad ta
             ON ta.id = ap.tipo_actividad_id
@@ -621,6 +628,7 @@ class MdPacAdmin
             }
         }
 
+        // TERCERO: Para cada PAC, determinar la fase basada en la actividad más reciente
         $detalle = [];
         $subtotales = [];
         $totales = [
@@ -648,8 +656,43 @@ class MdPacAdmin
 
         foreach ($rows as $r) {
             $pacId = (int)($r['id'] ?? 0);
-            $estado = (string)($r['estado_nombre'] ?? '');
-            $fase = self::normalizarFaseResumen($estado);
+
+            // OBTENER FASE DESDE LA ACTIVIDAD MÁS RECIENTE
+            $actividadesPac = $actividadesPorPac[$pacId] ?? [];
+
+            // Encontrar la actividad más reciente con fecha <= hoy
+            $actividadReciente = null;
+            $actividadRecienteFecha = null;
+            $actividadRecienteId = 0;
+
+            foreach ($actividadesPac as $act) {
+                $fechaAct = trim((string)($act['fecha'] ?? ''));
+                if ($fechaAct !== '' && $fechaAct <= $hoy) {
+                    $aid = (int)($act['id'] ?? 0);
+                    if (
+                        $actividadReciente === null ||
+                        $fechaAct > $actividadRecienteFecha ||
+                        ($fechaAct === $actividadRecienteFecha && $aid > $actividadRecienteId)
+                    ) {
+                        $actividadReciente = $act;
+                        $actividadRecienteFecha = $fechaAct;
+                        $actividadRecienteId = $aid;
+                    }
+                }
+            }
+
+            // Determinar la fase basada en la actividad más reciente
+            $fase = null;
+            if ($actividadReciente !== null) {
+                $tipoNombre = trim((string)($actividadReciente['tipo_nombre'] ?? ''));
+                $fase = self::normalizarFasePorActividad($tipoNombre);
+            }
+
+            // Si no hay actividad reciente, usar el estado del PAC como fallback
+            if ($fase === null) {
+                $estadoNombre = (string)($r['estado_nombre'] ?? '');
+                $fase = self::normalizarFasePorEstado($estadoNombre);
+            }
 
             if ($fase === null) {
                 continue;
@@ -720,27 +763,40 @@ class MdPacAdmin
 
             $valorObac[$obac] += $estimado;
 
-            $actividadesPac = $actividadesPorPac[$pacId] ?? [];
-
+            // CONSTRUIR HISTORIAL Y SITUACIÓN
             $historialPartes = [];
 
-            // ACTA (solo si existe)
             $acta = trim((string)($r['acta_inclu'] ?? ''));
             if ($acta !== '') {
                 $historialPartes[] = 'Acta ' . $acta . '.';
             }
 
-            // INVERSION (solo si existe)
             $inv = trim((string)($r['inversiones'] ?? ''));
             if ($inv !== '') {
                 $historialPartes[] = 'Inversion: ' . $inv . '.';
             }
-            $situacion = '';
 
+            $situacion = '';
             $actividadVigente = null;
             $actividadVigenteFecha = null;
             $actividadVigenteId = 0;
 
+            // Reutilizamos la actividad reciente que ya encontramos
+            if ($actividadReciente !== null) {
+                $tipoNombre = trim((string)($actividadReciente['tipo_nombre'] ?? ''));
+                $comentario = trim((string)($actividadReciente['comentario'] ?? ''));
+                $fecha = trim((string)($actividadReciente['fecha'] ?? ''));
+
+                $situacion = $tipoNombre;
+                if ($comentario !== '') {
+                    $situacion .= ($situacion !== '' ? ' ' : '') . $comentario;
+                }
+                if ($fecha !== '') {
+                    $situacion .= ($situacion !== '' ? ' DEL ' : '') . self::formatearFechaReporte($fecha);
+                }
+            }
+
+            // Construir historial completo con todas las actividades
             foreach ($actividadesPac as $a) {
                 $fecha = trim((string)($a['fecha'] ?? ''));
                 $tipoNombre = trim((string)($a['tipo_nombre'] ?? ''));
@@ -760,37 +816,8 @@ class MdPacAdmin
                 if ($textoHistorial !== '') {
                     $historialPartes[] = $textoHistorial . '.';
                 }
-
-                if ($fecha !== '' && $fecha <= $hoy) {
-                    $aid = (int)($a['id'] ?? 0);
-
-                    if (
-                        $actividadVigente === null ||
-                        $fecha > $actividadVigenteFecha ||
-                        ($fecha === $actividadVigenteFecha && $aid > $actividadVigenteId)
-                    ) {
-                        $actividadVigente = $a;
-                        $actividadVigenteFecha = $fecha;
-                        $actividadVigenteId = $aid;
-                    }
-                }
             }
 
-            if ($actividadVigente !== null) {
-                $tipoNombre = trim((string)($actividadVigente['tipo_nombre'] ?? ''));
-                $comentario = trim((string)($actividadVigente['comentario'] ?? ''));
-                $fecha = trim((string)($actividadVigente['fecha'] ?? ''));
-
-                $situacion = $tipoNombre;
-                if ($comentario !== '') {
-                    $situacion .= ($situacion !== '' ? ' ' : '') . $comentario;
-                }
-                if ($fecha !== '') {
-                    $situacion .= ($situacion !== '' ? ' DEL ' : '') . self::formatearFechaReporte($fecha);
-                }
-            }
-
-            // Mantener las hojas dinámicas exactamente como las espera tu Excel/PDF
             $tipoDetalle = self::clasificarTipoDetalleResumen((string)($r['modalidad_nombre'] ?? ''));
 
             if (!isset($detallePlano[$fase][$tipoDetalle])) {
@@ -805,7 +832,7 @@ class MdPacAdmin
                 'descripcion' => (string)($r['descripcion'] ?? ''),
                 'estimado'    => $estimado,
                 'fpc'         => (string)($r['mesconvoca'] ?? ''),
-                'estado'      => $estado,
+                'estado'      => $situacion, // Usar la situación real, no el estado estático
                 'ff'          => (string)($r['fuente_nombre'] ?? ''),
                 'tp'          => self::abreviarSeleccionReporte((string)($r['seleccion_nombre'] ?? '')),
                 'situacion'   => $situacion,
@@ -825,6 +852,130 @@ class MdPacAdmin
             'valor_estimado_obac'  => $valorObac,
             'detalle_plano'        => $detallePlano,
         ];
+    }
+
+    /**
+     * Normaliza la fase basada en el nombre del tipo de actividad (más preciso)
+     */
+    private static function normalizarFasePorActividad(string $tipoActividadNombre): ?string
+    {
+        $txt = mb_strtoupper(trim($tipoActividadNombre), 'UTF-8');
+
+        if ($txt === '') {
+            return null;
+        }
+
+        $txt = str_replace(
+            ['Á', 'É', 'Í', 'Ó', 'Ú', 'Ñ'],
+            ['A', 'E', 'I', 'O', 'U', 'N'],
+            $txt
+        );
+
+        $txt = preg_replace('/\s+/', ' ', $txt);
+        $txt = trim((string)$txt);
+
+        // FASE: NO RECEPCIONADOS
+        if (
+            strpos($txt, 'PUBLICADO') !== false ||
+            strpos($txt, 'PUBLICADA') !== false ||
+            strpos($txt, 'SOLICITADO') !== false ||
+            strpos($txt, 'SOLICITADA') !== false ||
+            strpos($txt, 'NO RECEPC') !== false ||
+            strpos($txt, 'NORECEPC') !== false
+        ) {
+            return 'NO RECEPCIONADOS';
+        }
+
+        // FASE: OBSERVADOS
+        if (
+            strpos($txt, 'OBSERVADO') !== false ||
+            strpos($txt, 'OBSERVADA') !== false ||
+            strpos($txt, 'SUBSANADO') !== false ||
+            strpos($txt, 'SUBSANADA') !== false
+        ) {
+            return 'OBSERVADOS';
+        }
+
+        // FASE: ESTUDIO DE MERCADO
+        if (
+            strpos($txt, 'ESTUDIO DE MERCADO') !== false ||
+            strpos($txt, 'ESTUDIO MERCADO') !== false
+        ) {
+            return 'ESTUDIO DE MERCADO';
+        }
+
+        // FASE: PROCESO DE COMPRAS
+        if (
+            strpos($txt, 'PROCESO DE COMPRAS') !== false ||
+            strpos($txt, 'PROCESO DE COMPRA') !== false ||
+            strpos($txt, 'CONVOCADO') !== false ||
+            strpos($txt, 'CONVOCADA') !== false ||
+            strpos($txt, 'ADJUDICADO') !== false ||
+            strpos($txt, 'ADJUDICADA') !== false ||
+            strpos($txt, 'CONSENTIDO') !== false ||
+            strpos($txt, 'CONSENTIDA') !== false ||
+            strpos($txt, 'DESIERTO') !== false ||
+            strpos($txt, 'DESIERTA') !== false
+        ) {
+            return 'PROCESO DE COMPRAS';
+        }
+
+        return null;
+    }
+
+    /**
+     * Normaliza la fase basada en el nombre del estado (fallback cuando no hay actividades)
+     */
+    private static function normalizarFasePorEstado(string $estadoNombre): ?string
+    {
+        $txt = mb_strtoupper(trim($estadoNombre), 'UTF-8');
+
+        if ($txt === '') {
+            return null;
+        }
+
+        $txt = str_replace(
+            ['Á', 'É', 'Í', 'Ó', 'Ú', 'Ñ'],
+            ['A', 'E', 'I', 'O', 'U', 'N'],
+            $txt
+        );
+
+        $txt = preg_replace('/\s+/', ' ', $txt);
+        $txt = trim((string)$txt);
+
+        // Misma lógica que antes, pero solo como fallback
+        if (
+            strpos($txt, 'PUBLICADO') !== false ||
+            strpos($txt, 'SOLICITADO') !== false
+        ) {
+            return 'NO RECEPCIONADOS';
+        }
+
+        if (
+            strpos($txt, 'OBSERVADO') !== false ||
+            strpos($txt, 'SUBSANADO') !== false
+        ) {
+            return 'OBSERVADOS';
+        }
+
+        if (
+            strpos($txt, 'ESTUDIO DE MERCADO') !== false ||
+            (strpos($txt, 'ESTUDIO') !== false && strpos($txt, 'MERCADO') !== false)
+        ) {
+            return 'ESTUDIO DE MERCADO';
+        }
+
+        if (
+            strpos($txt, 'PROCESO DE COMPRAS') !== false ||
+            strpos($txt, 'CONVOCADO') !== false ||
+            strpos($txt, 'ADJUDICADO') !== false ||
+            strpos($txt, 'CONSENTIDO') !== false ||
+            strpos($txt, 'DESIERTO') !== false
+        ) {
+            return 'PROCESO DE COMPRAS';
+        }
+
+        return null;
     }
 
     private static function clasificarTipoDetalleResumen(string $modalidadNombre): string
