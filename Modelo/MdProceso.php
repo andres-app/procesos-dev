@@ -8,20 +8,20 @@ class MdProceso
         $db = db();
 
         $sql = "
-      SELECT
-        p.id,
-        p.codigo_proceso AS proceso,
-        p.expediente,
-        p.obac,
-        p.descripcion,
-        COALESCE(ep.codigo,'') AS estado,
-        p.estimado,
-        p.anio_convocatoria,
-        p.periodo
-      FROM procesos p
-      LEFT JOIN estado ep ON ep.id = p.estado_id
-      WHERE 1=1
-    ";
+            SELECT
+                p.id,
+                p.codigo_proceso AS proceso,
+                p.expediente,
+                p.obac,
+                p.descripcion,
+                COALESCE(ep.nombre,'') AS estado,
+                p.estimado,
+                p.anio_convocatoria,
+                p.periodo
+            FROM procesos p
+            LEFT JOIN estado ep ON ep.id = p.estado_id
+            WHERE 1=1
+        ";
 
         $params = [];
 
@@ -36,18 +36,18 @@ class MdProceso
         }
 
         if (!empty($filtros['estado'])) {
-            $sql .= " AND ep.codigo = :estado";
+            $sql .= " AND ep.nombre = :estado";
             $params[':estado'] = strtoupper(trim((string)$filtros['estado']));
         }
 
         if (!empty($filtros['q'])) {
             $q = trim((string)$filtros['q']);
             $sql .= " AND (
-        p.codigo_proceso LIKE :q OR
-        p.expediente LIKE :q OR
-        p.obac LIKE :q OR
-        p.descripcion LIKE :q
-      )";
+                p.codigo_proceso LIKE :q OR
+                p.expediente LIKE :q OR
+                p.obac LIKE :q OR
+                p.descripcion LIKE :q
+            )";
             $params[':q'] = "%{$q}%";
         }
 
@@ -55,7 +55,7 @@ class MdProceso
 
         $st = $db->prepare($sql);
         $st->execute($params);
-        return $st->fetchAll();
+        return $st->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public static function obtener(int $id): ?array
@@ -63,20 +63,20 @@ class MdProceso
         $db = db();
 
         $sql = "
-    SELECT
-      p.id,
-      p.codigo_proceso AS proceso,
-      p.expediente,
-      p.obac,
-      p.descripcion,
-      COALESCE(ep.codigo,'') AS estado,
-      p.estimado,
-      p.anio_convocatoria
-    FROM procesos p
-    LEFT JOIN estado ep ON ep.id = p.estado_id
-    WHERE p.id = :id
-    LIMIT 1
-  ";
+            SELECT
+                p.id,
+                p.codigo_proceso AS proceso,
+                p.expediente,
+                p.obac,
+                p.descripcion,
+                COALESCE(ep.nombre,'') AS estado,
+                p.estimado,
+                p.anio_convocatoria
+            FROM procesos p
+            LEFT JOIN estado ep ON ep.id = p.estado_id
+            WHERE p.id = :id
+            LIMIT 1
+        ";
 
         $st = $db->prepare($sql);
         $st->execute([':id' => $id]);
