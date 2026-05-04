@@ -169,11 +169,6 @@ foreach (($tendenciaMes ?? []) as $item) {
 
     <div class="relative z-[1] flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
       <div class="max-w-3xl">
-        <div class="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 backdrop-blur">
-          <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
-          Panel gerencial
-        </div>
-
         <h1 class="mt-4 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
           Dashboard Principal
         </h1>
@@ -440,34 +435,6 @@ foreach (($tendenciaMes ?? []) as $item) {
       </div>
       <div class="premium-chart-wrap premium-chart-wrap-donut">
         <canvas id="chartModalidad"></canvas>
-      </div>
-    </section>
-
-    <section class="premium-chart-card xl:col-span-2">
-      <div class="premium-chart-head">
-        <div>
-          <div class="premium-kicker">Visual ejecutivo</div>
-          <h2 class="premium-title">Tendencia mensual</h2>
-          <p class="premium-subtitle">Comportamiento del monto estimado por mes de convocatoria.</p>
-        </div>
-        <div class="premium-chip premium-chip-slate">Barras</div>
-      </div>
-      <div class="premium-chart-wrap premium-chart-wrap-bar">
-        <canvas id="chartMeses"></canvas>
-      </div>
-    </section>
-
-    <section class="premium-chart-card">
-      <div class="premium-chart-head">
-        <div>
-          <div class="premium-kicker">Visual ejecutivo</div>
-          <h2 class="premium-title">OBAC por monto</h2>
-          <p class="premium-subtitle">Concentración presupuestal por órgano.</p>
-        </div>
-        <div class="premium-chip premium-chip-blue">Ranking</div>
-      </div>
-      <div class="premium-chart-wrap premium-chart-wrap-bar">
-        <canvas id="chartObac"></canvas>
       </div>
     </section>
   </section>
