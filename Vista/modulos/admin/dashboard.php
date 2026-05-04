@@ -174,72 +174,39 @@ foreach (($tendenciaMes ?? []) as $item) {
         </h1>
 
         <div class="mt-5 flex flex-wrap items-center gap-2">
-          <a href="<?= htmlspecialchars(buildDashboardFilterUrl(['ejecucion' => 4]), ENT_QUOTES, 'UTF-8') ?>" class="inline-flex items-center rounded-full border px-3.5 py-2 text-xs font-semibold transition <?= $ejecucionActual === '4' ? 'border-rose-300 bg-rose-600 text-white shadow-[0_8px_20px_rgba(225,29,72,.22)]' : 'border-slate-200 bg-white/85 text-slate-700 hover:border-rose-200 hover:text-rose-700' ?>"> ACFFAA </a>
-          <a href="<?= htmlspecialchars(buildDashboardFilterUrl(['ejecucion' => 0]), ENT_QUOTES, 'UTF-8') ?>" class="inline-flex items-center rounded-full border px-3.5 py-2 text-xs font-semibold transition <?= $ejecucionActual === '0' ? 'border-slate-300 bg-slate-900 text-white shadow-[0_8px_20px_rgba(15,23,42,.20)]' : 'border-slate-200 bg-white/85 text-slate-700 hover:border-slate-300 hover:text-slate-900' ?>"> Todos </a>
+
+          <!-- Chips -->
+          <a href="<?= htmlspecialchars(buildDashboardFilterUrl(['ejecucion' => 4]), ENT_QUOTES, 'UTF-8') ?>"
+            class="inline-flex items-center rounded-full border px-3.5 py-2 text-xs font-semibold transition <?= $ejecucionActual === '4' ? 'border-rose-300 bg-rose-600 text-white shadow-[0_8px_20px_rgba(225,29,72,.22)]' : 'border-slate-200 bg-white/85 text-slate-700 hover:border-rose-200 hover:text-rose-700' ?>">
+            ACFFAA
+          </a>
+
+          <a href="<?= htmlspecialchars(buildDashboardFilterUrl(['ejecucion' => 0]), ENT_QUOTES, 'UTF-8') ?>"
+            class="inline-flex items-center rounded-full border px-3.5 py-2 text-xs font-semibold transition <?= $ejecucionActual === '0' ? 'border-slate-300 bg-slate-900 text-white shadow-[0_8px_20px_rgba(15,23,42,.20)]' : 'border-slate-200 bg-white/85 text-slate-700 hover:border-slate-300 hover:text-slate-900' ?>">
+            Todos
+          </a>
+
+          <!-- SELECT AÑO (nuevo) -->
+          <form method="GET">
+            <input type="hidden" name="ejecucion" value="<?= htmlspecialchars($ejecucionActual) ?>">
+
+            <select name="periodo"
+              onchange="this.form.submit()"
+              class="ml-2 h-10 rounded-full border border-slate-200 bg-white px-4 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-200">
+
+              <?php foreach (($periodos ?? []) as $p): ?>
+                <option value="<?= (int)$p['id'] ?>"
+                  <?= ((string)($filtros['periodo'] ?? '') === (string)$p['id']) ? 'selected' : '' ?>>
+                  <?= htmlspecialchars($p['nombre'], ENT_QUOTES, 'UTF-8') ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+          </form>
+
         </div>
       </div>
     </div>
   </section>
-
-  <!-- FILTROS -->
-  <section class="section-card">
-    <div class="section-head mb-5">
-      <div>
-        <div class="section-kicker">Filtros</div>
-        <h2 class="section-title">Control de vista</h2>
-      </div>
-    </div>
-
-    <form method="GET" class="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1fr_1fr_auto]">
-      <select
-        name="periodo"
-        class="h-12 rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
-        <option value="">Periodo</option>
-        <?php foreach (($periodos ?? []) as $p): ?>
-          <option value="<?= (int)$p['id'] ?>" <?= ((string)($filtros['periodo'] ?? '') === (string)$p['id']) ? 'selected' : '' ?>>
-            <?= htmlspecialchars($p['nombre'], ENT_QUOTES, 'UTF-8') ?>
-          </option>
-        <?php endforeach; ?>
-      </select>
-
-      <select
-        name="obac"
-        class="h-12 rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
-        <option value="">OBAC</option>
-        <?php foreach (($obacs ?? []) as $o): ?>
-          <option value="<?= (int)$o['id'] ?>" <?= ((string)($_GET['obac'] ?? '') === (string)$o['id']) ? 'selected' : '' ?>>
-            <?= htmlspecialchars($o['nombre'], ENT_QUOTES, 'UTF-8') ?>
-          </option>
-        <?php endforeach; ?>
-      </select>
-
-      <select
-        name="estado"
-        class="h-12 rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200">
-        <option value="">Estado</option>
-        <?php foreach (($estados ?? []) as $e): ?>
-          <option value="<?= (int)$e['id'] ?>" <?= ((string)($_GET['estado'] ?? '') === (string)$e['id']) ? 'selected' : '' ?>>
-            <?= htmlspecialchars($e['nombre'], ENT_QUOTES, 'UTF-8') ?>
-          </option>
-        <?php endforeach; ?>
-      </select>
-
-      <div class="flex gap-2">
-        <button
-          type="submit"
-          class="h-12 rounded-2xl bg-slate-900 px-5 text-sm font-semibold text-white transition hover:bg-slate-800">
-          Aplicar
-        </button>
-
-        <a
-          href="<?= BASE_URL ?>/admin/dashboard"
-          class="inline-flex h-12 items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
-          Limpiar
-        </a>
-      </div>
-    </form>
-  </section>
-
   <!-- KPI -->
   <section class="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-4">
     <article class="metric-card metric-card--dark">
@@ -264,133 +231,6 @@ foreach (($tendenciaMes ?? []) as $item) {
       <div class="metric-card__label">PAC con inversión</div>
       <div class="metric-card__value"><?= (int)($kpis['total_con_inversion'] ?? 0) ?></div>
       <div class="metric-card__sub">Registros con inversiones</div>
-    </article>
-  </section>
-
-  <!-- TABLAS RESUMEN -->
-  <section class="grid grid-cols-1 gap-5 xl:grid-cols-2">
-    <article class="section-card overflow-hidden">
-      <div class="section-head section-head--border">
-        <div>
-          <div class="section-kicker">Resumen ejecutivo</div>
-          <h2 class="section-title">Listas generales de compras</h2>
-          <p class="section-subtitle">Vista consolidada dinámica de tipo de compra.</p>
-        </div>
-      </div>
-
-      <div class="overflow-x-auto">
-        <table class="premium-table premium-table--clean">
-          <thead>
-            <tr>
-              <th>Listas</th>
-              <th class="text-center">Individuales</th>
-              <th class="text-center">Corporativos</th>
-              <th class="text-center">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php foreach (($resumenListas ?? []) as $row): ?>
-              <?php $isTotal = !empty($row['is_total']); ?>
-              <tr class="<?= $isTotal ? 'is-total' : '' ?>">
-                <td>
-                  <div class="table-row-title">
-                    <?= htmlspecialchars((string)($row['lista'] ?? '-'), ENT_QUOTES, 'UTF-8') ?>
-                  </div>
-                </td>
-
-                <td class="text-center">
-                  <div class="table-row-number">
-                    <?= (int)($row['individuales_cantidad'] ?? 0) ?>
-                  </div>
-                  <div class="table-row-money">
-                    <?= fmt_money_dashboard((float)($row['individuales_monto'] ?? 0)) ?>
-                  </div>
-                </td>
-
-                <td class="text-center">
-                  <div class="table-row-number">
-                    <?= (int)($row['corporativos_cantidad'] ?? 0) ?>
-                  </div>
-                  <div class="table-row-money">
-                    <?= fmt_money_dashboard((float)($row['corporativos_monto'] ?? 0)) ?>
-                  </div>
-                </td>
-
-                <td class="text-center">
-                  <div class="table-row-number table-row-number--total">
-                    <?= (int)($row['total_cantidad'] ?? 0) ?>
-                  </div>
-                  <div class="table-row-money table-row-money--total">
-                    <?= fmt_money_dashboard((float)($row['total_monto'] ?? 0)) ?>
-                  </div>
-                </td>
-              </tr>
-            <?php endforeach; ?>
-          </tbody>
-        </table>
-      </div>
-    </article>
-
-    <article class="section-card overflow-hidden">
-      <div class="section-head section-head--border">
-        <div>
-          <div class="section-kicker">Resumen ejecutivo</div>
-          <h2 class="section-title">Tipo de compra por mercado</h2>
-          <p class="section-subtitle">Distribución dinámica entre individuales y corporativos por mercado.</p>
-        </div>
-      </div>
-
-      <div class="overflow-x-auto">
-        <table class="premium-table premium-table--clean">
-          <thead>
-            <tr>
-              <th>Mercado</th>
-              <th class="text-center">Individuales</th>
-              <th class="text-center">Corporativos</th>
-              <th class="text-center">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php foreach (($resumenMercadoDetalle ?? []) as $row): ?>
-              <?php $isTotal = !empty($row['is_total']); ?>
-              <tr class="<?= $isTotal ? 'is-total' : '' ?>">
-                <td>
-                  <div class="table-row-title">
-                    <?= htmlspecialchars((string)($row['mercado'] ?? '-'), ENT_QUOTES, 'UTF-8') ?>
-                  </div>
-                </td>
-
-                <td class="text-center">
-                  <div class="table-row-number">
-                    <?= (int)($row['individuales_cantidad'] ?? 0) ?>
-                  </div>
-                  <div class="table-row-money">
-                    <?= fmt_money_dashboard((float)($row['individuales_monto'] ?? 0)) ?>
-                  </div>
-                </td>
-
-                <td class="text-center">
-                  <div class="table-row-number">
-                    <?= (int)($row['corporativos_cantidad'] ?? 0) ?>
-                  </div>
-                  <div class="table-row-money">
-                    <?= fmt_money_dashboard((float)($row['corporativos_monto'] ?? 0)) ?>
-                  </div>
-                </td>
-
-                <td class="text-center">
-                  <div class="table-row-number table-row-number--total">
-                    <?= (int)($row['total_cantidad'] ?? 0) ?>
-                  </div>
-                  <div class="table-row-money table-row-money--total">
-                    <?= fmt_money_dashboard((float)($row['total_monto'] ?? 0)) ?>
-                  </div>
-                </td>
-              </tr>
-            <?php endforeach; ?>
-          </tbody>
-        </table>
-      </div>
     </article>
   </section>
 
@@ -437,6 +277,86 @@ foreach (($tendenciaMes ?? []) as $item) {
         <canvas id="chartModalidad"></canvas>
       </div>
     </section>
+  </section>
+
+  <!-- TABLAS RESUMEN -->
+  <section class="summary-grid">
+    <?php
+    $tables = [
+      [
+        'title' => 'Listas generales de compras',
+        'subtitle' => 'Vista consolidada dinámica por tipo de compra.',
+        'label' => 'Listas',
+        'data' => $resumenListas ?? [],
+        'field' => 'lista',
+        'icon' => 'LC'
+      ],
+      [
+        'title' => 'Tipo de compra por mercado',
+        'subtitle' => 'Distribución entre individuales y corporativos por mercado.',
+        'label' => 'Mercado',
+        'data' => $resumenMercadoDetalle ?? [],
+        'field' => 'mercado',
+        'icon' => 'TM'
+      ]
+    ];
+    ?>
+
+    <?php foreach ($tables as $table): ?>
+      <article class="executive-table-card">
+        <div class="executive-table-head">
+          <div class="head-icon"><?= $table['icon'] ?></div>
+
+          <div>
+            <div class="section-kicker">Resumen ejecutivo</div>
+            <h2 class="section-title"><?= htmlspecialchars($table['title'], ENT_QUOTES, 'UTF-8') ?></h2>
+            <p class="section-subtitle"><?= htmlspecialchars($table['subtitle'], ENT_QUOTES, 'UTF-8') ?></p>
+          </div>
+        </div>
+
+        <div class="executive-table-wrap">
+          <table class="executive-table">
+            <thead>
+              <tr>
+                <th><?= htmlspecialchars($table['label'], ENT_QUOTES, 'UTF-8') ?></th>
+                <th>Individuales</th>
+                <th>Corporativos</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <?php foreach ($table['data'] as $row): ?>
+                <?php $isTotal = !empty($row['is_total']); ?>
+
+                <tr class="<?= $isTotal ? 'is-total' : '' ?>">
+                  <td>
+                    <span class="row-badge">
+                      <?= htmlspecialchars((string)($row[$table['field']] ?? '-'), ENT_QUOTES, 'UTF-8') ?>
+                    </span>
+                  </td>
+
+                  <td>
+                    <div class="metric-number"><?= (int)($row['individuales_cantidad'] ?? 0) ?></div>
+                    <div class="metric-money"><?= fmt_money_dashboard((float)($row['individuales_monto'] ?? 0)) ?></div>
+                  </td>
+
+                  <td>
+                    <div class="metric-number"><?= (int)($row['corporativos_cantidad'] ?? 0) ?></div>
+                    <div class="metric-money"><?= fmt_money_dashboard((float)($row['corporativos_monto'] ?? 0)) ?></div>
+                  </td>
+
+                  <td>
+                    <div class="metric-number metric-number-total"><?= (int)($row['total_cantidad'] ?? 0) ?></div>
+                    <div class="metric-money metric-money-total"><?= fmt_money_dashboard((float)($row['total_monto'] ?? 0)) ?></div>
+                  </td>
+                </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    <?php endforeach; ?>
   </section>
 
   <!-- PARTICIPACION -->
@@ -913,42 +833,6 @@ foreach (($tendenciaMes ?? []) as $item) {
     border-color: rgba(244, 63, 94, .12);
   }
 
-  .premium-table {
-    width: 100%;
-    min-width: 640px;
-    border-collapse: separate;
-    border-spacing: 0;
-    font-size: 14px;
-  }
-
-  .premium-table thead th {
-    padding: 14px 14px;
-    text-align: left;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: rgb(100 116 139);
-    border-bottom: 1px solid rgba(226, 232, 240, .95);
-    background: rgba(248, 250, 252, .72);
-  }
-
-  .premium-table tbody td {
-    padding: 14px;
-    color: rgb(51 65 85);
-    border-bottom: 1px solid rgba(241, 245, 249, .95);
-  }
-
-  .premium-table tbody tr:hover td {
-    background: rgba(248, 250, 252, .72);
-  }
-
-  .premium-table tbody tr.is-total td {
-    background: rgba(248, 250, 252, .92);
-    font-weight: 700;
-    color: rgb(15 23 42);
-  }
-
   .rank-card {
     border-radius: 20px;
     border: 1px solid rgba(241, 245, 249, .95);
@@ -1115,26 +999,6 @@ foreach (($tendenciaMes ?? []) as $item) {
       0 10px 24px rgba(15, 23, 42, .04);
   }
 
-  .premium-table--clean {
-    width: 100%;
-    min-width: 100%;
-    table-layout: fixed;
-  }
-
-  .premium-table--clean thead th {
-    padding: 14px 12px;
-  }
-
-  .premium-table--clean tbody td {
-    padding: 16px 12px;
-    vertical-align: middle;
-  }
-
-  .premium-table--clean tbody tr.is-total td {
-    background: rgba(248, 250, 252, .96);
-    font-weight: 700;
-  }
-
   .table-row-title {
     font-size: 14px;
     font-weight: 700;
@@ -1167,41 +1031,9 @@ foreach (($tendenciaMes ?? []) as $item) {
     font-weight: 600;
   }
 
-  /* Fila TOTAL destacada */
-  .premium-table--clean tbody tr.is-total td {
-    background: linear-gradient(180deg,
-        rgba(15, 23, 42, 0.03),
-        rgba(15, 23, 42, 0.06));
-    border-top: 1px solid rgba(148, 163, 184, 0.35);
-    font-weight: 700;
-  }
-
-  /* Refuerza el texto TOTAL */
-  .premium-table--clean tbody tr.is-total .table-row-title {
-    color: rgb(15 23 42);
-    letter-spacing: 0.02em;
-  }
-
-  /* Número total más fuerte */
-  .premium-table--clean tbody tr.is-total .table-row-number {
-    font-size: 20px;
-    font-weight: 800;
-    color: rgb(15 23 42);
-  }
-
-  /* Monto total más visible */
-  .premium-table--clean tbody tr.is-total .table-row-money {
-    font-size: 12px;
-    font-weight: 700;
-    color: rgb(30 41 59);
-  }
 
   @media (max-width: 768px) {
 
-    .premium-table--clean thead th,
-    .premium-table--clean tbody td {
-      padding: 12px 10px;
-    }
 
     .table-row-title {
       font-size: 13px;
@@ -1218,14 +1050,6 @@ foreach (($tendenciaMes ?? []) as $item) {
     .table-row-money {
       font-size: 11px;
     }
-  }
-
-  .premium-table--clean thead th {
-    text-align: center;
-  }
-
-  .premium-table--clean thead th:first-child {
-    text-align: left;
   }
 
   @media (max-width: 1024px) {
@@ -1287,6 +1111,202 @@ foreach (($tendenciaMes ?? []) as $item) {
     .section-head {
       flex-direction: column;
       align-items: flex-start;
+    }
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-top: 18px;
+  }
+
+  .executive-table-card {
+    overflow: hidden;
+    border-radius: 22px;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, .98), rgba(248, 250, 252, .96));
+    border: 1px solid rgba(148, 163, 184, .25);
+    box-shadow:
+      0 18px 40px rgba(15, 23, 42, .07),
+      inset 0 1px 0 rgba(255, 255, 255, .9);
+  }
+
+  .executive-table-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 20px 16px;
+    border-bottom: 1px solid rgba(148, 163, 184, .20);
+    background:
+      radial-gradient(circle at top left, rgba(122, 12, 25, .10), transparent 34%),
+      linear-gradient(180deg, #ffffff, #f8fafc);
+  }
+
+  .head-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 15px;
+    display: grid;
+    place-items: center;
+    color: #7A0C19;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    background: linear-gradient(180deg, #fff7f8, #f8e8eb);
+    border: 1px solid rgba(122, 12, 25, .16);
+    box-shadow: 0 10px 24px rgba(122, 12, 25, .10);
+    flex: 0 0 auto;
+  }
+
+  .section-kicker {
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+
+  .section-title {
+    color: #0f172a;
+    font-size: 19px;
+    font-weight: 800;
+    line-height: 1.1;
+    margin: 0;
+  }
+
+  .section-subtitle {
+    color: #64748b;
+    font-size: 12px;
+    margin-top: 7px;
+  }
+
+  .executive-table-wrap {
+    padding: 14px 18px 18px;
+    overflow-x: auto;
+  }
+
+  .executive-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+    font-size: 12px;
+  }
+
+  .executive-table thead th {
+    padding: 11px 10px;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    text-align: center;
+    background: #f8fafc;
+    border-top: 1px solid rgba(148, 163, 184, .22);
+    border-bottom: 1px solid rgba(148, 163, 184, .22);
+  }
+
+  .executive-table thead th:first-child {
+    text-align: left;
+    border-radius: 14px 0 0 14px;
+    border-left: 1px solid rgba(148, 163, 184, .22);
+  }
+
+  .executive-table thead th:last-child {
+    border-radius: 0 14px 14px 0;
+    border-right: 1px solid rgba(148, 163, 184, .22);
+  }
+
+  .executive-table tbody tr {
+    background: #ffffff;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, .045);
+  }
+
+  .executive-table tbody td {
+    padding: 13px 10px;
+    text-align: center;
+    vertical-align: middle;
+    border-top: 1px solid rgba(226, 232, 240, .9);
+    border-bottom: 1px solid rgba(226, 232, 240, .9);
+  }
+
+  .executive-table tbody td:first-child {
+    text-align: left;
+    border-left: 1px solid rgba(226, 232, 240, .9);
+    border-radius: 15px 0 0 15px;
+  }
+
+  .executive-table tbody td:last-child {
+    border-right: 1px solid rgba(226, 232, 240, .9);
+    border-radius: 0 15px 15px 0;
+    background: linear-gradient(180deg, #fff, #fafafa);
+  }
+
+  .row-badge {
+    display: inline-flex;
+    align-items: center;
+    min-width: 76px;
+    padding: 7px 10px;
+    border-radius: 999px;
+    color: #0f172a;
+    background: #f8fafc;
+    border: 1px solid rgba(148, 163, 184, .24);
+    font-weight: 800;
+  }
+
+  .metric-number {
+    color: #020617;
+    font-size: 18px;
+    font-weight: 850;
+    line-height: 1;
+  }
+
+  .metric-money {
+    margin-top: 7px;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .metric-number-total {
+    color: #7A0C19;
+    font-size: 19px;
+  }
+
+  .metric-money-total {
+    color: #111827;
+    font-weight: 800;
+  }
+
+  .executive-table tbody tr.is-total {
+    box-shadow: 0 12px 26px rgba(122, 12, 25, .10);
+  }
+
+  .executive-table tbody tr.is-total td {
+    background: linear-gradient(180deg, #fff8f9, #f7e8eb);
+    border-top: 1px solid rgba(122, 12, 25, .18);
+    border-bottom: 1px solid rgba(122, 12, 25, .18);
+  }
+
+  .executive-table tbody tr.is-total td:first-child {
+    border-left: 1px solid rgba(122, 12, 25, .18);
+  }
+
+  .executive-table tbody tr.is-total td:last-child {
+    border-right: 1px solid rgba(122, 12, 25, .18);
+  }
+
+  .executive-table tbody tr.is-total .row-badge {
+    color: #7A0C19;
+    background: #ffffff;
+    border-color: rgba(122, 12, 25, .22);
+  }
+
+  @media (max-width: 1180px) {
+    .summary-grid {
+      grid-template-columns: 1fr;
     }
   }
 </style>
