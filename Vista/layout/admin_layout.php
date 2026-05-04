@@ -14,6 +14,7 @@ function acls($isActive)
 }
 
 $hrefDashboard = "/public/admin/dashboard";
+$hrefDashboard2 = "/public/admin/dashboard2";
 $hrefPac       = "/public/admin/pac";
 $hrefProcesos  = "/public/admin/procesos";
 $hrefPresupuesto  = "/public/admin/presupuesto";

@@ -133,6 +133,12 @@ if ($module === 'admin') {
         exit;
     }
 
+    if ($subRoute === 'dashboard2') {
+        require_once __DIR__ . '/../Controlador/CtrDashboard2Admin.php';
+        CtrDashboard2Admin::index();
+        exit;
+    }
+
     if ($subRoute === 'actividades') {
         require_once __DIR__ . '/../Controlador/CtrProcesoAdmin.php';
         CtrProcesoAdmin::actividades();
@@ -271,6 +277,10 @@ $routes = [
 
     'dashboard' => static function (): void {
         require_file(__DIR__ . '/../Vista/modulos/dashboard.php');
+    },
+
+    'dashboard2' => static function (): void {
+        require_file(__DIR__ . '/../Vista/modulos/dashboard2.php');
     },
 
     'perfil' => static function (): void {

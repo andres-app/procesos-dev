@@ -13,6 +13,12 @@
             <span class="sb-label">Dashboard</span>
         </a>
 
+        <a href="<?= $hrefDashboard2 ?>"
+            class="flex items-center gap-3 px-3 py-2 rounded-xl <?= acls($active === 'dashboard2') ?>">
+            <span class="sb-ico w-6 text-center">⌂</span>
+            <span class="sb-label">Dashboard2</span>
+        </a>
+
         <a href="<?= $hrefPac ?>"
             class="flex items-center gap-3 px-3 py-2 rounded-xl <?= acls($active === 'pac') ?>">
             <span class="sb-ico w-6 text-center">▦</span>
