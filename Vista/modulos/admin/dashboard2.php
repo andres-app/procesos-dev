@@ -1,7 +1,15 @@
 <?php
 // Vista/modulos/admin/dashboard2.php
-$titulo = 'Dashboard 2';
-$active = 'dashboard2';
+$titulo = $titulo ?? 'Dashboard 2';
+$active = $active ?? 'dashboard2';
+
+$dashboardData = $dashboardData ?? [
+    'anio' => 2026,
+    'listas' => [],
+    'mercados' => [],
+    'obac' => [],
+];
+
 require __DIR__ . '/../../layout/admin_layout.php';
 ?>
 
@@ -96,7 +104,7 @@ require __DIR__ . '/../../layout/admin_layout.php';
 
     .d2-dashboard .year-link {
         margin-top: 8px;
-        color: rgba(255,255,255,.9);
+        color: rgba(255, 255, 255, .9);
         font-size: 11px;
         font-weight: 600;
         text-decoration: none;
@@ -367,7 +375,7 @@ require __DIR__ . '/../../layout/admin_layout.php';
         height: 230px;
         border-radius: 50%;
         background: #e5e5e5;
-        box-shadow: 0 18px 34px rgba(15,23,42,.12);
+        box-shadow: 0 18px 34px rgba(15, 23, 42, .12);
     }
 
     @media (max-width: 1180px) {
@@ -381,6 +389,7 @@ require __DIR__ . '/../../layout/admin_layout.php';
     }
 
     @media (max-width: 768px) {
+
         .d2-dashboard .top-row,
         .d2-dashboard .market-grid {
             grid-template-columns: 1fr;
@@ -404,61 +413,13 @@ require __DIR__ . '/../../layout/admin_layout.php';
 </style>
 
 <script>
-    const dashboardData = {
-        anio: 2026,
-
-        listas: [
-            {
-                codigo: "LGCSM",
-                descripcion: "De Carácter Secreto",
-                total: 0,
-                individuales: 0,
-                corporativos: 0
-            },
-            {
-                codigo: "LGCGG",
-                descripcion: "Gobierno a Gobierno",
-                total: 0,
-                individuales: 0,
-                corporativos: 0
-            },
-            {
-                codigo: "LECMNE",
-                descripcion: "Estratégicas (Nac. y Ext.)",
-                total: 47,
-                individuales: 39,
-                corporativos: 8
-            }
-        ],
-
-        mercados: [
-            {
-                nombre: "MERCADO NACIONAL",
-                individuales: 26,
-                corporativos: 8,
-                monto: 181248967.17,
-                icono: "flag"
-            },
-            {
-                nombre: "MERCADO EXTRANJERO",
-                individuales: 13,
-                corporativos: 0,
-                monto: 311727491.74,
-                icono: "globe"
-            }
-        ],
-
-        obac: [
-            { nombre: "CONIDA", valor: 3, color: "#1f8de2" },
-            { nombre: "EP", valor: 10, color: "#f7af42" },
-            { nombre: "FAP", valor: 16, color: "#10aaa8" },
-            { nombre: "MGP", valor: 16, color: "#11aaa8" },
-            { nombre: "CCFFAA", valor: 2, color: "#6472b4" }
-        ]
-    };
+    const dashboardData = <?= json_encode(
+                                $dashboardData,
+                                JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_NUMERIC_CHECK
+                            ); ?>;
 
     function formatoSoles(valor) {
-        return "S/. " + Number(valor).toLocaleString("es-PE", {
+        return "S/. " + Number(valor || 0).toLocaleString("es-PE", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
@@ -488,6 +449,11 @@ require __DIR__ . '/../../layout/admin_layout.php';
     }
 
     function renderDashboard(data) {
+        data = data || {};
+        data.listas = Array.isArray(data.listas) ? data.listas : [];
+        data.mercados = Array.isArray(data.mercados) ? data.mercados : [];
+        data.obac = Array.isArray(data.obac) ? data.obac : [];
+
         renderTopRow(data);
         renderMercados(data.mercados);
         renderTablaObac(data.obac);
@@ -497,29 +463,41 @@ require __DIR__ . '/../../layout/admin_layout.php';
 
     function renderTopRow(data) {
         const topRow = document.getElementById("topRow");
-        const totalPac = data.listas.reduce((sum, item) => sum + item.total, 0);
-        const totalMonto = data.mercados.reduce((sum, item) => sum + item.monto, 0);
+        const listas = data.listas || [];
+        const mercados = data.mercados || [];
+
+        const totalPac = Number(data.total_pacs || 0);
+        const totalMonto = mercados.reduce((sum, item) => {
+            if ((item.nombre || '').toUpperCase() === 'TOTAL') {
+                return sum;
+            }
+
+            return sum + Number(item.monto || 0);
+        }, 0);
 
         let html = `
             <article class="year-card">
                 <div class="year-title">PLAN ANUAL DE CONTRAT.</div>
                 <div class="year-subtitle">Año Fiscal</div>
-                <div class="year-number">${data.anio}</div>
+                <div class="year-number">${data.anio || 2026}</div>
                 <a href="#" class="year-link">▣ Seleccionar año</a>
             </article>
         `;
 
-        data.listas.forEach(item => {
-            const porcentaje = totalPac > 0 ? ((item.total / totalPac) * 100).toFixed(0) : 0;
+        listas.forEach(item => {
+            const total = Number(item.total || 0);
+            const individuales = Number(item.individuales || 0);
+            const corporativos = Number(item.corporativos || 0);
+            const porcentaje = totalPac > 0 ? ((total / totalPac) * 100).toFixed(0) : 0;
 
             html += `
                 <article class="stat-card">
-                    <div class="stat-title">${item.codigo}</div>
-                    <div class="stat-desc">${item.descripcion}</div>
-                    <div class="stat-number">${item.total}</div>
+                    <div class="stat-title">${item.codigo || '-'}</div>
+                    <div class="stat-desc">${item.descripcion || ''}</div>
+                    <div class="stat-number">${total}</div>
                     <div class="stat-line">
-                        <strong>${item.individuales}</strong> Individuales
-                        <strong>${item.corporativos}</strong> Corporativos
+                        <strong>${individuales}</strong> Individuales
+                        <strong>${corporativos}</strong> Corporativos
                     </div>
                     <div class="stat-line-2">
                         <strong>${porcentaje}</strong> % del total de PAC's
@@ -544,22 +522,37 @@ require __DIR__ . '/../../layout/admin_layout.php';
         const marketGrid = document.getElementById("marketGrid");
         marketGrid.innerHTML = "";
 
+        if (!mercados.length) {
+            marketGrid.innerHTML = `
+                <div class="market-card">
+                    <div class="market-info">
+                        <div class="market-title">SIN REGISTROS</div>
+                        <div class="market-detail">No hay información disponible</div>
+                    </div>
+                    <div class="market-number">0</div>
+                </div>
+            `;
+            return;
+        }
+
         mercados.forEach(item => {
-            const total = item.individuales + item.corporativos;
+            const individuales = Number(item.individuales || 0);
+            const corporativos = Number(item.corporativos || 0);
+            const total = individuales + corporativos;
 
             marketGrid.innerHTML += `
                 <div class="market-card">
                     <div class="market-icon">
-                        ${iconoMercado(item.icono)}
+                        ${iconoMercado(item.icono || 'flag')}
                     </div>
 
                     <div class="market-info">
-                        <div class="market-title">${item.nombre}</div>
+                        <div class="market-title">${item.nombre || 'SIN MERCADO'}</div>
                         <div class="market-detail">
-                            <strong>${item.individuales}</strong> Individuales&nbsp;&nbsp;
-                            <strong>${item.corporativos}</strong> Corporativos
+                            <strong>${individuales}</strong> Individuales&nbsp;&nbsp;
+                            <strong>${corporativos}</strong> Corporativos
                         </div>
-                        <div class="market-amount">${formatoSoles(item.monto)}</div>
+                        <div class="market-amount">${formatoSoles(item.monto || 0)}</div>
                     </div>
 
                     <div class="market-number">${total}</div>
@@ -570,15 +563,29 @@ require __DIR__ . '/../../layout/admin_layout.php';
 
     function renderTablaObac(obac) {
         const tbody = document.getElementById("summaryTable");
-        const total = obac.reduce((sum, item) => sum + item.valor, 0);
+        const total = obac.reduce((sum, item) => sum + Number(item.valor || 0), 0);
 
         tbody.innerHTML = "";
+
+        if (!obac.length) {
+            tbody.innerHTML = `
+                <tr>
+                    <td>SIN REGISTROS</td>
+                    <td>0</td>
+                </tr>
+                <tr class="total">
+                    <td>TOTAL</td>
+                    <td>0</td>
+                </tr>
+            `;
+            return;
+        }
 
         obac.forEach(item => {
             tbody.innerHTML += `
                 <tr>
-                    <td>${item.nombre}</td>
-                    <td>${item.valor}</td>
+                    <td>${item.nombre || '-'}</td>
+                    <td>${Number(item.valor || 0)}</td>
                 </tr>
             `;
         });
@@ -598,8 +605,8 @@ require __DIR__ . '/../../layout/admin_layout.php';
         obac.forEach(item => {
             legend.innerHTML += `
                 <div class="legend-item">
-                    <span class="legend-color" style="background:${item.color}"></span>
-                    ${item.nombre}
+                    <span class="legend-color" style="background:${item.color || '#94a3b8'}"></span>
+                    ${item.nombre || '-'}
                 </div>
             `;
         });
@@ -607,7 +614,7 @@ require __DIR__ . '/../../layout/admin_layout.php';
 
     function renderPieObac(obac) {
         const pie = document.getElementById("pieObac");
-        const total = obac.reduce((sum, item) => sum + item.valor, 0);
+        const total = obac.reduce((sum, item) => sum + Number(item.valor || 0), 0);
 
         if (!pie || total === 0) {
             pie.style.background = "#e5e5e5";
@@ -617,11 +624,12 @@ require __DIR__ . '/../../layout/admin_layout.php';
         let acumulado = 0;
 
         const partes = obac.map(item => {
+            const valor = Number(item.valor || 0);
             const inicio = acumulado;
-            const grados = (item.valor / total) * 360;
+            const grados = (valor / total) * 360;
             acumulado += grados;
 
-            return `${item.color} ${inicio.toFixed(2)}deg ${acumulado.toFixed(2)}deg`;
+            return `${item.color || '#94a3b8'} ${inicio.toFixed(2)}deg ${acumulado.toFixed(2)}deg`;
         });
 
         pie.style.background = `conic-gradient(from -90deg, ${partes.join(", ")})`;
