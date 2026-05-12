@@ -282,6 +282,92 @@ foreach (($tendenciaMes ?? []) as $item) {
   <!-- TABLAS RESUMEN -->
   <section class="summary-grid">
     <?php
+    $normalizarResumenListas = function (array $data): array {
+      $listasBase = [
+        'LGCSM'  => 'LGCSM',
+        'LGCGG'  => 'LGCGG',
+        'LECMNE' => 'LECMNE',
+      ];
+
+      $aliases = [
+        'LCMN'  => 'LECMNE',
+        'LCME'  => 'LECMNE',
+        'LECMN' => 'LECMNE',
+      ];
+
+      $camposNumericos = [
+        'individuales_cantidad',
+        'individuales_monto',
+        'corporativos_cantidad',
+        'corporativos_monto',
+        'total_cantidad',
+        'total_monto',
+      ];
+
+      $filaVacia = [
+        'individuales_cantidad' => 0,
+        'individuales_monto' => 0,
+        'corporativos_cantidad' => 0,
+        'corporativos_monto' => 0,
+        'total_cantidad' => 0,
+        'total_monto' => 0,
+      ];
+
+      $map = [];
+
+      foreach ($listasBase as $key => $label) {
+        $map[$key] = array_merge($filaVacia, [
+          'lista' => $label
+        ]);
+      }
+
+      foreach ($data as $row) {
+        if (!empty($row['is_total'])) {
+          continue;
+        }
+
+        $listaOriginal = trim((string)($row['lista'] ?? ''));
+
+        if ($listaOriginal === '') {
+          continue;
+        }
+
+        $key = mb_strtoupper($listaOriginal, 'UTF-8');
+        $key = $aliases[$key] ?? $key;
+
+        if (!isset($map[$key])) {
+          $map[$key] = array_merge($filaVacia, [
+            'lista' => $key
+          ]);
+        }
+
+        foreach ($camposNumericos as $campo) {
+          $map[$key][$campo] += (float)($row[$campo] ?? 0);
+        }
+      }
+
+      $resultado = [];
+      $total = array_merge($filaVacia, [
+        'lista' => 'TOTAL',
+        'is_total' => true
+      ]);
+
+      foreach ($map as $row) {
+        foreach ($camposNumericos as $campo) {
+          $total[$campo] += (float)($row[$campo] ?? 0);
+        }
+
+        $resultado[] = $row;
+      }
+
+      $resultado[] = $total;
+
+      return $resultado;
+    };
+
+    $resumenListas = $normalizarResumenListas($resumenListas ?? []);
+    ?>
+    <?php
     $tables = [
       [
         'title' => 'Listas generales de compras',
